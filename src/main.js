@@ -36,7 +36,7 @@ const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'No
 
 let minePixelimer = 0;
 
-setInterval(function () {
+/*setInterval(function () {
     twitchClient.api({
         url: "https://api.twitch.tv/kraken/streams/158466757/",
         method: "GET",
@@ -55,7 +55,7 @@ setInterval(function () {
             uptime = `JOURLOY вещает на всю станцию уже ${s}`
         } else uptime = `стример сейчас оффлайн`
     });
-}, 1000);
+}, 1000);*/
 
 /**
  * Repeat information about rules on stream
