@@ -33,6 +33,8 @@ async function getData() {
     return response.json(); // parses JSON response into native JavaScript objects
 }
 exports.start = () => client;
+exports.getChannelName = () => options.channels[0];
+exports.getBotName = () => options.identity.username;
 exports.uptime = () => {
     const data = getData();
     data.on('end', (response) => console.log(response))
