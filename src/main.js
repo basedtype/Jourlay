@@ -253,6 +253,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case '!q':
             twitchClient.say(channelName, `@${username}, ${tools.ChooseAnswer()}`);
             break;
+        case '!uptime':
+            twitchClient.action(channelName, `${uptime}`);
+            break;
         /* case '!balance':
             for (i in chatterInfo) {
                 if (chatterInfo[i].username == username) twitchClient.say(channelName, `@${username}, баланс пикселей: ${chatterInfo[i].amountPixels}`);
