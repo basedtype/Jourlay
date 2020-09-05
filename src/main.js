@@ -1,6 +1,7 @@
 const twitch = require('./TwitchBot');
 const discord = require('./DiscordBot');
 const tools = require('./tools');
+const moment = require('moment');
 //const spaceGame = require('./SpaceGame');
 const https = require('https');
 
@@ -15,28 +16,19 @@ const channelName = twitch.getChannelName();
 const botName = twitch.getBotName();
 
 const chatterInfo = tools.GetChatterInfo();
-const PixelPerMessage = 0.5;
 
 const userDossier = {
     username: '',
-    mod: {
-        warnings: 0,
-        timeouts: 0,
-        bans: 0,
-    },
-    amountMessages: 0,
-    waitingTimerForPixels: 0,
-    amountPixels: 0,
-    waitingTimerForGift: 0,
-    amountGifts: 0,
+    isks: 0,
+    userShip: [],
+    userInventory: [],
+    iskMineTimer: 0,
 };
 
 let emotionsTimer = 0;
 const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump'];
 
-let minePixelimer = 0;
-
-/*setInterval(function () {
+setInterval(function () {
     twitchClient.api({
         url: "https://api.twitch.tv/kraken/streams/158466757/",
         method: "GET",
@@ -55,45 +47,17 @@ let minePixelimer = 0;
             uptime = `JOURLOY вещает на всю станцию уже ${s}`
         } else uptime = `стример сейчас оффлайн`
     });
-}, 1000);*/
+}, 1000);
 
 /**
  * Repeat information about rules on stream
  */
 setInterval(function () {
-    const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
-    twitchClient.action(channelName, rules);
-}, tools.ConvertTime({ minutes: 30 }));
-
-function ReturningPixels(username) {
-    if (minePixelTimer == 0) {
-        for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) {
-                const pixelInfo = tools.GeneratePixelStory();
-                chatterInfo[i].amountPixels += pixelInfo.Amount;
-                twitchClient.say(channelName, `@${username}, вы вернулись из игровых миров захватив с собой ${pixelInfo.Story}. Торговец дал вам за это ${pixelInfo.Amount} пикселей. Теперь у вас ${chatterInfo[i].amountPixels} пикселей`)
-            }
-        }
+    if (uptime != 'стример сейчас оффлайн') {
+        const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
+        twitchClient.action(channelName, rules);
     }
-}
-
-function MinePixels(username) {
-    let check = 0;
-    if (minePixelTimer == 0) {
-        for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) {
-                if (chatterInfo[i].amountPixels >= 20) {
-                    chatterInfo[i].amountPixels -= 20;
-                    minePixelTimer = 1;
-                    const pixelsWaiting = () => {minePixelTimer = 0; ReturningPixels(username);}
-                    time = tools.RandomInt(30, 60);
-                    twitchClient.say(channelName, `@${username}, оплатив проход в 20 пикселей вы ушли в игровые миры на поиски новых пикселей, удачи вам! Возвращение через ${time} минут`)
-                    setTimeout(pixelsWaiting, tools.ConvertTime({seconds: 5}));
-                }
-            }
-        }
-    }
-}
+}, tools.ConvertTime({ minutes: 40 }));
 
 /**
  * 
@@ -114,7 +78,7 @@ function SayEmoties(message) {
             twitchClient.say(channelName, `${emotion} ${emotion} ${emotion}`)
             emotionsTimer = 1;
             const f = () => emotionsTimer = 0;
-            setTimeout(f, tools.ConvertTime({ minutes: 2 }));
+            setTimeout(f, tools.ConvertTime({ minutes: 1 }));
         }
     }
 }
@@ -197,27 +161,14 @@ twitchClient.on('join', (username) => {
 });
 
 twitchClient.on("ban", (channel, username, reason, userstate) => {
-    if (chatterInfo.length == 0) {
-        let userInfo = userDossier;
-        userInfo.username = username;
-        userInfo.mod.bans++;
-        chatterInfo.push(userInfo);
-    } else {
+    if (chatterInfo.length != 0) {
         for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) {
-                chatterInfo[i].mod.warnings = 0;
-                chatterInfo[i].mod.bans++;
-            }
-            return;
+            if (chatterInfo[i].username == username) chatterInfo.slice(i, i);
         }
-        let userInfo = userDossier;
-        userInfo.username = username;
-        userInfo.mod.bans++;
-        chatterInfo.push(userInfo);
     }
 });
 
-twitchClient.on("timeout", (channel, username, reason, duration, userstate) => {
+/* twitchClient.on("timeout", (channel, username, reason, duration, userstate) => {
     if (chatterInfo.length == 0) {
         let userInfo = userDossier;
         userInfo.username = username;
@@ -236,7 +187,7 @@ twitchClient.on("timeout", (channel, username, reason, duration, userstate) => {
         userInfo.mod.timeouts++;
         chatterInfo.push(userInfo);
     }
-});
+}); */
 
 twitchClient.on("action", (channel, userstate, message, self) => {
     const username = userstate['display-name'];
@@ -253,22 +204,14 @@ function UpdateChatterInfo(username) {
     if (chatterInfo.length == 0) {
         let userInfo = userDossier;
         userInfo.username = username;
-        userInfo.amountMessages++;
-        userInfo.amountPixels += 20 + PixelPerMessage;
         chatterInfo.push(userInfo);
     } else {
         for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) {
-                chatterInfo[i].amountMessages++;
-                chatterInfo[i].amountPixels += PixelPerMessage;
-                check = true;
-            }
+            if (chatterInfo[i].username == username) check = true;
         }
         if (check == false) {
             let userInfo = userDossier;
             userInfo.username = username;
-            userInfo.amountMessages++;
-            userInfo.amountPixels += 20 + PixelPerMessage;
             chatterInfo.push(userInfo);
         }
     }
@@ -295,9 +238,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case '!pc':
             twitchClient.action(channelName, `| iMac 27" 5k retina. Играю на Windows`);
             break;
-        case '!pixels':
+        /* case '!pixels':
             twitchClient.action(channelName, '| Пиксели - это такая валюта, с помощью которой вы можете заказать челлендж. 1 челендж = 1000 пикселей. Пиксели можно получить просто писав сообщения в чат или попробовать удачу в !minepixels. Узнать свой баланс можно при помощи !balance. Заказать челлендж можно командой !challane [ТЕКСТ]');
-            break;
+            break; */
         case '!warband':
             twitchClient.action(channelName, '| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
             break;
@@ -307,7 +250,10 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case '!minecraft':
             twitchClient.action(channelName, '| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
             break;
-        case '!balance':
+        case '!q':
+            twitchClient.say(channelName, `@${username}, ${tools.ChooseAnswer()}`);
+            break;
+        /* case '!balance':
             for (i in chatterInfo) {
                 if (chatterInfo[i].username == username) twitchClient.say(channelName, `@${username}, баланс пикселей: ${chatterInfo[i].amountPixels}`);
             }
@@ -350,7 +296,7 @@ ${message}
                     }
                 }
             }
-            break;
+            break; */
     }
 
     if (CheckPartyPlay(message) == true) twitchClient.say(channel, `@${username}, стример не любит играть в пати`);
