@@ -40,6 +40,10 @@ exports.ChooseHelloMessages = function() {
     }
 }
 
+/**
+ * Exit from program
+ * @param {Number} status 
+ */
 exports.exit = function(status) {
     throw `Bot finished. Status: ${status}`;
 }
@@ -58,6 +62,9 @@ exports.SaveChattersInfo = function(chattersInfo) {
     fs.writeFile("chatterInfo.txt", saveInformation, function(error){ if(error) throw error; });
 }
 
+/**
+ * Read file per line
+ */
 function readLines() {
     const input = fs.readFileSync("chatterInfo.txt", "utf8");
     let chatterInfoNotFormatted = [];
@@ -92,11 +99,16 @@ function readLines() {
     return chatterInfo;
 }
 
+/**
+ * Return chatterInfo to main.js
+ */
 exports.GetChatterInfo = function() {
     return readLines();
 }
 
-exports.GeneratePixelStory = function() {
+/* 
+ * Deprecated
+exports.GeneratePixelStory = function() => {
 
     const rare = this.RandomInt(0, 10);
     let amountPixels = 0;
@@ -142,4 +154,12 @@ exports.GeneratePixelStory = function() {
         Amount: amountPixels
     };
     return pixelInfo;
+} */
+
+/**
+ * Choose random answer
+ */
+exports.ChooseAnswer = function() {
+    const array = ['да!','нет!','возможно','определенное нет','не знаю'];
+    return array[this.RandomInt(0, array.length-1)]
 }
