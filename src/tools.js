@@ -160,6 +160,6 @@ exports.GeneratePixelStory = function() => {
  * Choose random answer
  */
 exports.ChooseAnswer = function() {
-    const array = ['да!','нет!','возможно','определенное нет','не знаю'];
+    const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
     return array[this.RandomInt(0, array.length-1)]
 }
