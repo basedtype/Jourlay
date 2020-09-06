@@ -84,7 +84,7 @@ setInterval(function () {
         else {
             for (i in followers) {
                 if (!oldFollowers.includes(followers[i])) {
-                    twitchClient.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
+                    twitchClient.say(channelName, `@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
                     oldFollowers = followers;
                 }
             }
