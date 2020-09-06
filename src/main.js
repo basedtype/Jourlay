@@ -4,17 +4,15 @@ const tools = require('./tools');
 const moment = require('moment');
 //const spaceGame = require('./SpaceGame');
 const https = require('https');
+const { client } = require('tmi.js');
 
 //const chattersInfo = tools.GetChattersInfo();
-let uptime;
-
 
 //  ================== ================== ================== ================== TWITCH ================== ================== ================== ==================
 
 const twitchClient = twitch.start()
 const channelName = twitch.getChannelName();
 const botName = twitch.getBotName();
-
 const chatterInfo = tools.GetChatterInfo();
 
 const userDossier = {
@@ -26,8 +24,16 @@ const userDossier = {
 };
 
 let emotionsTimer = 0;
-const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump'];
+const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode'];
 
+let questionTimer = 0;
+
+let uptime = 'стример сейчас оффлайн';
+let oldFollowers = [];
+
+/**
+ * Update uptime
+ */
 setInterval(function () {
     twitchClient.api({
         url: "https://api.twitch.tv/kraken/streams/158466757/",
@@ -44,8 +50,45 @@ setInterval(function () {
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
             let s = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
-            uptime = `JOURLOY вещает на всю станцию уже ${s}`
-        } else uptime = `стример сейчас оффлайн`
+            if (uptime == `стример сейчас оффлайн`) twitchClient.say(channelName, `чату и стримеру привет`);
+            uptime = `| JOURLOY вещает на всю станцию уже ${s}`
+        } else {
+            if (uptime != `стример сейчас оффлайн`) {
+                twitchClient.action(channelName, '| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
+                tools.SaveChattersInfo(chatterInfo);
+            }
+            uptime = `стример сейчас оффлайн`;
+        }
+    });
+}, 1000);
+
+/**
+ * Check new follows
+ */
+setInterval(function () {
+    twitchClient.api({
+        url: "https://api.twitch.tv/kraken/channels/158466757/follows",
+        method: "GET",
+        headers: {
+            'Accept': 'application/vnd.twitchtv.v5+json',
+            "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+            'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+        }
+    }, (err, res, body) => {
+        let followers = [];
+        for (i in body.follows) {
+            followers.push(body.follows[i].user.display_name);
+        }
+
+        if (oldFollowers.length == 0) oldFollowers = followers;
+        else {
+            for (i in followers) {
+                if (!oldFollowers.includes(followers[i])) {
+                    twitchClient.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
+                    oldFollowers = followers;
+                }
+            }
+        }
     });
 }, 1000);
 
@@ -85,20 +128,17 @@ function SayEmoties(message) {
 
 /**
  * 
- * @param {*} username 
- * @param {*} message 
+ * @param {String} username 
+ * @param {String} message 
  */
 function InfoAboutGames(username, message) {
     const array = ['во что играешь', 'в какие игры'];
     let check = false;
     for (i in array) {
-        if (message.toLowerCase().indexOf(array[i]) != -1) {
-            check = true;
-        }
+        if (message.toLowerCase().indexOf(array[i]) != -1) check = true;
     }
-    if (check) {
-        twitchClient.say(channelName, `@${username} во все, что можно. Если есть идея, то можешь написать в чат :)`)
-    }
+    if (check) twitchClient.say(channelName, `@${username} во все, что можно. Если есть идея, то можешь написать в чат :)`);
+    return check;
 }
 
 /**
@@ -109,57 +149,72 @@ function InfoAboutGames(username, message) {
 function CheckMod(userstate) { return (userstate['user-type'] != 'mod' && userstate['display-name'] != channelName); }
 
 /**
- * 
- * @param {String} message 
+ * Check message and answer if need
+ * @param {String} message
+ * @param {String} username
  * @returns {boolean}
  */
-function CheckPartyPlay(message) {
+function CheckPartyPlay(message, username) {
     const array = ['давай сыграем', 'будешь пати', 'сыграем вместе', 'в пати', 'сыграй с ', 'в тиму'];
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (check == true) twitchClient.say(channelName, `@${username}, стример не любит играть в пати`);
     return check;
 }
 
 /**
- * 
- * @param {String} message 
+ * Check message and answer if need
+ * @param {String} message
+ * @param {String} username
  * @returns {boolean}
  */
-function CheckWhoAreU(message) {
+function CheckWhoAreU(message, username) {
     const array = ['ты кто', 'ты хто', 'хто ты', 'кто ты', 'что ты', 'ты что', 'ты бот', 'ты человек'];
     const nickname = '@' + botName;
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
+    if (check == true) twitchClient.say(channel, `@${username}, что за вопросы, ты кто такой? А? Kappa`);
     return check;
 }
 
 /**
- * 
- * @param {String} message 
+ * Check message and answer if need
+ * @param {String} message
+ * @param {String} username
  * @returns {boolean}
  */
 function CheckChangeSub(message) {
     const array = ['взаимная подписку', 'взаимную подписку', 'взаимной подписке'];
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (check == true) twitchClient.say(channel, `@${username}, никаких взаимных подписок`);
     return check;
 }
 
+/**
+ * Check message and ban user if need
+ * @param {String} message
+ * @param {String} username
+ * @returns {boolean}
+ */
+function CheckBannedWords(message, username) {
+    const array = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол'];
+    let check = false;
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (check == true) twitchClient.timeout(channelName, username, tools.ConvertTime({hours: 24}), 'запретное слово');
+    return check;
+}
+
+/**
+ * Reaction when chat has been cleared
+ */
 twitchClient.on("clearchat", (channel) => {
     twitchClient.say(channel, `я первый Kappa`)
 });
 
-twitchClient.on('join', (username) => {
-    if (chatterInfo.length != 0) {
-        for (i in chatterInfo) {
-            if (chatterInfo.username == username) {
-                if (chatterInfo[i].amountMessages > 0) twitchClient.say(channelName, `@${username}, ${tools.ChooseHelloMessage()}`);
-                return;
-            }
-        };
-    }
-});
-
+/**
+ * Reaction when user has been banned
+ */
 twitchClient.on("ban", (channel, username, reason, userstate) => {
     if (chatterInfo.length != 0) {
         for (i in chatterInfo) {
@@ -168,36 +223,22 @@ twitchClient.on("ban", (channel, username, reason, userstate) => {
     }
 });
 
-/* twitchClient.on("timeout", (channel, username, reason, duration, userstate) => {
-    if (chatterInfo.length == 0) {
-        let userInfo = userDossier;
-        userInfo.username = username;
-        userInfo.mod.timeouts++;
-        chatterInfo.push(userInfo);
-    } else {
-        for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) {
-                chatterInfo[i].mod.warnings = 0;
-                chatterInfo[i].mod.timeouts++;
-            }
-            return;
-        }
-        let userInfo = userDossier;
-        userInfo.username = username;
-        userInfo.mod.timeouts++;
-        chatterInfo.push(userInfo);
-    }
-}); */
-
+/**
+ * Reaction when user send /me message in chat
+ */
 twitchClient.on("action", (channel, userstate, message, self) => {
     const username = userstate['display-name'];
     if (self) return;
     if (userstate['user-type'] != 'mod' && username != channelName) {
-        twitchClient.timeout(channel, username, 20, "/me в сообщении");
-        twitchClient.say(channelName, `@${username} у нас не принято использовать /me в чате!`)
+        twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
+        twitchClient.say(channelName, `@${username} у нас не принято использовать /me в чате!`);
     }
 });
 
+/**
+ * Add user in chatterInfo
+ * @param {String} username 
+ */
 function UpdateChatterInfo(username) {
     let check = false;
 
@@ -225,89 +266,51 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     UpdateChatterInfo(username)
 
+    if (CheckBannedWords(message) == true) return;
+    if (CheckPartyPlay(message, username) == true) return;
+    if (CheckWhoAreU(message, username) == true) return;
+    if (CheckChangeSub(message) == true) return;
+    if (InfoAboutGames(username, message) == true) return;
+
     switch (messageSplit[0]) {
         case '!шумнафоне':
             twitchClient.say(channel, `@${username}, twitch.tv/kartinka_katerinka`);
-            break;
+            return;
         case '!save':
             if (CheckMod(userstate)) {
                 tools.SaveChattersInfo(chatterInfo);
                 twitchClient.say(channel, `сохранено`);
             }
-            break;
+            return;
         case '!pc':
             twitchClient.action(channelName, `| iMac 27" 5k retina. Играю на Windows`);
-            break;
+            return;
         /* case '!pixels':
             twitchClient.action(channelName, '| Пиксели - это такая валюта, с помощью которой вы можете заказать челлендж. 1 челендж = 1000 пикселей. Пиксели можно получить просто писав сообщения в чат или попробовать удачу в !minepixels. Узнать свой баланс можно при помощи !balance. Заказать челлендж можно командой !challane [ТЕКСТ]');
-            break; */
+            return; */
         case '!warband':
             twitchClient.action(channelName, '| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
-            break;
+            return;
         case '!hitman':
             twitchClient.action(channelName, '| Цель: пройти игру. Условие: ни разу не умереть иначе все сначала');
-            break;
+            return;
         case '!minecraft':
             twitchClient.action(channelName, '| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
-            break;
+            return;
         case '!q':
-            twitchClient.say(channelName, `@${username}, ${tools.ChooseAnswer()}`);
-            break;
+            if (questionTimer == 0) {
+                twitchClient.say(channelName, `@${username}, ${tools.ChooseAnswer()}`);
+                questionTimer = 1;
+                const setQuestionTime = () => questionTimer = 0;
+                setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
+            }
+            return;
         case '!uptime':
             twitchClient.action(channelName, `${uptime}`);
-            break;
-        /* case '!balance':
-            for (i in chatterInfo) {
-                if (chatterInfo[i].username == username) twitchClient.say(channelName, `@${username}, баланс пикселей: ${chatterInfo[i].amountPixels}`);
-            }
-            break;
-        case '!minepixels':
-            MinePixels(username);
-            break;
-        case '!givepixels':
-            if (CheckMod(userstate)) {
-                for (i in chatterInfo) {
-                    if (chatterInfo[i].username == messageSplit[1]) chatterInfo[i].amountPixels += parseInt(messageSplit[2]);
-                }
-            }
-            break;
-        case '!clearpixels':
-            if (CheckMod(userstate)) {
-                for (i in chatterInfo) {
-                    if (chatterInfo[i].username == messageSplit[1]) chatterInfo[i].amountPixels = 0;
-                }
-            }
-            break;
-        case '!challange':
-            for (i in chatterInfo) {
-                if (chatterInfo[i].username == username) {
-                    if (chatterInfo[i].amountPixels >= 1000) {
-                        chatterInfo[i].amountPixels -= 1000;
-                        twitchClient.say(channelName, '@JOURlOY, тут челендж заказали. 1000 пикселей списал, посмотри челлендж');
-                        console.log(`
-=====================================
-ЧЕЛЛЕНДЖ
-=====================================
-
-${message}
-
-=====================================
-
-                        `);
-                    } else {
-                        twitchClient.say(channelName, `@${username}, у тебя не хватает пикселей, накопи еще ${1000 - chatterInfo[i].amountPixels} пикселей и сможешь заказать`);
-                    }
-                }
-            }
-            break; */
+            return;
     }
 
-    if (CheckPartyPlay(message) == true) twitchClient.say(channel, `@${username}, стример не любит играть в пати`);
-    if (CheckWhoAreU(message) == true) twitchClient.say(channel, `@${username}, что за вопросы, ты кто такой? А? Kappa`);
-    if (CheckChangeSub(message) == true) twitchClient.say(channel, `@${username}, никаких взаимных подписок`);
-
     SayEmoties(message);
-    InfoAboutGames(username, message);
 });
 
 //  ================== ================== ================== ================== DISCORD ================== ================== ================== ==================
