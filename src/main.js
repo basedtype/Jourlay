@@ -50,12 +50,12 @@ setInterval(function () {
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
             let s = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
-            if (uptime == `стример сейчас оффлайн`) twitchClient.say(channelName, `чату и стримеру привет`);
+            //if (uptime == `стример сейчас оффлайн`) twitchClient.say(channelName, `чату и стримеру привет`);
             uptime = `| JOURLOY вещает на всю станцию уже ${s}`
         } else {
             if (uptime != `стример сейчас оффлайн`) {
-                twitchClient.action(channelName, '| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
-                tools.SaveChattersInfo(chatterInfo);
+                //twitchClient.action(channelName, '| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
+                //tools.SaveChattersInfo(chatterInfo);
             }
             uptime = `стример сейчас оффлайн`;
         }
