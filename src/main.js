@@ -3,8 +3,6 @@ const discord = require('./DiscordBot');
 const tools = require('./tools');
 const moment = require('moment');
 //const spaceGame = require('./SpaceGame');
-const https = require('https');
-const { client } = require('tmi.js');
 
 //const chattersInfo = tools.GetChattersInfo();
 
@@ -24,7 +22,7 @@ const userDossier = {
 };
 
 let emotionsTimer = 0;
-const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode'];
+const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa'];
 
 let questionTimer = 0;
 
@@ -50,13 +48,10 @@ setInterval(function () {
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
             let s = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
-            //if (uptime == `стример сейчас оффлайн`) twitchClient.say(channelName, `чату и стримеру привет`);
+            if (uptime == `стример сейчас оффлайн`) twitch.say(`чату и стримеру привет`);
             uptime = `| JOURLOY вещает на всю станцию уже ${s}`
         } else {
-            if (uptime != `стример сейчас оффлайн`) {
-                //twitchClient.action(channelName, '| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
-                //tools.SaveChattersInfo(chatterInfo);
-            }
+            if (uptime != `стример сейчас оффлайн`) twitch.action('| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
             uptime = `стример сейчас оффлайн`;
         }
     });
@@ -84,7 +79,7 @@ setInterval(function () {
         else {
             for (i in followers) {
                 if (!oldFollowers.includes(followers[i])) {
-                    twitchClient.say(channelName, `@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
+                    twitch.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
                     oldFollowers = followers;
                 }
             }
@@ -97,8 +92,8 @@ setInterval(function () {
  */
 setInterval(function () {
     if (uptime != 'стример сейчас оффлайн') {
-        const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
-        twitchClient.action(channelName, rules);
+        const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером. Использовать символы из русского и английского алфавитов и частоиспользуемые символы.`;
+        twitch.action(rules);
     }
 }, tools.ConvertTime({ minutes: 40 }));
 
@@ -118,7 +113,7 @@ function SayEmoties(message) {
             }
         }
         if (check) {
-            twitchClient.say(channelName, `${emotion} ${emotion} ${emotion}`)
+            twitch.say(`${emotion} ${emotion} ${emotion}`)
             emotionsTimer = 1;
             const f = () => emotionsTimer = 0;
             setTimeout(f, tools.ConvertTime({ minutes: 1 }));
@@ -128,16 +123,16 @@ function SayEmoties(message) {
 
 /**
  * 
- * @param {String} username 
  * @param {String} message 
+ * @param {String} username 
  */
-function InfoAboutGames(username, message) {
+function InfoAboutGames(message, username) {
     const array = ['во что играешь', 'в какие игры'];
     let check = false;
     for (i in array) {
         if (message.toLowerCase().indexOf(array[i]) != -1) check = true;
     }
-    if (check) twitchClient.say(channelName, `@${username} во все, что можно. Если есть идея, то можешь написать в чат :)`);
+    if (check) twitch.say(`@${username} во все, что можно. Если есть идея, то можешь написать в чат :)`);
     return check;
 }
 
@@ -158,7 +153,7 @@ function CheckPartyPlay(message, username) {
     const array = ['давай сыграем', 'будешь пати', 'сыграем вместе', 'в пати', 'сыграй с ', 'в тиму'];
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) twitchClient.say(channelName, `@${username}, стример не любит играть в пати`);
+    if (check == true) twitch.say(`@${username}, стример не любит играть в пати`);
     return check;
 }
 
@@ -173,7 +168,7 @@ function CheckWhoAreU(message, username) {
     const nickname = '@' + botName;
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
-    if (check == true) twitchClient.say(channel, `@${username}, что за вопросы, ты кто такой? А? Kappa`);
+    if (check == true) twitch.say(`@${username}, что за вопросы, ты кто такой? А? Kappa`);
     return check;
 }
 
@@ -183,11 +178,11 @@ function CheckWhoAreU(message, username) {
  * @param {String} username
  * @returns {boolean}
  */
-function CheckChangeSub(message) {
+function CheckChangeSub(message, username) {
     const array = ['взаимная подписку', 'взаимную подписку', 'взаимной подписке'];
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) twitchClient.say(channel, `@${username}, никаких взаимных подписок`);
+    if (check == true) twitch.say(`@${username}, никаких взаимных подписок`);
     return check;
 }
 
@@ -202,6 +197,19 @@ function CheckBannedWords(message, username) {
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
     if (check == true) twitchClient.timeout(channelName, username, tools.ConvertTime({hours: 24}), 'запретное слово');
+    return check;
+}
+
+/**
+ * 
+ * @param {String} message 
+ * @param {String} username 
+ */
+function HiMessage(message, username) {
+    const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули'];
+    let check = false;
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (check == true) twitch.say(`@${username}, ${tools.ChooseHiMessage()}`);
     return check;
 }
 
@@ -231,7 +239,7 @@ twitchClient.on("action", (channel, userstate, message, self) => {
     if (self) return;
     if (userstate['user-type'] != 'mod' && username != channelName) {
         twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
-        twitchClient.say(channelName, `@${username} у нас не принято использовать /me в чате!`);
+        twitch.say(`@${username} у нас не принято использовать /me в чате!`);
     }
 });
 
@@ -266,11 +274,13 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     UpdateChatterInfo(username)
 
+    //if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'запрещенные символы');
+    if (HiMessage(message, username) == true) return;
     if (CheckBannedWords(message) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
     if (CheckWhoAreU(message, username) == true) return;
-    if (CheckChangeSub(message) == true) return;
-    if (InfoAboutGames(username, message) == true) return;
+    if (CheckChangeSub(message, username) == true) return;
+    if (InfoAboutGames(message, username) == true) return;
 
     switch (messageSplit[0]) {
         case '!шумнафоне':
@@ -283,31 +293,38 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             }
             return;
         case '!pc':
-            twitchClient.action(channelName, `| iMac 27" 5k retina. Играю на Windows`);
+            twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
             return;
-        /* case '!pixels':
-            twitchClient.action(channelName, '| Пиксели - это такая валюта, с помощью которой вы можете заказать челлендж. 1 челендж = 1000 пикселей. Пиксели можно получить просто писав сообщения в чат или попробовать удачу в !minepixels. Узнать свой баланс можно при помощи !balance. Заказать челлендж можно командой !challane [ТЕКСТ]');
-            return; */
         case '!warband':
-            twitchClient.action(channelName, '| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
+            twitch.action('| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
             return;
         case '!hitman':
-            twitchClient.action(channelName, '| Цель: пройти игру. Условие: ни разу не умереть иначе все сначала');
+            twitch.action('| Цель: пройти игру. Условие: ни разу не умереть иначе все сначала');
             return;
         case '!minecraft':
-            twitchClient.action(channelName, '| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
+            twitch.action('| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
             return;
         case '!q':
-            if (questionTimer == 0) {
-                twitchClient.say(channelName, `@${username}, ${tools.ChooseAnswer()}`);
+            if (questionTimer == 0 && message.includes('?') && message.length > 5) {
+                twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
                 questionTimer = 1;
                 const setQuestionTime = () => questionTimer = 0;
                 setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
             }
             return;
         case '!uptime':
-            twitchClient.action(channelName, `${uptime}`);
+            twitch.action(`${uptime}`);
             return;
+        case '!t':
+            if (CheckMod) {
+                if (twitch.timeout(messageSplit[1], messageSplit[2]) == -1) console.log(`Человек с ником [ ${messageSplit[1]} ] не найден`);
+            }
+            return;
+        case '!b':
+            if (CheckMod) {
+                if (twitch.ban(messageSplit[1]) == -1) console.log(`Человек с ником [ ${messageSplit[1]} ] не найден`);
+            }
+            return;     
     }
 
     SayEmoties(message);
