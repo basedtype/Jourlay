@@ -29,18 +29,6 @@ exports.RandomInt = function(min, max) {
 }
 
 /**
- * 
- * @returns {String} message
- */
-exports.ChooseHelloMessages = function() {
-    switch(RandomInt(0, 2)) {
-        case 0: return `привет! Как дела?`;
-        case 1: return 'хеллоу. Приятного просмотра';
-        case 2: return `здрасте! Устраивайся поудобнее и приятного тебе просмотра`
-    }
-}
-
-/**
  * Exit from program
  * @param {Number} status 
  */
@@ -106,60 +94,33 @@ exports.GetChatterInfo = function() {
     return readLines();
 }
 
-/* 
- * Deprecated
-exports.GeneratePixelStory = function() => {
-
-    const rare = this.RandomInt(0, 10);
-    let amountPixels = 0;
-    
-    switch (rare) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-            amountPixels = this.RandomInt(10, 19);
-            break;
-        case 6:
-            amountPixels = this.RandomInt(25, 35);
-            break;
-        case 7:
-            amountPixels = this.RandomInt(35, 45);
-            break;
-        case 8:
-            amountPixels = this.RandomInt(45, 55);
-            break;
-        case 9:
-            amountPixels = this.RandomInt(55, 65);
-            break;
-        case 10:
-            amountPixels = this.RandomInt(65, 75);
-            break;
-    }
-
-    const descArray = ['обычный', 'красивый', 'редкий', 'уникальный', 'поломанный', 'большой', 'использованный', 'чужой', 'свой', 'красный', 'синий', 'известный'];
-    const randomDesc = this.RandomInt(0, descArray.length);
-    const desc = descArray[(descArray.length-1)%randomDesc];
-
-    const thigsArray = ['телевизор', 'башмак', 'меч', 'щит', 'кирпич', 'посох', 'автомат', 'дробовик', 'пистолет', 'корабль', 'лазер', 'камень'];
-    const randomThing = this.RandomInt(0, thigsArray.length);
-    const thing = thigsArray[(thigsArray.length-1)%randomThing];
-
-    const story = `${desc} ${thing}`;
-
-    const pixelInfo = {
-        Story: story,
-        Amount: amountPixels
-    };
-    return pixelInfo;
-} */
-
 /**
  * Choose random answer
  */
 exports.ChooseAnswer = function() {
     const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
     return array[this.RandomInt(0, array.length-1)]
+}
+
+exports.ChooseHiMessage = function() {
+    const array = ['привет', 'приветули', 'добро пожаловать', 'вы посмотрите кто пришел', 'вот ваш напиток', 'хеллоу', 'хай'];
+    return ` ${array[this.RandomInt(0, array.length-1)]} ShowOfHands ShowOfHands`;
+}
+
+/**
+ * 
+ * @param {String} text 
+ */
+exports.CheckString = function(message) {
+    const englishAlphabet = ['q','w','e','r','t','y','u','i','o','p','a','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'];
+    const russianAlphabet = ['й','ц','у','к','е','н','г','ш','щ','з','х','ъ','ф','ы','в','а','п','р','о','л','д','ж','э','ё','я','ч','с','м','и','т','ь','б','ю'];
+    const symbols = ['1','2','3','4','5','6','7','8','9','0','-','_','=','+','[','{',']','}',';',':','\'','"','\\','|','/','.','?','>',',','<','@','#','$','%','^','*','(',')','№','%',':','`','~'];
+    let check = false;
+
+    for (i in message) {
+        if (englishAlphabet.includes(message[i].toLowerCase()) || russianAlphabet.includes(message[i].toLowerCase()) || symbols.includes(message[i])) check = false;
+        else check = true;
+    }
+    
+    return check;
 }
