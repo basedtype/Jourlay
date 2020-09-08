@@ -4,8 +4,6 @@ const tools = require('./tools');
 const moment = require('moment');
 //const spaceGame = require('./SpaceGame');
 
-//const chattersInfo = tools.GetChattersInfo();
-
 //  ================== ================== ================== ================== TWITCH ================== ================== ================== ==================
 
 const twitchClient = twitch.start()
@@ -26,8 +24,21 @@ const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'No
 
 let questionTimer = 0;
 
-let uptime = 'стример сейчас оффлайн';
+let twitchInfo = {viewers: 0, maxViewers: 0, game: '', maxGame: '', uptime: 'стример сейчас оффлайн'};
 let oldFollowers = [];
+
+setInterval(function () {
+    tools.ClearCli();
+    console.log(`
+Трансляция запущена
+
+Uptime: ${twitchInfo.uptime}
+Game: ${twitchInfo.game}
+Viewers: ${twitchInfo.viewers}
+
+Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame};
+`);
+}, 2000);
 
 /**
  * Update uptime
@@ -43,19 +54,23 @@ setInterval(function () {
         }
     }, (err, res, body) => {
         if (body.stream != null) {
+            if (body.stream.viewers > twitchInfo.maxViewers) {
+                twitchInfo.maxViewers = body.stream.viewers;
+                twitchInfo.maxGame = body.stream.game;
+            }
+            twitchInfo.viewers = body.stream.viewers;
+            twitchInfo.game = body.stream.game;
             let now = new Date();
             let then = body.stream.created_at;
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
-            let s = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
-            //if (uptime == `стример сейчас оффлайн`) twitch.say(`чату и стримеру привет`);
-            uptime = `| JOURLOY вещает на всю станцию уже ${s}`
+            twitchInfo.uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
         } else {
             //if (uptime != `стример сейчас оффлайн`) twitch.action('| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
-            uptime = `стример сейчас оффлайн`;
+            twitchInfo.uptime = `стример сейчас оффлайн`;
         }
     });
-}, 1000);
+}, 100);
 
 /**
  * Check new follows
@@ -85,7 +100,7 @@ setInterval(function () {
             }
         }
     });
-}, 1000);
+}, 100);
 
 /**
  * Repeat information about rules on stream
@@ -193,10 +208,10 @@ function CheckChangeSub(message, username) {
  * @returns {boolean}
  */
 function CheckBannedWords(message, username) {
-    const array = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол'];
+    const array = tools.GetBannedWords();
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) twitchClient.timeout(channelName, username, tools.ConvertTime({hours: 24}), 'запретное слово');
+    if (check == true) twitchClient.timeout(channelName, username, tools.ConvertTime({hours: 24}), 'без возможности разбана [БОТ]');
     return check;
 }
 
@@ -209,7 +224,10 @@ function HiMessage(message, username) {
     const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули'];
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) twitch.say(`@${username}, ${tools.ChooseHiMessage()}`);
+    if (check == true) {
+        //if (oldFollowers.includes(username)) twitch.say(`@${username}, ${tools.ChooseHiMessage()} Не забудь зафоловиться на канал`);
+        twitch.say(`@${username}, ${tools.ChooseHiMessage()} ShowOfHands ShowOfHands`);
+    }
     return check;
 }
 
@@ -274,8 +292,8 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     UpdateChatterInfo(username)
 
-    //if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'запрещенные символы');
-    if (HiMessage(message, username) == true) return;
+    if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'запрещенные символы');
+    //if (HiMessage(message, username) == true) return;
     if (CheckBannedWords(message) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
     if (CheckWhoAreU(message, username) == true) return;
@@ -313,18 +331,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             }
             return;
         case '!uptime':
-            twitch.action(`${uptime}`);
+            if (twitchInfo.uptime != 'стример сейчас офлайн') twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
+            else twitch.action(twitchInfo.uptime);
             return;
-        case '!t':
-            if (CheckMod) {
-                if (twitch.timeout(messageSplit[1], messageSplit[2]) == -1) console.log(`Человек с ником [ ${messageSplit[1]} ] не найден`);
-            }
-            return;
-        case '!b':
-            if (CheckMod) {
-                if (twitch.ban(messageSplit[1]) == -1) console.log(`Человек с ником [ ${messageSplit[1]} ] не найден`);
-            }
-            return;     
     }
 
     SayEmoties(message);
