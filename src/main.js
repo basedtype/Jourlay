@@ -292,7 +292,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     UpdateChatterInfo(username)
 
-    if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'запрещенные символы');
+    if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
     //if (HiMessage(message, username) == true) return;
     if (CheckBannedWords(message) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
