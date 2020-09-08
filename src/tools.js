@@ -1,4 +1,5 @@
 const fs = require("fs");
+const utf8 = require('utf8');
 
 /**
  * 
@@ -103,24 +104,23 @@ exports.ChooseAnswer = function() {
 }
 
 exports.ChooseHiMessage = function() {
-    const array = ['привет', 'приветули', 'добро пожаловать', 'вы посмотрите кто пришел', 'вот ваш напиток', 'хеллоу', 'хай'];
-    return ` ${array[this.RandomInt(0, array.length-1)]} ShowOfHands ShowOfHands`;
+    const array = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'вот ваш напиток!', 'хеллоу!', 'хай!'];
+    return `${array[this.RandomInt(0, array.length-1)]}`;
 }
 
 /**
- * 
+ * Check string and return true if string includes banned symbols
  * @param {String} text 
  */
 exports.CheckString = function(message) {
-    const englishAlphabet = ['q','w','e','r','t','y','u','i','o','p','a','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m'];
-    const russianAlphabet = ['й','ц','у','к','е','н','г','ш','щ','з','х','ъ','ф','ы','в','а','п','р','о','л','д','ж','э','ё','я','ч','с','м','и','т','ь','б','ю'];
-    const symbols = ['1','2','3','4','5','6','7','8','9','0','-','_','=','+','[','{',']','}',';',':','\'','"','\\','|','/','.','?','>',',','<','@','#','$','%','^','*','(',')','№','%',':','`','~'];
     let check = false;
-
     for (i in message) {
-        if (englishAlphabet.includes(message[i].toLowerCase()) || russianAlphabet.includes(message[i].toLowerCase()) || symbols.includes(message[i])) check = false;
-        else check = true;
+        const buffer = Buffer.from(message[i]);
+        const json = JSON.parse(JSON.stringify(buffer))
+        if (json.data.length > 2 && message[i] != '▬') check = true;
     }
-    
     return check;
 }
+
+exports.GetBannedWords = () => ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс'];
+exports.ClearCli = function() { console.log('\x1Bc') }
