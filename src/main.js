@@ -275,7 +275,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     UpdateChatterInfo(username)
 
     //if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'запрещенные символы');
-    if (HiMessage(message, username) == true) return;
+    //if (HiMessage(message, username) == true) return;
     if (CheckBannedWords(message) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
     if (CheckWhoAreU(message, username) == true) return;
