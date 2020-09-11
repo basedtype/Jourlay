@@ -27,79 +27,81 @@ let questionTimer = 0;
 let twitchInfo = {viewers: 0, maxViewers: 0, game: '', maxGame: '', uptime: 'стример сейчас оффлайн'};
 let oldFollowers = [];
 
+let hiMans = [];
+
 setInterval(function () {
     tools.ClearCli();
-    console.log(`
-Трансляция запущена
-
-Uptime: ${twitchInfo.uptime}
-Game: ${twitchInfo.game}
-Viewers: ${twitchInfo.viewers}
-
-Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame};
-`);
+    console.log(`Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame};`);
 }, 2000);
 
 /**
  * Update uptime
  */
 setInterval(function () {
-    twitchClient.api({
-        url: "https://api.twitch.tv/kraken/streams/158466757/",
-        method: "GET",
-        headers: {
-            'Accept': 'application/vnd.twitchtv.v5+json',
-            "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-            'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
-        }
-    }, (err, res, body) => {
-        if (body.stream != null) {
-            if (body.stream.viewers > twitchInfo.maxViewers) {
-                twitchInfo.maxViewers = body.stream.viewers;
-                twitchInfo.maxGame = body.stream.game;
+    try {
+        twitchClient.api({
+            url: "https://api.twitch.tv/kraken/streams/158466757/",
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
             }
-            twitchInfo.viewers = body.stream.viewers;
-            twitchInfo.game = body.stream.game;
-            let now = new Date();
-            let then = body.stream.created_at;
-            let ms = moment(now).diff(moment(then));
-            let d = moment.duration(ms);
-            twitchInfo.uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
-        } else {
-            //if (uptime != `стример сейчас оффлайн`) twitch.action('| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
-            twitchInfo.uptime = `стример сейчас оффлайн`;
-        }
-    });
+        }, (err, res, body) => {
+            if (body.stream != null) {
+                if (body.stream.viewers > twitchInfo.maxViewers) {
+                    twitchInfo.maxViewers = body.stream.viewers;
+                    twitchInfo.maxGame = body.stream.game;
+                }
+                twitchInfo.viewers = body.stream.viewers;
+                twitchInfo.game = body.stream.game;
+                let now = new Date();
+                let then = body.stream.created_at;
+                let ms = moment(now).diff(moment(then));
+                let d = moment.duration(ms);
+                twitchInfo.uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
+            } else {
+                //if (uptime != `стример сейчас оффлайн`) twitch.action('| всем пока, приходите на следующий стрим! Узнать о новых стримах и не только можно в нашем дискорде: discord.gg/DVukvAu');
+                twitchInfo.uptime = `стример сейчас оффлайн`;
+            }
+        });
+    } catch {
+        twitchInfo.uptime = `стример сейчас оффлайн`;
+    }
 }, 100);
 
 /**
  * Check new follows
  */
 setInterval(function () {
-    twitchClient.api({
-        url: "https://api.twitch.tv/kraken/channels/158466757/follows",
-        method: "GET",
-        headers: {
-            'Accept': 'application/vnd.twitchtv.v5+json',
-            "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-            'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
-        }
-    }, (err, res, body) => {
-        let followers = [];
-        for (i in body.follows) {
-            followers.push(body.follows[i].user.display_name);
-        }
+    try {
+        twitchClient.api({
+            url: "https://api.twitch.tv/kraken/channels/158466757/follows",
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+            }
+        }, (err, res, body) => {
+            let followers = [];
+            for (i in body.follows) {
+                followers.push(body.follows[i].user.display_name);
+            }
 
-        if (oldFollowers.length == 0) oldFollowers = followers;
-        else {
-            for (i in followers) {
-                if (!oldFollowers.includes(followers[i])) {
-                    twitch.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
-                    oldFollowers = followers;
+            if (oldFollowers.length == 0) oldFollowers = followers;
+            else {
+                for (i in followers) {
+                    if (!oldFollowers.includes(followers[i])) {
+                        twitch.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
+                        oldFollowers = followers;
+                    }
                 }
             }
-        }
-    });
+        });
+    } catch {
+        ;
+    }
 }, 100);
 
 /**
@@ -107,7 +109,7 @@ setInterval(function () {
  */
 setInterval(function () {
     if (uptime != 'стример сейчас оффлайн') {
-        const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером. Использовать символы из русского и английского алфавитов и частоиспользуемые символы.`;
+        const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
         twitch.action(rules);
     }
 }, tools.ConvertTime({ minutes: 40 }));
@@ -223,10 +225,13 @@ function CheckBannedWords(message, username) {
 function HiMessage(message, username) {
     const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули'];
     let check = false;
-    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) {
-        //if (oldFollowers.includes(username)) twitch.say(`@${username}, ${tools.ChooseHiMessage()} Не забудь зафоловиться на канал`);
-        twitch.say(`@${username}, ${tools.ChooseHiMessage()} ShowOfHands ShowOfHands`);
+    if (!hiMans.includes(username) && username.toLocaleLowerCase() != channelName) {
+        for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+        if (check == true) {
+            if (!oldFollowers.includes(username)) twitch.say(`@${username}, ${tools.ChooseHiMessage()} Не забудь зафоловиться на канал`);
+            else twitch.say(`@${username}, ${tools.ChooseHiMessage()} ShowOfHands ShowOfHands`);
+            hiMans.push(username);
+        }
     }
     return check;
 }
@@ -234,9 +239,7 @@ function HiMessage(message, username) {
 /**
  * Reaction when chat has been cleared
  */
-twitchClient.on("clearchat", (channel) => {
-    twitchClient.say(channel, `я первый Kappa`)
-});
+twitchClient.on("clearchat", (channel) => { twitchClient.say(channel, `я первый Kappa`) });
 
 /**
  * Reaction when user has been banned
@@ -293,7 +296,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     UpdateChatterInfo(username)
 
     if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
-    //if (HiMessage(message, username) == true) return;
+    if (HiMessage(message, username) == true) return;
     if (CheckBannedWords(message) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
     if (CheckWhoAreU(message, username) == true) return;
@@ -320,19 +323,23 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             twitch.action('| Цель: пройти игру. Условие: ни разу не умереть иначе все сначала');
             return;
         case '!minecraft':
-            twitch.action('| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
+            //twitch.action('| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
             return;
         case '!q':
-            if (questionTimer == 0 && message.includes('?') && message.length > 5) {
+            if (questionTimer == 0 && message.includes('?') && message.length > 6) {
                 twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
                 questionTimer = 1;
                 const setQuestionTime = () => questionTimer = 0;
                 setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
             }
             return;
+        case '!up':
         case '!uptime':
             if (twitchInfo.uptime != 'стример сейчас офлайн') twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
             else twitch.action(twitchInfo.uptime);
+            return;
+        case '!10hoursgames':
+            twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: warband`);
             return;
     }
 
