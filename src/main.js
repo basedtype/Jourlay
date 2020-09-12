@@ -29,9 +29,57 @@ let oldFollowers = [];
 
 let hiMans = [];
 
+let streamAims = {
+    5: {
+        done: false,
+        message: '5 зрителей есть, давайте поднажмем'
+    },
+    10: {
+        done: false,
+        message: 'Воу, уже 10 зрителей. А вы зафоловились?'
+    },
+    15: {
+        done: false,
+        message: '15 зрителей на канале? Пойду проверю почту, вдруг рекламу просят'
+    },
+    20: {
+        done: false,
+        message: '20 зрителей. ОМГ. Зовите своих друзей, осталось 5 человек до цели'
+    },
+    25: {
+        done: false,
+        message: '25 зрителей есть, цель есть, можно и стрим закончить Kappa'
+    },
+}
+
 setInterval(function () {
-    tools.ClearCli();
-    console.log(`Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame};`);
+    try {
+        if (twitchInfo.viewers) {
+            if (twitchInfo.viewers >= 25) {
+                streamAims[25].done = true;
+                twitch.action(streamAims[20].message)
+            } else if (twitchInfo.viewers >= 20) {
+                streamAims[20].done = true;
+                twitch.action(streamAims[20].message)
+            } else if (twitchInfo.viewers >= 15) {
+                streamAims[15].done = true;
+                twitch.action(streamAims[20].message)
+            } else if (twitchInfo.viewers >= 10) {
+                streamAims[10].done = true;
+                twitch.action(streamAims[20].message)
+            } else if (twitchInfo.viewers >= 5) {
+                streamAims[5].done = true;
+                twitch.action(streamAims[20].message)
+            }
+        }
+    } catch { ; }
+}, 2000);
+
+setInterval(function () {
+    try {
+        tools.ClearCli();
+        console.log(`Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame};`);
+    } catch { ; }
 }, 2000);
 
 /**
@@ -68,7 +116,7 @@ setInterval(function () {
     } catch {
         twitchInfo.uptime = `стример сейчас оффлайн`;
     }
-}, 100);
+}, 1000);
 
 /**
  * Check new follows
@@ -85,33 +133,32 @@ setInterval(function () {
             }
         }, (err, res, body) => {
             let followers = [];
-            for (i in body.follows) {
-                followers.push(body.follows[i].user.display_name);
-            }
-
-            if (oldFollowers.length == 0) oldFollowers = followers;
-            else {
-                for (i in followers) {
-                    if (!oldFollowers.includes(followers[i])) {
-                        twitch.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
-                        oldFollowers = followers;
+            if (body && body.followers) {
+                for (i in body.follows) followers.push(body.follows[i].user.display_name);
+                if (oldFollowers.length == 0) oldFollowers = followers;
+                else {
+                    for (i in followers) {
+                        if (!oldFollowers.includes(followers[i])) {
+                            twitch.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
+                            oldFollowers = followers;
+                        }
                     }
                 }
             }
         });
-    } catch {
-        ;
-    }
-}, 100);
+    } catch { ; }
+}, 1000);
 
 /**
  * Repeat information about rules on stream
  */
 setInterval(function () {
-    if (uptime != 'стример сейчас оффлайн') {
-        const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
-        twitch.action(rules);
-    }
+    try {
+        if (twitchInfo.uptime != 'стример сейчас оффлайн') {
+            const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
+            twitch.action(rules);
+        }
+    } catch { ; }
 }, tools.ConvertTime({ minutes: 40 }));
 
 /**
@@ -295,9 +342,12 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     UpdateChatterInfo(username)
 
-    if (tools.CheckString(message) == true) twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
-    if (HiMessage(message, username) == true) return;
+    if (tools.CheckString(message) == true) {
+        twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
+        return;
+    }
     if (CheckBannedWords(message) == true) return;
+    if (HiMessage(message, username) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
     if (CheckWhoAreU(message, username) == true) return;
     if (CheckChangeSub(message, username) == true) return;
@@ -335,11 +385,13 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             return;
         case '!up':
         case '!uptime':
-            if (twitchInfo.uptime != 'стример сейчас офлайн') twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
-            else twitch.action(twitchInfo.uptime);
+            try {
+                if (twitchInfo.uptime != 'стример сейчас офлайн') twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
+                else twitch.action(twitchInfo.uptime);
+            } catch { ; }
             return;
         case '!10hoursgames':
-            twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: warband`);
+            twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: Warband`);
             return;
     }
 
