@@ -52,12 +52,4 @@ const information = {
         price: 70700000,
     }
 };
-const 
 
-class Play {
-    static Regestration(dossier, chatterInfo, username) {
-        
-    }
-}
-
-console.log(Play.Regestration()) 
