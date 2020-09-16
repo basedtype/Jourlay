@@ -36,7 +36,7 @@ let streamAims = {
     },
     10: {
         done: false,
-        message: 'Воу, уже 10 зрителей. А вы зафоловились?'
+        message: 'Уже 10 зрителей. А вы зафоловились?'
     },
     15: {
         done: false,
@@ -44,7 +44,7 @@ let streamAims = {
     },
     20: {
         done: false,
-        message: '20 зрителей. ОМГ. Зовите своих друзей, осталось 5 человек до цели'
+        message: 'Когда на твоем стриме сидят 20 человек, то стоит задуматься, что ты делаешь так'
     },
     25: {
         done: false,
@@ -55,21 +55,21 @@ let streamAims = {
 setInterval(function () {
     try {
         if (twitchInfo.viewers) {
-            if (twitchInfo.viewers >= 25) {
+            if (twitchInfo.viewers >= 25 && streamAims[25].done == false) {
                 streamAims[25].done = true;
                 twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 20) {
+            } else if (twitchInfo.viewers >= 20 && streamAims[20].done == false) {
                 streamAims[20].done = true;
                 twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 15) {
+            } else if (twitchInfo.viewers >= 15 && streamAims[15].done == false) {
                 streamAims[15].done = true;
                 twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 10) {
+            } else if (twitchInfo.viewers >= 10 && streamAims[10].done == false) {
                 streamAims[10].done = true;
                 twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 5) {
+            } else if (twitchInfo.viewers >= 5 && streamAims[5].done == false) {
                 streamAims[5].done = true;
-                twitch.action(streamAims[20].message)
+                twitch.action(streamAims[5].message)
             }
         }
     } catch { ; }
@@ -78,7 +78,7 @@ setInterval(function () {
 setInterval(function () {
     try {
         tools.ClearCli();
-        console.log(`Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame};`);
+        console.log(`Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame}`);
     } catch { ; }
 }, 2000);
 
@@ -392,6 +392,10 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             return;
         case '!10hoursgames':
             twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: Warband`);
+            return;
+        case `!dis`:
+        case `!discord`:
+            twitch.action(`| discord.gg/DVukvAu`);
             return;
     }
 
