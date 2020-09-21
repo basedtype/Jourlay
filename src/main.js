@@ -32,23 +32,23 @@ let hiMans = [];
 let streamAims = {
     5: {
         done: false,
-        message: '5 зрителей есть, давайте поднажмем'
+        message: '5 зрителей *галочка*'
     },
     10: {
         done: false,
-        message: 'Уже 10 зрителей. А вы зафоловились?'
+        message: '10 зрителей *галочка*'
     },
     15: {
         done: false,
-        message: '15 зрителей на канале? Пойду проверю почту, вдруг рекламу просят'
+        message: '15 зрителей *галочка*'
     },
     20: {
         done: false,
-        message: 'Когда на твоем стриме сидят 20 человек, то стоит задуматься, что ты делаешь так'
+        message: '20 зрителей *галочка*'
     },
     25: {
         done: false,
-        message: '25 зрителей есть, цель есть, можно и стрим закончить Kappa'
+        message: '25 зрителей *галочка*. Офай стрим Kappa'
     },
 }
 
@@ -162,6 +162,18 @@ setInterval(function () {
 }, tools.ConvertTime({ minutes: 40 }));
 
 /**
+ * Repeat information about links on stream
+ */
+setInterval(function () {
+    try {
+        if (twitchInfo.uptime != 'стример сейчас оффлайн') {
+            const rules = `| Подключайся по ссылке discord.gg/DVukvAu к discord серверу чтобы быть в курсе всего.`;
+            twitch.action(rules);
+        }
+    } catch { ; }
+}, tools.ConvertTime({ minutes: 30 }));
+
+/**
  * 
  * @param {String} message 
  * @returns {boolean}
@@ -260,7 +272,7 @@ function CheckBannedWords(message, username) {
     const array = tools.GetBannedWords();
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) twitchClient.timeout(channelName, username, tools.ConvertTime({hours: 24}), 'без возможности разбана [БОТ]');
+    if (check == true) twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
     return check;
 }
 
@@ -275,8 +287,7 @@ function HiMessage(message, username) {
     if (!hiMans.includes(username) && username.toLocaleLowerCase() != channelName) {
         for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
         if (check == true) {
-            if (!oldFollowers.includes(username)) twitch.say(`@${username}, ${tools.ChooseHiMessage()} Не забудь зафоловиться на канал`);
-            else twitch.say(`@${username}, ${tools.ChooseHiMessage()} ShowOfHands ShowOfHands`);
+            twitch.say(`@${username}, ${tools.ChooseHiMessage()} ShowOfHands ShowOfHands`);
             hiMans.push(username);
         }
     }
@@ -305,10 +316,7 @@ twitchClient.on("ban", (channel, username, reason, userstate) => {
 twitchClient.on("action", (channel, userstate, message, self) => {
     const username = userstate['display-name'];
     if (self) return;
-    if (userstate['user-type'] != 'mod' && username != channelName) {
-        twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
-        twitch.say(`@${username} у нас не принято использовать /me в чате!`);
-    }
+    if (userstate['user-type'] != 'mod' && username != channelName) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
 });
 
 /**
@@ -367,20 +375,22 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
             return;
         case '!warband':
-            twitch.action('| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
+            //twitch.action('| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
             return;
         case '!hitman':
-            twitch.action('| Цель: пройти игру. Условие: ни разу не умереть иначе все сначала');
+            //twitch.action('| Цель: пройти игру. Условие: ни разу не умереть, иначе все сначала');
             return;
         case '!minecraft':
             //twitch.action('| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
             return;
         case '!q':
-            if (questionTimer == 0 && message.includes('?') && message.length > 6) {
-                twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
-                questionTimer = 1;
-                const setQuestionTime = () => questionTimer = 0;
-                setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
+            if (twitchInfo && twitchInfo.viewers < 100) {
+                if (questionTimer == 0 && message.includes('?') && message.length > 6) {
+                    twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
+                    questionTimer = 1;
+                    const setQuestionTime = () => questionTimer = 0;
+                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
+                }
             }
             return;
         case '!up':
@@ -390,9 +400,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
                 else twitch.action(twitchInfo.uptime);
             } catch { ; }
             return;
-        case '!10hoursgames':
+        /* case '!10hoursgames':
             twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: Warband`);
-            return;
+            return; */
         case `!dis`:
         case `!discord`:
             twitch.action(`| discord.gg/DVukvAu`);
