@@ -53,3 +53,12 @@ const information = {
     }
 };
 
+/**
+ *
+ * @param {Object} userInfo
+ * @param {string} shipName
+ * @return {Number} code
+ */
+exports.buyShip = (userInfo, shipName) => {
+
+}
