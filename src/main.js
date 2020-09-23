@@ -1,6 +1,6 @@
+const tools = require('./tools');
 const twitch = require('./TwitchBot');
 const discord = require('./DiscordBot');
-const tools = require('./tools');
 const moment = require('moment');
 //const spaceGame = require('./SpaceGame');
 
@@ -24,63 +24,26 @@ const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'No
 
 let questionTimer = 0;
 
-let twitchInfo = {viewers: 0, maxViewers: 0, game: '', maxGame: '', uptime: 'стример сейчас оффлайн'};
+let twitchInfo = {viewers: 0, maxViewers: 0, game: '', maxGame: '', uptime: 'стример сейчас оффлайн', commands: 0,};
 let oldFollowers = [];
 
 let hiMans = [];
 
-let streamAims = {
-    5: {
-        done: false,
-        message: '5 зрителей *галочка*'
-    },
-    10: {
-        done: false,
-        message: '10 зрителей *галочка*'
-    },
-    15: {
-        done: false,
-        message: '15 зрителей *галочка*'
-    },
-    20: {
-        done: false,
-        message: '20 зрителей *галочка*'
-    },
-    25: {
-        done: false,
-        message: '25 зрителей *галочка*. Офай стрим Kappa'
-    },
-}
-
-setInterval(function () {
-    try {
-        if (twitchInfo.viewers) {
-            if (twitchInfo.viewers >= 25 && streamAims[25].done == false) {
-                streamAims[25].done = true;
-                twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 20 && streamAims[20].done == false) {
-                streamAims[20].done = true;
-                twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 15 && streamAims[15].done == false) {
-                streamAims[15].done = true;
-                twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 10 && streamAims[10].done == false) {
-                streamAims[10].done = true;
-                twitch.action(streamAims[20].message)
-            } else if (twitchInfo.viewers >= 5 && streamAims[5].done == false) {
-                streamAims[5].done = true;
-                twitch.action(streamAims[5].message)
-            }
-        }
-    } catch { ; }
-}, 2000);
-
 setInterval(function () {
     try {
         tools.ClearCli();
-        console.log(tools.twitchIcon);
-        console.log(`╔ Stats`)
-        console.log(`╚ Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame}`);
+        console.log(tools.TwitchIcon());
+        console.log(`
+Channel name: ${channelName}
+
+╔ Stream's info
+╚ Uptime: ${twitchInfo.uptime}
+
+╔ Stream's stats
+╠ Max viewers: ${twitchInfo.maxViewers}
+╠ Game with max viewers: ${twitchInfo.maxGame}
+╚ Used commands: ${twitchInfo.commands}
+        `)
     } catch { ; }
 }, 2000);
 
@@ -284,9 +247,9 @@ function CheckBannedWords(message, username) {
  * @param {String} username 
  */
 function HiMessage(message, username) {
-    const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули'];
+    const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули', 'bonjour', 'бонжур'];
     let check = false;
-    if (!hiMans.includes(username) && username.toLocaleLowerCase() != channelName) {
+    if (!hiMans.includes(username) /* && username.toLocaleLowerCase() != channelName */) {
         for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
         if (check == true) {
             twitch.say(`@${username}, ${tools.ChooseHiMessage()} ShowOfHands ShowOfHands`);
@@ -346,10 +309,9 @@ function UpdateChatterInfo(username) {
 
 twitchClient.on("message", (channel, userstate, message, self) => {
     if (self) return;
-
     const messageSplit = message.split(" ");
-    const username = userstate['display-name']
-
+    const username = userstate['display-name'];
+    
     UpdateChatterInfo(username)
 
     if (tools.CheckString(message) == true) {
@@ -366,41 +328,52 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     switch (messageSplit[0]) {
         case '!шумнафоне':
             twitchClient.say(channel, `@${username}, twitch.tv/kartinka_katerinka`);
+            twitchInfo.commands++;
             return;
         case '!save':
             if (CheckMod(userstate)) {
                 tools.SaveChattersInfo(chatterInfo);
                 twitchClient.say(channel, `сохранено`);
             }
+            twitchInfo.commands++;
             return;
         case '!pc':
             twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
+            twitchInfo.commands++;
             return;
         case '!warband':
             //twitch.action('| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
+            twitchInfo.commands++;
             return;
         case '!hitman':
             //twitch.action('| Цель: пройти игру. Условие: ни разу не умереть, иначе все сначала');
+            twitchInfo.commands++;
             return;
         case '!minecraft':
             //twitch.action('| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
+            twitchInfo.commands++;
             return;
         case '!q':
-            if (twitchInfo && twitchInfo.viewers < 100) {
+            if (CheckMod(userstate)) {
+                twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
+                twitchInfo.commands++;
+            } else if (twitchInfo && twitchInfo.viewers < 100) {
                 if (questionTimer == 0 && message.includes('?') && message.length > 6) {
                     twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
                     questionTimer = 1;
                     const setQuestionTime = () => questionTimer = 0;
                     setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
+                    twitchInfo.commands++;
                 }
             }
             return;
         case '!up':
         case '!uptime':
             try {
-                if (twitchInfo.uptime != 'стример сейчас офлайн') twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
+                if (twitchInfo.uptime != 'стример сейчас оффлайн') twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
                 else twitch.action(twitchInfo.uptime);
             } catch { ; }
+            twitchInfo.commands++;
             return;
         /* case '!10hoursgames':
             twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: Warband`);
@@ -408,6 +381,12 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case `!dis`:
         case `!discord`:
             twitch.action(`| discord.gg/DVukvAu`);
+            twitchInfo.commands++;
+            return;
+        case `!wow`:
+        case `!wowC`:
+            twitch.action(`| Я апаю мага до 60 лвл. В основном хочу использовать AoE прокачку`);
+            twitchInfo.commands++;
             return;
     }
 
