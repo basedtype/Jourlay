@@ -78,7 +78,9 @@ setInterval(function () {
 setInterval(function () {
     try {
         tools.ClearCli();
-        console.log(`Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame}`);
+        console.log(tools.twitchIcon);
+        console.log(`╔ Stats`)
+        console.log(`╚ Max viewers (${twitchInfo.maxViewers}) on this game: ${twitchInfo.maxGame}`);
     } catch { ; }
 }, 2000);
 
