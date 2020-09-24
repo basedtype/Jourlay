@@ -1,4 +1,5 @@
 const fs = require("fs");
+const db = require('./Data/db')
 const graph = require('./graph');
 
 function sleep(millis) {
@@ -93,10 +94,9 @@ exports.SaveChattersInfo = function(chattersInfo) {
 
 /**
  * Return chatterInfo to main.js
+ * @param {String} pattern
  */
-exports.GetChatterInfo = function() {
-    return readLines();
-}
+exports.GetChatterInfo = function(pattern) { return db.GetDataFromDB('chatterDB', pattern) }
 
 /**
  * Choose random answer

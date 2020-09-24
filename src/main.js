@@ -9,15 +9,16 @@ const moment = require('moment');
 const twitchClient = twitch.start()
 const channelName = twitch.getChannelName();
 const botName = twitch.getBotName();
-const chatterInfo = tools.GetChatterInfo();
 
-const userDossier = {
+const userInfo = {
+    pattern: 'username coins',
     username: '',
-    isks: 0,
-    userShip: [],
-    userInventory: [],
-    iskMineTimer: 0,
+    coins: 0,
 };
+
+const chatterInfo = tools.GetChatterInfo(userInfo.pattern);
+
+console.log(chatterInfo)
 
 let emotionsTimer = 0;
 const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa'];
