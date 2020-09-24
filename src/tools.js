@@ -92,43 +92,6 @@ exports.SaveChattersInfo = function(chattersInfo) {
 }
 
 /**
- * Read file per line
- */
-function readLines() {
-    const input = fs.readFileSync("chatterInfo.txt", "utf8");
-    let chatterInfoNotFormatted = [];
-    let chatterInfo = [];
-    let line = '';
-    
-    for (let i = 0; i < input.length; i++) {
-        if (input[i] != '\n') line += input[i];
-        else {
-            chatterInfoNotFormatted.push(line);
-            line = '';
-        }
-    }
-
-    for (i in chatterInfoNotFormatted) {
-        let line = chatterInfoNotFormatted[i].split(' ');
-        const userInfo = {
-            username: line[0],
-            mod: {
-                warnings: parseInt(line[1]),
-                timeouts: parseInt(line[2]),
-                bans: parseInt(line[3]),
-            },
-            amountMessages: parseInt(line[4]),
-            waitingTimerForPixels: 0,
-            amountPixels: parseInt(line[6]),
-            waitingTimerForGift: 0,
-            amountGifts: parseInt(line[8]),
-        }
-        chatterInfo.push(userInfo);
-    }
-    return chatterInfo;
-}
-
-/**
  * Return chatterInfo to main.js
  */
 exports.GetChatterInfo = function() {
