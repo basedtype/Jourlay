@@ -1,6 +1,6 @@
-const tools = require('./tools');
-const twitch = require('./TwitchBot');
-const discord = require('./DiscordBot');
+const tools = require('./Tools/tools');
+const twitch = require('./Twitch/TwitchBot');
+const discord = require('./Discord/DiscordBot');
 const moment = require('moment');
 //const spaceGame = require('./SpaceGame');
 
@@ -148,11 +148,11 @@ setInterval(function () {
 setInterval(function () {
     try {
         if (twitchInfo.uptime != 'стример сейчас оффлайн') {
-            const rules = `| Подключайся по ссылке discord.gg/DVukvAu к discord серверу чтобы быть в курсе всего.`;
+            const rules = `| Хочешь получать анонсы стримов? `;
             twitch.action(rules);
         }
     } catch { ; }
-}, tools.ConvertTime({ minutes: 30 }));
+}, tools.ConvertTime({ minutes: 50 }));
 
 /**
  * 
@@ -415,6 +415,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             return;
         case `!infoAboutUsers`:
             for (i in chatterInfo) console.log(`Username: ${chatterInfo[i].username} | Coins: ${chatterInfo[i].coins}`);
+            return;
+        case `!ping`:
+            twitch.action('pong');
             return;
     }
 
