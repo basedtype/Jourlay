@@ -18,14 +18,23 @@ const userInfo = {
 
 const chatterInfo = tools.GetChatterInfo(userInfo.pattern);
 
-console.log(chatterInfo)
-
 let emotionsTimer = 0;
 const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa'];
 
 let questionTimer = 0;
 
-let twitchInfo = {viewers: 0, maxViewers: 0, game: '', maxGame: '', uptime: 'стример сейчас оффлайн', commands: 0,};
+let twitchInfo = {
+    viewers: 0, 
+    maxViewers: 0, 
+    game: '', 
+    maxGame: '',
+    uptime: 'стример сейчас оффлайн', 
+    commands: 0,
+    chatClears: 0,
+    bans: 0,
+    timeouts: 0,
+    messages: 0,
+};
 let oldFollowers = [];
 
 let hiMans = [];
@@ -37,14 +46,20 @@ setInterval(function () {
         console.log(`
 Channel name: ${channelName}
 
-╔ Stream's info
-╚ Uptime: ${twitchInfo.uptime}
-
-╔ Stream's stats
+╔══ Stream info
+╠ Uptime: ${twitchInfo.uptime}
+╠ Viewers: ${twitchInfo.viewers}
+╠ Game: ${twitchInfo.game}
+╠══ Stream stats
 ╠ Max viewers: ${twitchInfo.maxViewers}
 ╠ Game with max viewers: ${twitchInfo.maxGame}
-╚ Used commands: ${twitchInfo.commands}
-        `)
+╠══ Chat stats
+╠ Used commands: ${twitchInfo.commands}
+╠ Chat clears: ${twitchInfo.chatClears}
+╠ Bans: ${twitchInfo.bans}
+╠ Timeouts: ${twitchInfo.timeouts}
+╠ Messages: ${twitchInfo.messages}
+╚══`)
     } catch { ; }
 }, 2000);
 
@@ -263,18 +278,26 @@ function HiMessage(message, username) {
 /**
  * Reaction when chat has been cleared
  */
-twitchClient.on("clearchat", (channel) => { twitchClient.say(channel, `я первый Kappa`) });
+twitchClient.on("clearchat", (channel) => { 
+    twitchClient.say(channel, `я первый Kappa`);
+    twitchInfo.chatClears++;
+});
 
 /**
  * Reaction when user has been banned
  */
 twitchClient.on("ban", (channel, username, reason, userstate) => {
+    twitchInfo.bans++;
     if (chatterInfo.length != 0) {
         for (i in chatterInfo) {
             if (chatterInfo[i].username == username) chatterInfo.slice(i, i);
         }
     }
 });
+
+twitchClient.on('timeout', (channel, username, reason, duration, userstate) => {
+    twitchInfo.timeouts++;
+})
 
 /**
  * Reaction when user send /me message in chat
@@ -320,6 +343,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         return;
     }
     if (CheckBannedWords(message) == true) return;
+    twitchInfo.messages++;
     if (HiMessage(message, username) == true) return;
     if (CheckPartyPlay(message, username) == true) return;
     if (CheckWhoAreU(message, username) == true) return;
@@ -388,6 +412,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case `!wowC`:
             twitch.action(`| Я апаю мага до 60 лвл. В основном хочу использовать AoE прокачку`);
             twitchInfo.commands++;
+            return;
+        case `!infoAboutUsers`:
+            for (i in chatterInfo) console.log(`Username: ${chatterInfo[i].username} | Coins: ${chatterInfo[i].coins}`);
             return;
     }
 
