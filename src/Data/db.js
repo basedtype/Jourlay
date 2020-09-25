@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require('path');
 
 /**
  * Read file per line
@@ -30,7 +31,9 @@ function ReadLines(DBname) {
 exports.CreateDB = (name) => {
     if (!name) return -1;
     try {
-        fs.writeFileSync(`/home/samurai/Program/TwitchBot/src/Data/${name}.txt`, ' ');
+        const pathFile = path.resolve(`./Data/${name}.txt`)
+        const DBname = pathFile;
+        fs.writeFileSync(DBname, ' ');
         return 0;
     } catch (error) {
         console.log(error)
@@ -46,7 +49,9 @@ exports.CreateDB = (name) => {
 exports.CheckDB = (name) => {
     if (!name) return -1;
     try {
-        if (fs.statSync(`/home/samurai/Program/TwitchBot/src/Data/${name}.txt`)) return 0;
+        const pathFile = path.resolve(`./Data/${name}.txt`)
+        const DBname = pathFile;
+        if (fs.statSync(DBname)) return 0;
         else return -2;
     } catch (error) {
         console.log(error)
@@ -65,7 +70,8 @@ exports.CheckDB = (name) => {
  * @return 0 = OK | -1 = Error when program did try add information in file
  */
 exports.AddArrayInDB = (name, array, arrayPattern) => {
-    const DBname = '/home/samurai/Program/TwitchBot/src/Data/' + name + '.txt';
+    const pathFile = path.resolve(`./Data/${name}.txt`)
+    const DBname = pathFile;
     const DBarrayPattern = arrayPattern.split(' ')
 
     let information = [];
@@ -93,7 +99,8 @@ exports.AddArrayInDB = (name, array, arrayPattern) => {
  * @return {Object}
  */
 exports.GetDataFromDB = (name, pattern) => {
-    const DBname = '/home/samurai/Program/TwitchBot/src/Data/' + name + '.txt';
+    const pathFile = path.resolve(`./Data/${name}.txt`)
+    const DBname = pathFile;
     const DBarrayPattern = pattern.split(' ');
     let chatterInfo;
 
@@ -101,15 +108,14 @@ exports.GetDataFromDB = (name, pattern) => {
     catch (err) {console.log(err); return -1}
    
 
-    let information = {};
+    let information = [];
 
     for (i in chatterInfo) {
         const info = chatterInfo[i].split(' ');
+        information.push({})
 
-        for (j in info) information[DBarrayPattern[j]] = info[j];
+        for (j in info) information[i][DBarrayPattern[j]] = info[j];
     }
-
-    console.log(information)
     return information;
 }
 
