@@ -21,7 +21,7 @@ const client = new tmi.client(options);
 function onConnectedHandler() {
     const array = ['передает всем привет', 'запускает свой нейронный мозг', 'приземляется в чат', 'готовит себе покушать', 'пересчитывает фолловеров', 'потерялся в космосе']
     client.color("Red");
-    client.action(options.channels[0], ` ${array[tools.RandomInt(0, array.length-1)]}.`);
+    //client.action(options.channels[0], ` ${array[tools.RandomInt(0, array.length-1)]}.`);
 }
 client.on('connected', onConnectedHandler);
 client.connect();
