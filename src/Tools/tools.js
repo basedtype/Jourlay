@@ -1,5 +1,5 @@
 const fs = require("fs");
-const db = require('./Data/db')
+const db = require('../Data/db')
 const graph = require('./graph');
 
 function sleep(millis) {
@@ -124,5 +124,21 @@ exports.CheckString = function(message) {
     return check;
 }
 
+/**
+ * Array of banned words
+ */
 exports.GetBannedWords = () => ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details точкаКом'];
+
+/**
+ * Clear console
+ */
 exports.ClearCli = function() { console.log('\x1Bc') }
+
+/**
+ * Return random element from array
+ * @param {Array} array 
+ */
+exports.GetRandomElementFromArray = function(array) {
+    const element = array[this.RandomInt(0, array.length-1)];
+    return element;
+}
