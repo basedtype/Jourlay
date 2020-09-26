@@ -2,6 +2,8 @@ const tools = require('./Tools/tools');
 const twitch = require('./Twitch/TwitchBot');
 const discord = require('./Discord/DiscordBot');
 const moment = require('moment');
+const hack = require('./Games/Hack');
+const db = require('./Data/db');
 //const spaceGame = require('./SpaceGame');
 
 //  ================== ================== ================== ================== TWITCH ================== ================== ================== ==================
@@ -14,6 +16,7 @@ const userInfo = {
     pattern: 'username coins',
     username: '',
     coins: 0,
+    hackTimer: 0,
 };
 
 const chatterInfo = tools.GetChatterInfo(userInfo.pattern);
@@ -39,7 +42,7 @@ let oldFollowers = [];
 
 let hiMans = [];
 
-setInterval(function () {
+/* setInterval(function () {
     try {
         tools.ClearCli();
         console.log(tools.TwitchIcon());
@@ -62,7 +65,7 @@ Channel name: ${channelName}
 ╚══`)
     } catch { ; }
 }, 2000);
-
+ */
 /**
  * Update uptime
  */
@@ -98,6 +101,10 @@ setInterval(function () {
         twitchInfo.uptime = `стример сейчас оффлайн`;
     }
 }, 1000);
+
+setInterval(function() {
+    db.AddArrayInDB('chatterDB', chatterInfo, userInfo.pattern);
+}, 100)
 
 /**
  * Check new follows
@@ -324,9 +331,9 @@ function UpdateChatterInfo(username) {
             if (chatterInfo[i].username == username) check = true;
         }
         if (check == false) {
-            let userInfo = userDossier;
-            userInfo.username = username;
-            chatterInfo.push(userInfo);
+            let user = userInfo;
+            user.username = username;
+            chatterInfo.push(user);
         }
     }
 }
@@ -334,7 +341,9 @@ function UpdateChatterInfo(username) {
 twitchClient.on("message", (channel, userstate, message, self) => {
     if (self) return;
     const messageSplit = message.split(" ");
-    const username = userstate['display-name'];
+    const username = userstate['display-name'].toLowerCase();
+
+    let userData;
     
     UpdateChatterInfo(username)
 
@@ -419,6 +428,29 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case `!ping`:
             twitch.action('pong');
             return;
+        case `!hack`:
+            for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
+            if (userData.hackTimer == 0) {
+                const info = hack.Hack(username);
+                if (info.target.username != 'None') twitch.say(`@${username}, вы заказали взлом @${info.target.username}. Все будет сделано через ${info.timer} минут`);
+                else twitch.say(`@${username}, вы заказали взлом случайной цели. Все будет сделано через ${info.timer} минут`);
+                
+                userData.hackTimer = 1;
+                const setQuestionTime = () => {
+                    userData.hackTimer = 0;
+                    userData.coins += info.getCoins;
+                    twitch.say(`@${username}, готово. Вы получаете ${info.getCoins} байткоинов`)
+                }
+                setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 10 }));
+                twitchInfo.commands++;
+            }
+            return;
+        case `!b`:
+        case `!balance`:
+            for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
+            twitch.say(`@${username}, ваш баланс: ${userData.coins} байткоинов`);
+            return;
+
     }
 
     SayEmoties(message);
