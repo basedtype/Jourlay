@@ -59,6 +59,10 @@ exports.CheckDB = (name) => {
     }
 }
 
+exports.UpdateDB = (name, array, pattern) => {
+    
+}
+
 /**
  * Add information in database
  * Example of pattern: 'name second_name one_two_three'
