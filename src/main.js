@@ -22,7 +22,7 @@ const userInfo = {
 const chatterInfo = tools.GetChatterInfo(userInfo.pattern);
 
 let emotionsTimer = 0;
-const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa'];
+const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa', 'LOL', ':D', 'D:'];
 
 let questionTimer = 0;
 
@@ -205,7 +205,7 @@ function InfoAboutGames(message, username) {
  * @param {Array} userstate 
  * @returns {boolean} user type
  */
-function CheckMod(userstate) { return (userstate['user-type'] != 'mod' && userstate['display-name'] != channelName); }
+function CheckMod(userstate) { return (userstate['user-type'] != 'mod' && userstate['display-name'] != channelName) }
 
 /**
  * Check message and answer if need
@@ -323,17 +323,19 @@ function UpdateChatterInfo(username) {
     let check = false;
 
     if (chatterInfo.length == 0) {
-        let userInfo = userDossier;
-        userInfo.username = username;
-        chatterInfo.push(userInfo);
+        let user = userInfo;
+        user.username = username.toLowerCase();
+        chatterInfo.push(user);
     } else {
         for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) check = true;
+            if (chatterInfo[i].username.toLowerCase() == username.toLowerCase()) { check = true }
         }
         if (check == false) {
             let user = userInfo;
-            user.username = username;
+            user.username = username.toLowerCase();
+            console.log(chatterInfo)
             chatterInfo.push(user);
+            console.log(chatterInfo)
         }
     }
 }
@@ -388,10 +390,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             twitchInfo.commands++;
             return;
         case '!q':
-            if (CheckMod(userstate)) {
-                twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
-                twitchInfo.commands++;
-            } else if (twitchInfo && twitchInfo.viewers < 100) {
+            if (twitchInfo && twitchInfo.viewers < 100) {
                 if (questionTimer == 0 && message.includes('?') && message.length > 6) {
                     twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
                     questionTimer = 1;
@@ -428,27 +427,31 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case `!ping`:
             twitch.action('pong');
             return;
+        case `!test`:
         case `!hack`:
             for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
             if (userData.hackTimer == 0) {
                 const info = hack.Hack(username);
-                if (info.target.username != 'None') twitch.say(`@${username}, вы заказали взлом @${info.target.username}. Все будет сделано через ${info.timer} минут`);
-                else twitch.say(`@${username}, вы заказали взлом случайной цели. Все будет сделано через ${info.timer} минут`);
-                
+                //if (info.target.username != 'None') twitch.say(`@${username}, вы заказали взлом @${info.target.username}. Все будет сделано через ${info.timer} минут`);
+                //else twitch.say(`@${username}, вы заказали взлом случайной цели. Все будет сделано через ${info.timer} минут`);
+                if (info.target.username != 'None') twitch.say(`@${username}, ${info.target.username}. ${info.timer}`);
+                else twitch.say(`@${username}, ${info.timer}`);
                 userData.hackTimer = 1;
                 const setQuestionTime = () => {
                     userData.hackTimer = 0;
-                    userData.coins += info.getCoins;
-                    twitch.say(`@${username}, готово. Вы получаете ${info.getCoins} байткоинов`)
+                    userData.coins += parseFloat(info.getCoins);
+                    console.log(userData, ' | ', parseFloat(info.getCoins))
+                    twitch.say(`@${username}, ${info.getCoins}`)
                 }
-                setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 10 }));
+                setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 1 }));
                 twitchInfo.commands++;
-            }
+            } else twitch.say(userData.hackTimer);
             return;
         case `!b`:
         case `!balance`:
             for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
-            twitch.say(`@${username}, ваш баланс: ${userData.coins} байткоинов`);
+            //twitch.say(`@${username}, ваш баланс: ${userData.coins} байткоинов`);
+            twitch.say(`@${username}, ${userData.coins} `);
             return;
 
     }
