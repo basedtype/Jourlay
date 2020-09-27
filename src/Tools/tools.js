@@ -69,6 +69,8 @@ exports.RandomInt = function(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+exports.RandomFloat = function(min, max) { return Math.random() * (max - min) + min }
+
 /**
  * Exit from program
  * @param {Number} status 
@@ -78,24 +80,23 @@ exports.exit = function(status) {
 }
 
 /**
- * username, warnings, timeouts, bans, amountMessages, 0, amountPixels, 0, amountGifts
- * @param {*} chattersInfo 
- */
-exports.SaveChattersInfo = function(chattersInfo) {
-    let saveInformation = [];
-    for (i in chattersInfo) {
-        const information = `${chattersInfo[i].username} ${chattersInfo[i].mod.warnings} ${chattersInfo[i].mod.timeouts} ${chattersInfo[i].mod.bans} ${chattersInfo[i].amountMessages} 0 ${chattersInfo[i].amountPixels} 0 ${chattersInfo[i].amountGifts}`;
-        saveInformation.push(information);
-    }
-    saveInformation = saveInformation.join('\n') + "\n";
-    fs.writeFile("chatterInfo.txt", saveInformation, function(error){ if(error) throw error; });
-}
-
-/**
  * Return chatterInfo to main.js
  * @param {String} pattern
  */
-exports.GetChatterInfo = function(pattern) { return db.GetDataFromDB('chatterDB', pattern) }
+exports.GetChatterInfo = function(pattern) { 
+    let chatterInfo = db.GetDataFromDB('chatterDB', pattern);
+
+    for (i in chatterInfo) {
+        chatterInfo[i] = {
+            pattern: 'username coins',
+            username: chatterInfo[i].username,
+            coins: parseFloat(chatterInfo[i].coins).toFixed(5),
+            hackTimer: 0,
+        }
+    }
+
+    return chatterInfo;
+}
 
 /**
  * Choose random answer
