@@ -2,6 +2,21 @@ const fs = require("fs");
 const path = require('path');
 
 /**
+ * Check database
+ * @param {String} name
+ * @return 0 = OK | -1 = Name is undefined | -2 = File don't exist
+ */
+exports.CheckDB = function(name) {
+    if (!name) return -1;
+    try {
+        const pathFile = path.resolve(`./Data/${name}.txt`)
+        const DBname = pathFile;
+        if (fs.statSync(DBname)) return 0;
+        else return -2;
+    } catch (error) { return -2 }
+}
+
+/**
  * Read file per line
  * @param {String} DBname
  * @return {String} not formatted chatter info
@@ -35,28 +50,7 @@ exports.CreateDB = (name) => {
         const DBname = pathFile;
         fs.writeFileSync(DBname, ' ');
         return 0;
-    } catch (error) {
-        console.log(error)
-        return -2;
-    }
-}
-
-/**
- * Check database
- * @param {String} name
- * @return 0 = OK | -1 = Name is undefined | -2 = File don't exist
- */
-exports.CheckDB = (name) => {
-    if (!name) return -1;
-    try {
-        const pathFile = path.resolve(`./Data/${name}.txt`)
-        const DBname = pathFile;
-        if (fs.statSync(DBname)) return 0;
-        else return -2;
-    } catch (error) {
-        console.log(error)
-        return -2;
-    }
+    } catch (error) { return -2 }
 }
 
 exports.UpdateDB = (name, array, pattern) => {
@@ -90,10 +84,7 @@ exports.AddArrayInDB = (name, array, arrayPattern) => {
         fs.writeFileSync(DBname, information);
         return 0;
     }
-    catch (error) {
-        console.log(error);
-        return -1;
-    }
+    catch (error) { return -1 }
 }
 
 /**
