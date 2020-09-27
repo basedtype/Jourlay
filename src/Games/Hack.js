@@ -7,7 +7,7 @@ const db = require('../Data/db');
  * @param {Object} player {username, coins}
  */
 exports.Hack = (username) => {
-    const playerInfo =  db.GetDataFromDB('HackGameDB', 'username coins');
+    const playerInfo =  db.GetDataFromDB('chatterDB', 'username coins');
     const hackPlayer = playerInfo.length;
 
     let info = {
@@ -23,11 +23,14 @@ exports.Hack = (username) => {
     }
 
     if (tools.RandomInt(1, 100) <= hackPlayer) {
-        const target = tools.GetRandomElementFromArray(playerInfo);
+        let target;
+        do {
+            target = tools.GetRandomElementFromArray(playerInfo);
+        } while (target.username.toLowerCase() != username.toLowerCase());
         info.target.username = target.username;
         info.target.coins = target.coins;
 
-        const getCoins = tools.RandomInt(1, target.coins);
+        const getCoins = tools.RandomFloat(0.00001, parseFloat(target.coins)+0.00001).toFixed(5);
         const timer = tools.RandomInt(30, 120);
 
         info.timer = timer;
@@ -36,7 +39,7 @@ exports.Hack = (username) => {
         info.target.username = 'None';
         info.target.coins = 0;
 
-        const getCoins = tools.RandomInt(1, 1000);
+        const getCoins = tools.RandomFloat(0.00001, 0.001).toFixed(5);
         const timer = tools.RandomInt(30, 120);
 
         info.timer = timer;
