@@ -4,7 +4,6 @@ const discord = require('./Discord/DiscordBot');
 const moment = require('moment');
 const hack = require('./Games/Hack');
 const db = require('./Data/db');
-//const spaceGame = require('./SpaceGame');
 
 //  ================== ================== ================== ================== TWITCH ================== ================== ================== ==================
 
@@ -42,7 +41,7 @@ let oldFollowers = [];
 
 let hiMans = [];
 
-/* setInterval(function () {
+setInterval(function () {
     try {
         tools.ClearCli();
         console.log(tools.TwitchIcon());
@@ -65,7 +64,7 @@ Channel name: ${channelName}
 ╚══`)
     } catch { ; }
 }, 2000);
- */
+
 /**
  * Update uptime
  */
@@ -97,14 +96,10 @@ setInterval(function () {
                 twitchInfo.uptime = `стример сейчас оффлайн`;
             }
         });
-    } catch {
-        twitchInfo.uptime = `стример сейчас оффлайн`;
-    }
+    } catch { twitchInfo.uptime = `стример сейчас оффлайн`; }
 }, 1000);
 
-setInterval(function() {
-    db.AddArrayInDB('chatterDB', chatterInfo, userInfo.pattern);
-}, 100)
+setInterval(function() { db.AddArrayInDB('chatterDB', chatterInfo, userInfo.pattern) }, 100)
 
 /**
  * Check new follows
@@ -193,9 +188,7 @@ function SayEmoties(message) {
 function InfoAboutGames(message, username) {
     const array = ['во что играешь', 'в какие игры'];
     let check = false;
-    for (i in array) {
-        if (message.toLowerCase().indexOf(array[i]) != -1) check = true;
-    }
+    for (i in array) if (message.toLowerCase().indexOf(array[i]) != -1) check = true;
     if (check) twitch.say(`@${username} во все, что можно. Если есть идея, то можешь написать в чат :)`);
     return check;
 }
@@ -205,7 +198,10 @@ function InfoAboutGames(message, username) {
  * @param {Array} userstate 
  * @returns {boolean} user type
  */
-function CheckMod(userstate) { return (userstate['user-type'] != 'mod' && userstate['display-name'] != channelName) }
+function CheckMod(userstate) { 
+    if (userstate['user-type'] == 'mod' || userstate['display-name'].toLowerCase() == channelName) return true;
+    else return false; 
+}
 
 /**
  * Check message and answer if need
@@ -296,9 +292,7 @@ twitchClient.on("clearchat", (channel) => {
 twitchClient.on("ban", (channel, username, reason, userstate) => {
     twitchInfo.bans++;
     if (chatterInfo.length != 0) {
-        for (i in chatterInfo) {
-            if (chatterInfo[i].username == username) chatterInfo.slice(i, i);
-        }
+        for (i in chatterInfo) if (chatterInfo[i].username == username) chatterInfo.slice(i, i);
     }
 });
 
@@ -327,9 +321,7 @@ function UpdateChatterInfo(username) {
         user.username = username.toLowerCase();
         chatterInfo.push(user);
     } else {
-        for (i in chatterInfo) {
-            if (chatterInfo[i].username.toLowerCase() == username.toLowerCase()) { check = true }
-        }
+        for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username.toLowerCase()) { check = true }
         if (check == false) {
             let user = userInfo;
             user.username = username.toLowerCase();
@@ -347,7 +339,8 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     let userData;
     
-    UpdateChatterInfo(username)
+    UpdateChatterInfo(username);
+    console.log(CheckMod(userstate));
 
     if (tools.CheckString(message) == true) {
         twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
@@ -364,13 +357,6 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     switch (messageSplit[0]) {
         case '!шумнафоне':
             twitchClient.say(channel, `@${username}, twitch.tv/kartinka_katerinka`);
-            twitchInfo.commands++;
-            return;
-        case '!save':
-            if (CheckMod(userstate)) {
-                tools.SaveChattersInfo(chatterInfo);
-                twitchClient.say(channel, `сохранено`);
-            }
             twitchInfo.commands++;
             return;
         case '!pc':
@@ -421,14 +407,13 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             twitch.action(`| Я апаю мага до 60 лвл. В основном хочу использовать AoE прокачку`);
             twitchInfo.commands++;
             return;
-        case `!infoAboutUsers`:
-            for (i in chatterInfo) console.log(`Username: ${chatterInfo[i].username} | Coins: ${chatterInfo[i].coins}`);
-            return;
         case `!ping`:
+            if (!CheckMod(userstate)) return;
             twitch.action('pong');
             return;
         case `!test`:
         case `!hack`:
+            if (!CheckMod(userstate)) return;
             for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
             if (userData.hackTimer == 0) {
                 const info = hack.Hack(username);
@@ -440,7 +425,6 @@ twitchClient.on("message", (channel, userstate, message, self) => {
                 const setQuestionTime = () => {
                     userData.hackTimer = 0;
                     userData.coins += parseFloat(info.getCoins);
-                    console.log(userData, ' | ', parseFloat(info.getCoins))
                     twitch.say(`@${username}, ${info.getCoins}`)
                 }
                 setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 1 }));
@@ -449,6 +433,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             return;
         case `!b`:
         case `!balance`:
+            if (!CheckMod(userstate)) return;
             for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
             //twitch.say(`@${username}, ваш баланс: ${userData.coins} байткоинов`);
             twitch.say(`@${username}, ${userData.coins} `);
