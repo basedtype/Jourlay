@@ -63,7 +63,7 @@ Channel name: ${channelName}
 ╠ Messages: ${twitchInfo.messages}
 ╚══`)
     } catch { ; }
-}, 2000);
+}, tools.ConvertTime({seconds: 5}));
 
 /**
  * Update uptime
@@ -97,9 +97,9 @@ setInterval(function () {
             }
         });
     } catch { twitchInfo.uptime = `стример сейчас оффлайн`; }
-}, 1000);
+}, tools.ConvertTime({seconds: 1}));
 
-setInterval(function() { db.AddArrayInDB('chatterDB', chatterInfo, userInfo.pattern) }, 100)
+setInterval(function() { db.AddArrayInDB('chatterDB', chatterInfo, userInfo.pattern) }, tools.ConvertTime({seconds: 5}))
 
 /**
  * Check new follows
@@ -130,7 +130,7 @@ setInterval(function () {
             }
         });
     } catch { ; }
-}, 1000);
+}, tools.ConvertTime({seconds: 1}));
 
 /**
  * Repeat information about rules on stream
