@@ -30,35 +30,58 @@ exports.start = () => client;
 exports.getChannelName = () => channelName;
 exports.getBotName = () => botName;
 
+/**
+ * Send {text} in chat
+ * @param {String} text 
+ */
 exports.say = function(text) {
     try {
         client.say(channelName, text)
         return 0;
-    } catch {
-        console.log(`[BOT ERROR] Can't say message: ${text}`)
-        return -1 
-    }
+    } catch { return -1 };
 }
+
+/**
+ * Send {test} in chat as action
+ * @param {String} text 
+ */
 exports.action = function(text) {
     try {
         client.action(channelName, text)
         return 0;
-    } catch {
-        console.log(`[BOT ERROR] Can't action message: ${text}`)
-        return -1 
-    }
+    } catch { return -1 };
 }
 
+/**
+ * Timeout {username} at {length}s
+ * @param {String} username 
+ * @param {Number} length 
+ */
 exports.timeout = function(username, length) {
     try {
         client.timeout(channelName, username, length, 'Таймаут через команду бота');
         return 0;
-    } catch { return -1 }
+    } catch { return -1 };
 }
 
-exports.ban = function(username) {
+/**
+ * Ban {username}
+ * @param {String} username 
+ * @param {String} reason 
+ */
+exports.ban = function(username, reason) {
     try {
-        client.ban(channelName, username, 'Таймаут через команду бота');
+        client.ban(channelName, username, reason);
         return 0;
-    } catch { return -1 }
+    } catch { return -1 };
+}
+
+/**
+ * Clear chat
+ */
+exports.clearChat = function() {
+    try {
+        client.clear(channelName);
+        return 0;
+    } catch { return -1 };
 }
