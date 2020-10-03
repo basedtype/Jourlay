@@ -122,7 +122,7 @@ setInterval(function () {
                 else {
                     for (i in followers) {
                         if (!oldFollowers.includes(followers[i])) {
-                            twitch.say(`@${followers[i]}, добро пожаловать на орбитальную станцию JOURLOY. Спасибо, что выбрали нас ShowOfHands ShowOfHands`);
+                            twitch.say(`@${followers[i]}, ты зарегистрировался в агенстве безопасти JOURLOY, спасибо, что выбрал нас. Можешь зайти на Discord сервер, чтобы быть в курсе новостей канала (https://discord.gg/DVukvAu)!  `);
                             oldFollowers = followers;
                         }
                     }
@@ -150,7 +150,7 @@ setInterval(function () {
 setInterval(function () {
     try {
         if (twitchInfo.uptime != 'стример сейчас оффлайн') {
-            const rules = `| Хочешь получать анонсы стримов? `;
+            const rules = `| Хочешь получать анонсы стримов? Тогда заходи на дискор сервер https://discord.gg/DVukvAu`;
             twitch.action(rules);
         }
     } catch { ; }
@@ -238,6 +238,38 @@ function CheckWhoAreU(message, username) {
  * @param {String} username
  * @returns {boolean}
  */
+function CheckWhereIsKate(message, username) {
+    const answer = ['Катя сейчас  работает на 7ми работах', 'она строит дом', 'учит IP адресацию'];
+    const array = ['где', 'что делает', 'что катя делает'];
+    const nickname = 'катя';
+    let check = false;
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
+    if (check == true) twitch.say(`@${username}, ${tools.GetRandomElementFromArray(answer)}`);
+    return check;
+}
+
+/**
+ * Check message and answer if need
+ * @param {String} message
+ * @param {String} username
+ * @returns {boolean}
+ */
+function CheckWhen(message, username) {
+    const answer = ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяца', 'тогда', 'да'];
+    const array = ['когда'];
+    let check = false;
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (check == true) twitch.say(`@${username}, ${tools.GetRandomElementFromArray(answer)}`);
+    return check;
+}
+
+
+/**
+ * Check message and answer if need
+ * @param {String} message
+ * @param {String} username
+ * @returns {boolean}
+ */
 function CheckChangeSub(message, username) {
     const array = ['взаимная подписку', 'взаимную подписку', 'взаимной подписке'];
     let check = false;
@@ -256,7 +288,7 @@ function CheckBannedWords(message, username) {
     const array = tools.GetBannedWords();
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
-    if (check == true) twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
+    if (check == true) twitchClient.ban(channelName, username, 'бан [БОТ]');
     return check;
 }
 
@@ -340,10 +372,10 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     let userData;
     
     UpdateChatterInfo(username);
-    console.log(CheckMod(userstate));
 
     if (tools.CheckString(message) == true) {
-        twitchClient.ban(channelName, username, 'без возможности разбана [БОТ]');
+        twitch.ban(username, 'без возможности разбана [БОТ]')
+        twitch.clearChat();
         return;
     }
     if (CheckBannedWords(message) == true) return;
@@ -353,6 +385,8 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     if (CheckWhoAreU(message, username) == true) return;
     if (CheckChangeSub(message, username) == true) return;
     if (InfoAboutGames(message, username) == true) return;
+    if (CheckWhereIsKate(message, username) == true) return;
+    if (CheckWhen(message, username) == true) return;
 
     switch (messageSplit[0]) {
         case '!шумнафоне':
