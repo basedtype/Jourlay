@@ -26,11 +26,11 @@ const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'No
 let questionTimer = 0;
 
 let twitchInfo = {
-    viewers: 0, 
-    maxViewers: 0, 
-    game: '', 
+    viewers: 0,
+    maxViewers: 0,
+    game: '',
     maxGame: '',
-    uptime: 'стример сейчас оффлайн', 
+    uptime: 'стример сейчас оффлайн',
     commands: 0,
     chatClears: 0,
     bans: 0,
@@ -157,8 +157,8 @@ setInterval(function () {
 }, tools.ConvertTime({ minutes: 50 }));
 
 /**
- * 
- * @param {String} message 
+ *
+ * @param {String} message
  * @returns {boolean}
  */
 function SayEmoties(message) {
@@ -181,9 +181,9 @@ function SayEmoties(message) {
 }
 
 /**
- * 
- * @param {String} message 
- * @param {String} username 
+ *
+ * @param {String} message
+ * @param {String} username
  */
 function InfoAboutGames(message, username) {
     const array = ['во что играешь', 'в какие игры'];
@@ -195,12 +195,12 @@ function InfoAboutGames(message, username) {
 
 /**
  * If user is moderator or author return true, else return false
- * @param {Array} userstate 
+ * @param {Array} userstate
  * @returns {boolean} user type
  */
-function CheckMod(userstate) { 
+function CheckMod(userstate) {
     if (userstate['user-type'] == 'mod' || userstate['display-name'].toLowerCase() == channelName) return true;
-    else return false; 
+    else return false;
 }
 
 /**
@@ -293,9 +293,9 @@ function CheckBannedWords(message, username) {
 }
 
 /**
- * 
- * @param {String} message 
- * @param {String} username 
+ *
+ * @param {String} message
+ * @param {String} username
  */
 function HiMessage(message, username) {
     const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули', 'bonjour', 'бонжур'];
@@ -313,7 +313,7 @@ function HiMessage(message, username) {
 /**
  * Reaction when chat has been cleared
  */
-twitchClient.on("clearchat", (channel) => { 
+twitchClient.on("clearchat", (channel) => {
     twitchClient.say(channel, `я первый Kappa`);
     twitchInfo.chatClears++;
 });
@@ -343,7 +343,7 @@ twitchClient.on("action", (channel, userstate, message, self) => {
 
 /**
  * Add user in chatterInfo
- * @param {String} username 
+ * @param {String} username
  */
 function UpdateChatterInfo(username) {
     let check = false;
@@ -370,7 +370,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
 
     let userData;
-    
+
     UpdateChatterInfo(username);
 
     if (tools.CheckString(message) == true) {
