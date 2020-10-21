@@ -137,7 +137,7 @@ setInterval(function () {
  */
 setInterval(function () {
     try {
-        if (twitchInfo.uptime != 'стример сейчас оффлайн') {
+        if (twitchInfo.uptime != 'стример сейчас оффлайн' && twitchInfo.viewers > 3) {
             const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
             twitch.action(rules);
         }
@@ -149,8 +149,8 @@ setInterval(function () {
  */
 setInterval(function () {
     try {
-        if (twitchInfo.uptime != 'стример сейчас оффлайн') {
-            const rules = `| Хочешь получать анонсы стримов? Тогда заходи на дискор сервер https://discord.gg/DVukvAu`;
+        if (twitchInfo.uptime != 'стример сейчас оффлайн' && twitchInfo.viewers > 3) {
+            const rules = `| Хочешь получать анонсы стримов? Тогда заходи на дискорд сервер https://discord.gg/DVukvAu`;
             twitch.action(rules);
         }
     } catch { ; }
@@ -255,7 +255,7 @@ function CheckWhereIsKate(message, username) {
  * @returns {boolean}
  */
 function CheckWhen(message, username) {
-    const answer = ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяца', 'тогда', 'да'];
+    const answer = ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяца', 'тогда'];
     const array = ['когда'];
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
@@ -410,7 +410,8 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             twitchInfo.commands++;
             return;
         case '!q':
-            if (twitchInfo && twitchInfo.viewers < 100) {
+            if (username == channelName) twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
+            else if (twitchInfo && twitchInfo.viewers < 100) {
                 if (questionTimer == 0 && message.includes('?') && message.length > 6) {
                     twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
                     questionTimer = 1;
