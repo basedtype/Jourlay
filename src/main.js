@@ -21,7 +21,7 @@ const userInfo = {
 const chatterInfo = tools.GetChatterInfo(userInfo.pattern);
 
 let emotionsTimer = 0;
-const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa', 'LOL', ':D', 'D:'];
+const emotionsArray = ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa', 'LOL', ':D', 'D:', 'KEKW', 'OmegaLOL', '4HEader', '2HEader', 'Lois'];
 
 let questionTimer = 0;
 
@@ -41,7 +41,7 @@ let oldFollowers = [];
 
 let hiMans = [];
 
-setInterval(function () {
+/* setInterval(function () {
     try {
         tools.ClearCli();
         console.log(tools.TwitchIcon());
@@ -63,7 +63,7 @@ Channel name: ${channelName}
 ╠ Messages: ${twitchInfo.messages}
 ╚══`)
     } catch { ; }
-}, tools.ConvertTime({seconds: 5}));
+}, tools.ConvertTime({seconds: 5})); */
 
 /**
  * Update uptime
@@ -293,7 +293,7 @@ function CheckBannedWords(message, username) {
 }
 
 /**
- *
+ * Check message and ban user if need
  * @param {String} message
  * @param {String} username
  */
@@ -307,6 +307,18 @@ function HiMessage(message, username) {
             hiMans.push(username);
         }
     }
+    return check;
+}
+
+/**
+ * Check message and ban user if need
+ * @param {String} message 
+ */
+function CheckSetPlus(message) {
+    const array = ['ставь +'];
+    let check = false;
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (check == true) twitch.say(`+`);
     return check;
 }
 
@@ -387,6 +399,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     if (InfoAboutGames(message, username) == true) return;
     if (CheckWhereIsKate(message, username) == true) return;
     if (CheckWhen(message, username) == true) return;
+    if (CheckSetPlus(message, username) == true) return;
 
     switch (messageSplit[0]) {
         case '!шумнафоне':
@@ -473,7 +486,6 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             //twitch.say(`@${username}, ваш баланс: ${userData.coins} байткоинов`);
             twitch.say(`@${username}, ${userData.coins} `);
             return;
-
     }
 
     SayEmoties(message);
@@ -481,11 +493,42 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
 //  ================== ================== ================== ================== DISCORD ================== ================== ================== ==================
 
-discordClient = discord.start()
+const discordClient = discord.start();
+
+function ModeratorFunctions(message, messageText, username) {
+    const messageSplit = messageText.split(" ");
+    switch (messageSplit[0]) {
+        case '!info':
+            message.channel.send(`╔══ Stream info
+╠ Uptime: ${twitchInfo.uptime}
+╠ Viewers: ${twitchInfo.viewers}
+╠ Game: ${twitchInfo.game}
+╠══ Stream stats
+╠ Max viewers: ${twitchInfo.maxViewers}
+╠ Game with max viewers: ${twitchInfo.maxGame}
+╠══ Chat stats
+╠ Used commands: ${twitchInfo.commands}
+╠ Chat clears: ${twitchInfo.chatClears}
+╠ Bans: ${twitchInfo.bans}
+╠ Timeouts: ${twitchInfo.timeouts}
+╠ Messages: ${twitchInfo.messages}
+╚══`)
+            break;
+        case '!ping':
+            message.channel.send(`pong`);
+            break;
+    }
+}
+
 discordClient.on('message', message => {
-    // If the message is "ping"
-    if (message.content === 'ping') {
-        // Send "pong" to the same channel
-        message.channel.send('pong');
+    if (message.author.bot == true) return;
+
+    const channelName = message.channel.name;
+    const messageText = message.content;
+    const username = message.author.username;
+
+    if (channelName == 'moderator-only') {
+        ModeratorFunctions(message, messageText, username);
+        return;
     }
 });
