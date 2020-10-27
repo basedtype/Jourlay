@@ -85,3 +85,13 @@ exports.clearChat = function() {
         return 0;
     } catch { return -1 };
 }
+
+/**
+ * If user is moderator or author return true, else return false
+ * @param {Array} userstate
+ * @returns {boolean} user type
+ */
+exports.CheckMod = function(userstate) {
+    if (userstate['user-type'] == 'mod' || userstate['display-name'].toLowerCase() == channelName) return true;
+    else return false;
+}
