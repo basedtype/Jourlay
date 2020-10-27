@@ -4,6 +4,7 @@ const discord = require('./Discord/DiscordBot');
 const moment = require('moment');
 const hack = require('./Games/Hack');
 const db = require('./Data/db');
+const settings = require('./Settings/settings')
 
 //  ================== ================== ================== ================== TWITCH ================== ================== ================== ==================
 
@@ -122,7 +123,7 @@ setInterval(function () {
                 else {
                     for (i in followers) {
                         if (!oldFollowers.includes(followers[i])) {
-                            twitch.say(`@${followers[i]}, ты зарегистрировался в агенстве безопасти JOURLOY, спасибо, что выбрал нас. Можешь зайти на Discord сервер, чтобы быть в курсе новостей канала (https://discord.gg/DVukvAu)!  `);
+                            twitch.say(`@${followers[i]}, ${settings.ru.follow}`);
                             oldFollowers = followers;
                         }
                     }
@@ -138,7 +139,7 @@ setInterval(function () {
 setInterval(function () {
     try {
         if (twitchInfo.uptime != 'стример сейчас оффлайн' && twitchInfo.viewers > 3) {
-            const rules = `| Правила в чате: Не спамить. Не говорить на тему политики. Не использовать запрещенные слова. Быть хорошим чатером.`;
+            const rules = `| ${settings.ru.rules}`;
             twitch.action(rules);
         }
     } catch { ; }
@@ -150,7 +151,7 @@ setInterval(function () {
 setInterval(function () {
     try {
         if (twitchInfo.uptime != 'стример сейчас оффлайн' && twitchInfo.viewers > 3) {
-            const rules = `| Хочешь получать анонсы стримов? Тогда заходи на дискорд сервер https://discord.gg/DVukvAu`;
+            const rules = `| ${settings.ru.diskord}`;
             twitch.action(rules);
         }
     } catch { ; }
@@ -263,7 +264,6 @@ function CheckWhen(message, username) {
     return check;
 }
 
-
 /**
  * Check message and answer if need
  * @param {String} message
@@ -293,7 +293,7 @@ function CheckBannedWords(message, username) {
 }
 
 /**
- * Check message and ban user if need
+ * Check message and answer user if need
  * @param {String} message
  * @param {String} username
  */
