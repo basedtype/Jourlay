@@ -151,7 +151,6 @@ setInterval(function () {
 }, tools.ConvertTime({ minutes: 50 }));
 
 /**
- * TODO fix params
  * Repeat emotions in chat
  * @param {String} message
  * @returns {boolean}
@@ -203,18 +202,17 @@ function CheckPartyPlay(message, username) {
 }
 
 /**
- * TODO add text in settings
  * Check message and answer if need
  * @param {String} message
  * @param {String} username
  * @returns {boolean}
  */
 function CheckWhoAreU(message, username) {
-    const array = ['ты кто', 'ты хто', 'хто ты', 'кто ты', 'что ты', 'ты что', 'ты бот', 'ты человек'];
+    const array = settings.whoAreYou(lang, 'array');
     const nickname = '@' + botName;
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
-    if (check == true) twitch.say(`@${username}, что за вопросы, ты кто такой? А? Kappa`);
+    if (check == true) twitch.say(`@${username}, ${settings.whoAreYou(lang, 'answer')}`);
     return check;
 }
 

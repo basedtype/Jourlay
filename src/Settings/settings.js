@@ -76,3 +76,21 @@ exports.party = function(lang) {
     if (lang == 'ru') return `Все команды бота: !help`;
     if (lang == 'en') return `All bot's commands: !help`;
 }
+
+/**
+ * TODO add English answers
+ * Return information about bot
+ * @param {String} lang 
+ * @param {String} aim 
+ * @returns {[String]}
+ */
+exports.whoAreYou = function(lang, aim) {
+    if (aim == 'array') {
+        if (lang == 'ru') return ['ты кто', 'ты хто', 'хто ты', 'кто ты', 'что ты', 'ты что', 'ты бот', 'ты человек'];
+        if (lang == 'en') return [];
+    }
+    if (aim == 'answer') {
+        if (lang == 'ru') return `что за вопросы, ты кто такой? А? Kappa`;
+        if (lang == 'en') return ``;
+    }
+}
