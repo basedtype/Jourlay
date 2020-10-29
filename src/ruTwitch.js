@@ -314,7 +314,7 @@ function CheckSetPlus(message) {
  * Reaction when chat has been cleared
  */
 twitchClient.on("clearchat", (channel) => {
-    twitchClient.say(channel, `я первый Kappa`);
+    twitchClient.say(channel, settings.chatCleared(lang));
     twitchInfo.chatClears++;
 });
 
@@ -326,9 +326,7 @@ twitchClient.on("ban", (channel, username, reason, userstate) => { twitchInfo.ba
 /**
  * Reaction when user has been timeout
  */
-twitchClient.on('timeout', (channel, username, reason, duration, userstate) => {
-    twitchInfo.timeouts++;
-})
+twitchClient.on('timeout', (channel, username, reason, duration, userstate) => { twitchInfo.timeouts++; })
 
 /**
  * TODO add text in settings
@@ -337,7 +335,7 @@ twitchClient.on('timeout', (channel, username, reason, duration, userstate) => {
 twitchClient.on("action", (channel, userstate, message, self) => {
     const username = userstate['display-name'];
     if (self) return;
-    if (userstate['user-type'] != 'mod' && username != channelName) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
+    if (!twitch.CheckMod(userstate)) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
 });
 
 twitchClient.on("message", (channel, userstate, message, self) => {
@@ -387,11 +385,11 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case '!q':
             if (username == channelName) twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
             else if (twitchInfo && twitchInfo.viewers < 100) {
-                if (questionTimer == 0 && message.includes('?') && message.length > 6) {
+                if (ask.timer == 0 && message.includes('?') && message.length > 6) {
                     twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
-                    questionTimer = 1;
-                    const setQuestionTime = () => questionTimer = 0;
-                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 30 }));
+                    ask.timer = 1;
+                    const setQuestionTime = () => ask.timer = 0;
+                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 15 }));
                     twitchInfo.commands++;
                 }
             }

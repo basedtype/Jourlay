@@ -138,7 +138,20 @@ exports.hiMessage = function(lang) {
     if (lang == 'en') return ['hi', 'hellp', 'sup', 'hey'];
 }
 
+/**
+ * Return information when somebody send 'Set +' in chat
+ * @param {String} lang 
+ */
 exports.setPlus = function(lang) {
     if (lang == 'ru') return ['ставь +'];
     if (lang == 'en') return ['set +'];
+}
+
+/**
+ * Return information whe chat has been cleared
+ * @param {String} lang 
+ */
+exports.chatCleared = function(lang) {
+    if (lang == 'ru') return `я первый Kappa`;
+    if (lang == 'en') return `I'm first OMEGALUL`;
 }
