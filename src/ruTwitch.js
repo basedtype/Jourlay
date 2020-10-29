@@ -208,7 +208,7 @@ function CheckPartyPlay(message, username) {
  * @returns {boolean}
  */
 function CheckWhoAreU(message, username) {
-    const array = settings.whoAreYou(lang, 'array');
+    const array = settings.whoAreYou(lang, 'ask');
     const nickname = '@' + botName;
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
@@ -218,16 +218,14 @@ function CheckWhoAreU(message, username) {
 
 
 /**
- * TODO add text in settings
  * Check message and answer if need
  * @param {String} message
  * @param {String} username
  * @returns {boolean}
  */
 function CheckWhereIsKate(message, username) {
-    const answer = ['Катя сейчас  работает на 7ми работах', 'она строит дом', 'учит IP адресацию'];
-    const array = ['где', 'что делает', 'что катя делает'];
-    const nickname = 'катя';
+    const answer = settings.whereIsKate(lang, 'answer');
+    const array = settings.whereIsKate(lang, 'ask');
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
     if (check == true) twitch.say(`@${username}, ${tools.GetRandomElementFromArray(answer)}`);
@@ -235,7 +233,6 @@ function CheckWhereIsKate(message, username) {
 }
 
 /**
- * TODO add text in settings
  * Check message and answer if need
  * @param {String} message
  * @param {String} username
@@ -287,7 +284,7 @@ function CheckBannedWords(message, username) {
  * @param {String} username
  */
 function HiMessage(message, username) {
-    const array = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули', 'bonjour', 'бонжур'];
+    const array = settings.hiMessage(lang);
     let check = false;
     if (!hiMans.includes(username) /* && username.toLocaleLowerCase() != channelName */) {
         for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
@@ -305,7 +302,7 @@ function HiMessage(message, username) {
  * @param {String} message 
  */
 function CheckSetPlus(message) {
-    const array = ['ставь +'];
+    const array = settings.setPlus(lang)
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
     if (check == true) twitch.say(`+`);

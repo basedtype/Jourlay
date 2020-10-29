@@ -85,7 +85,7 @@ exports.party = function(lang) {
  * @returns {[String]}
  */
 exports.whoAreYou = function(lang, aim) {
-    if (aim == 'array') {
+    if (aim == 'ask') {
         if (lang == 'ru') return ['ты кто', 'ты хто', 'хто ты', 'кто ты', 'что ты', 'ты что', 'ты бот', 'ты человек'];
         if (lang == 'en') return [];
     }
@@ -93,4 +93,52 @@ exports.whoAreYou = function(lang, aim) {
         if (lang == 'ru') return `что за вопросы, ты кто такой? А? Kappa`;
         if (lang == 'en') return ``;
     }
+}
+
+/**
+ * Return information about Kate
+ * @param {String} lang 
+ * @param {String} aim 
+ * @return {[String]}
+ */
+exports.whereIsKate = function(lang, aim) {
+    if (aim == 'ask') {
+        if (lang == 'ru') return ['где', 'что делает', 'что катя делает'];
+    }
+    if (aim == 'answer') {
+        if (lang == 'ru') return ['Катя сейчас  работает на 7ми работах', 'она строит дом', 'учит IP адресацию'];
+    }
+}
+
+/**
+ * Return when 
+ * @param {String} lang 
+ * @param {String} aim 
+ * @return {[String]}
+ */
+exports.when = function(lang, aim) {
+    if (aim == 'ask') {
+        if (lang == 'ru') return ['когда'];
+        if (lang == 'en') return ['when'];
+    }
+    if (aim == 'answer') {
+        if (lang == 'ru') return ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяца', 'тогда'];
+        if (lang == 'en') return [];
+    }
+}
+
+// TODO: Add changeSub func
+
+/**
+ * Return hi message
+ * @param {String} lang 
+ */
+exports.hiMessage = function(lang) {
+    if (lang == 'ru') return ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули', 'bonjour', 'бонжур'];
+    if (lang == 'en') return ['hi', 'hellp', 'sup', 'hey'];
+}
+
+exports.setPlus = function(lang) {
+    if (lang == 'ru') return ['ставь +'];
+    if (lang == 'en') return ['set +'];
 }
