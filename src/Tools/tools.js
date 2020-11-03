@@ -1,5 +1,4 @@
 const fs = require("fs");
-const db = require('../Data/db')
 const graph = require('./graph');
 
 function sleep(millis) {
@@ -77,25 +76,6 @@ exports.RandomFloat = function(min, max) { return Math.random() * (max - min) + 
  */
 exports.exit = function(status) {
     throw `Bot finished. Status: ${status}`;
-}
-
-/**
- * Return chatterInfo to main.js
- * @param {String} pattern
- */
-exports.GetChatterInfo = function(pattern) { 
-    let chatterInfo = db.GetDataFromDB('chatterDB', pattern);
-
-    for (i in chatterInfo) {
-        chatterInfo[i] = {
-            pattern: 'username coins',
-            username: chatterInfo[i].username,
-            coins: parseFloat(chatterInfo[i].coins).toFixed(5),
-            hackTimer: 0,
-        }
-    }
-
-    return chatterInfo;
 }
 
 /**
