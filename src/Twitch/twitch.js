@@ -136,7 +136,7 @@ exports.db = {
             try {
                 data = nodeDB.getData(`/${username}`);
                 return data
-            } catch {return {}};
+            } catch {return false};
         }
     },
     /**
