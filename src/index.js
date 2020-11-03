@@ -6,7 +6,7 @@ const settings = require('./Settings/settings');
 const twitchClient = twitch.start()
 const channelName = twitch.getChannelName();
 const botName = twitch.getBotName();
-const chatters = twitch.db.get();
+//const chatters = twitch.db.get();
 const lang = 'ru';
 
 const pattern = {
@@ -357,7 +357,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
 
     let userInfo = twitch.db.get(username);
-    if (userInfo == {}) userInfo = pattern;
+    if (userInfo == false) userInfo = pattern;
     userInfo.message++;
     twitch.db.push(username, userInfo);
 
