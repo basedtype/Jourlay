@@ -405,7 +405,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case '!up':
         case '!uptime':
             try {
-                if (twitchInfo.uptime != settings.offline) twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
+                if (twitchInfo.uptime != settings.offline(lang)) twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
                 else twitch.action(twitchInfo.uptime);
             } catch { ; }
             twitchInfo.commands++;
