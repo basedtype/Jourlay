@@ -1,10 +1,11 @@
 {
-  "name": "TwitchBot",
-  "version": "2.0.0",
+  "name": "twitchbot",
+  "version": "2.5.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run": "node src/index.js"
   },
   "keywords": [],
   "author": "",
