@@ -14,8 +14,8 @@ exports.rules = function(lang) {
  * @return {String}
  */
 exports.follow = function(lang) {
-    if (lang == 'ru') return `ты зарегистрировался в агенстве безопасти JOURLOY, спасибо, что выбрал нас`
-    if (lang == 'en') return `you registered in security agency "JOURLOY", thank what you choose us`
+    if (lang == 'ru') return `спасибо за фоллов, приятного просмотра!`
+    if (lang == 'en') return `thank for follow!`
 }
 
 /**
@@ -68,6 +68,7 @@ exports.games = function(lang) {
 }
 
 /**
+ * TODO
  * Get info about games
  * @param {String} lang 
  * @return {String}
@@ -172,4 +173,8 @@ exports.balance = function(lang) {
 exports.valute = function(lang) {
     if (lang == 'ru') return `пиксль(ей)`;
     if (lang == 'en') return `pixel(s)`;
+}
+
+exports.minecraft = function(lang) {
+    if (lang == 'ru') return `я хочу убить дракона на хардкоре`
 }
