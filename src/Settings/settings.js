@@ -140,7 +140,7 @@ exports.hiMessage = function(lang) {
 
 /**
  * Return information when somebody send 'Set +' in chat
- * @param {String} lang 
+ * @param {String} lang
  */
 exports.setPlus = function(lang) {
     if (lang == 'ru') return ['ставь +'];
@@ -148,10 +148,28 @@ exports.setPlus = function(lang) {
 }
 
 /**
- * Return information whe chat has been cleared
- * @param {String} lang 
+ * Return information when chat has been cleared
+ * @param {String} lang
  */
 exports.chatCleared = function(lang) {
     if (lang == 'ru') return `я первый Kappa`;
     if (lang == 'en') return `I'm first OMEGALUL`;
+}
+
+/**
+ * Return information about balance
+ * @param {String} lang
+ */
+exports.balance = function(lang) {
+    if (lang == 'ru') return `, твой баланс: `;
+    if (lang == 'en') return `, your balance: `;
+}
+
+/**
+ * Return information about stream valute
+ * @param {String} lang
+ */
+exports.valute = function(lang) {
+    if (lang == 'ru') return `пиксль(ей)`;
+    if (lang == 'en') return `pixel(s)`;
 }
