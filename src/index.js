@@ -350,7 +350,7 @@ twitchClient.on("action", (channel, userstate, message, self) => {
     if (!twitch.checkMod(userstate)) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
 });
 
-client.on("raided", (channel, username, viewers) => {
+twitchClient.on("raided", (channel, username, viewers) => {
     twitch.action(`| Опа, ${username} рейдит нас вместе с ${viewers} зрителями! Добро пожаловать на канал, мы тут в игры играем Kappa`)
 });
 
