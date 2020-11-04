@@ -350,6 +350,10 @@ twitchClient.on("action", (channel, userstate, message, self) => {
     if (!twitch.checkMod(userstate)) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
 });
 
+client.on("raided", (channel, username, viewers) => {
+    twitch.action(`| Опа, ${username} рейдит нас вместе с ${viewers} зрителями! Добро пожаловать на канал, мы тут в игры играем Kappa`)
+});
+
 twitchClient.on("message", (channel, userstate, message, self) => {
     if (self) return;
 
@@ -378,24 +382,12 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     if (CheckSetPlus(message, username) == true) return;
 
     switch (messageSplit[0]) {
-        case '!шумнафоне':
-            twitchClient.say(channel, `@${username}, twitch.tv/kartinka_katerinka`);
-            twitchInfo.commands++;
-            return;
         case '!pc':
             twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
             twitchInfo.commands++;
             return;
-        case '!warband':
-            //twitch.action('| Цель: обладать 1 замком. Условие: боевой отряд не больше 10 человек не считая ГГ');
-            twitchInfo.commands++;
-            return;
-        case '!hitman':
-            //twitch.action('| Цель: пройти игру. Условие: ни разу не умереть, иначе все сначала');
-            twitchInfo.commands++;
-            return;
         case '!minecraft':
-            //twitch.action('| Цель: выживать как можно дольше. Условие: я не могу строить, а моя девушка ломать, мы никого не убиваем, даже монстров, но играем на сложном уровне, а еще если один из нас умирает, то чтобы "воскресить" ');
+            twitch.action(`| ${settings.minecraft(lang)}`);
             twitchInfo.commands++;
             return;
         case '!q':
@@ -418,9 +410,6 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             } catch { ; }
             twitchInfo.commands++;
             return;
-        /* case '!10hoursgames':
-            twitch.action(`| сегодня мы можем поиграть в The Cycle, Spellbreak, Into the Breach, Starcraft 2, Overwatch, Minecraft, Call of Duty Modern Warfare, Sea of Thieves, Mount&Blade: Warband`);
-            return; */
         case `!dis`:
         case `!discord`:
             twitch.action(`| discord.gg/DVukvAu`);
@@ -442,7 +431,9 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             const allUsersNotSorted = twitch.db.get();
             const allUsersSorted = tools.sortArray(allUsersNotSorted);
             if (allUsersSorted.length > 0) {
-
+                const user = tools.GetRandomElementFromArray(allUsersSorted);
+                const randInt = tools.RandomInt(1, user.balance);
+                // TODO
             } else {
 
             }
