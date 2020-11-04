@@ -347,7 +347,7 @@ twitchClient.on('timeout', (channel, username, reason, duration, userstate) => {
 twitchClient.on("action", (channel, userstate, message, self) => {
     const username = userstate['display-name'];
     if (self) return;
-    if (!twitch.CheckMod(userstate)) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
+    if (!twitch.checkMod(userstate)) twitchClient.timeout(channel, username, toole.ConvertTime({seconds: 5}), "/me в сообщении");
 });
 
 twitchClient.on("message", (channel, userstate, message, self) => {
@@ -360,8 +360,6 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     if (userInfo == false) userInfo = pattern;
     userInfo.message++;
     twitch.db.push(username, userInfo);
-
-    let userData;
 
     if (tools.CheckString(message) == true) {
         twitch.ban(username, 'без возможности разбана [БОТ]')
@@ -434,37 +432,26 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             twitchInfo.commands++;
             return;
         case `!ping`:
-            if (!twitch.CheckMod(userstate)) return;
+            if (!twitch.checkMod(userstate)) return;
             twitch.action('pong');
             return;
         case `!test`:
         case `!hack`:
             return;
-            if (!twitch.CheckMod(userstate)) return;
-            for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
-            if (userData.hackTimer == 0) {
-                const info = hack.Hack(username);
-                //if (info.target.username != 'None') twitch.say(`@${username}, вы заказали взлом @${info.target.username}. Все будет сделано через ${info.timer} минут`);
-                //else twitch.say(`@${username}, вы заказали взлом случайной цели. Все будет сделано через ${info.timer} минут`);
-                if (info.target.username != 'None') twitch.say(`@${username}, ${info.target.username}. ${info.timer}`);
-                else twitch.say(`@${username}, ${info.timer}`);
-                userData.hackTimer = 1;
-                const setQuestionTime = () => {
-                    userData.hackTimer = 0;
-                    userData.coins += parseFloat(info.getCoins);
-                    twitch.say(`@${username}, ${info.getCoins}`)
-                }
-                setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 1 }));
-                twitchInfo.commands++;
-            } else twitch.say(userData.hackTimer);
+            if (!twitch.checkMod(userstate)) return;
+            const allUsersNotSorted = twitch.db.get();
+            const allUsersSorted = tools.sortArray(allUsersNotSorted);
+            if (allUsersSorted.length > 0) {
+
+            } else {
+
+            }
             return;
         case `!b`:
         case `!balance`:
-            return;
-            if (!twitch.CheckMod(userstate)) return;
-            for (i in chatterInfo) if (chatterInfo[i].username.toLowerCase() == username) userData = chatterInfo[i];
-            //twitch.say(`@${username}, ваш баланс: ${userData.coins} байткоинов`);
-            twitch.say(`@${username}, ${userData.coins} `);
+            if (!twitch.checkMod(userstate)) return;
+            const user = twitch.db.get(username);
+            twitch.say(`@${username}${settings.balance(lang)} ${user.balance.toString()} ${settings.valute(lang)}`);
             return;
     }
 
