@@ -5,3 +5,4 @@ node_modules
 TwitchBot.code-workspace
 *.txt
 src/Data/chatters.json
+*.json
