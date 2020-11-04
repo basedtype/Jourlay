@@ -123,3 +123,14 @@ exports.GetRandomElementFromArray = function(array) {
     const element = array[this.RandomInt(0, array.length-1)];
     return element;
 }
+
+/**
+ * Sort array by balance
+ * @param {[]} array 
+ * @return {[]} sorted array
+ */
+exports.sortArray = function(array) {
+    let newArray = [];
+    for (i in array) if (array[i].balance > 0) newArray.push(array[i]);
+    return newArray;
+}
