@@ -2,6 +2,7 @@ const tools = require('./Tools/tools');
 const twitch = require('./Twitch/twitch');
 const moment = require('moment');
 const settings = require('./Settings/settings');
+const graph = require('./Tools/graph');
 
 const twitchClient = twitch.start()
 const channelName = twitch.getChannelName();
@@ -39,6 +40,7 @@ let twitchInfo = {
 
 let oldFollowers = [];
 let hiMans = [];
+let chatLog = [];
 
 // == == == == == == == == == == == == INTERVALS == == == == == == == == == == == == \\
 
@@ -52,20 +54,23 @@ setInterval(function () {
         console.log(`
 Channel name: ${channelName}
 
-╔══ Stream info
-╠ Uptime: ${twitchInfo.uptime}
-╠ Viewers: ${twitchInfo.viewers}
-╠ Game: ${twitchInfo.game}
-╠══ Stream stats
-╠ Max viewers: ${twitchInfo.maxViewers}
-╠ Game with max viewers: ${twitchInfo.maxGame}
-╠══ Chat stats
-╠ Used commands: ${twitchInfo.commands}
-╠ Chat clears: ${twitchInfo.chatClears}
-╠ Bans: ${twitchInfo.bans}
-╠ Timeouts: ${twitchInfo.timeouts}
-╠ Messages: ${twitchInfo.messages}
-╚══`)
+╔════ Stream info ════
+║ Uptime: ${twitchInfo.uptime}
+║ Viewers: ${twitchInfo.viewers}
+║ Game: ${twitchInfo.game}
+╠════ Stream stats ═══
+║ Max viewers: ${twitchInfo.maxViewers}
+║ Game with max viewers: ${twitchInfo.maxGame}
+╠═════ Chat stats ════
+║ Used commands: ${twitchInfo.commands}
+║ Chat clears: ${twitchInfo.chatClears}
+║ Bans: ${twitchInfo.bans}
+║ Timeouts: ${twitchInfo.timeouts}
+║ Messages: ${twitchInfo.messages}
+╚═════════════════════
+
+════════ Chat ════════
+${chat()}`)
     } catch { ; }
 }, tools.ConvertTime({seconds: 5}));
 
@@ -158,6 +163,15 @@ setInterval(function () {
         }
     } catch { ; }
 }, tools.ConvertTime({ minutes: 50 }));
+
+function chat() {
+    let chatFin = []
+    for (let i = 0; i < 10; i++) {
+        if (chatLog[i]) chatFin.push(chatLog[i]);
+        else chatFin.push('');
+    }
+    return chatFin.join('\n');
+}
 
 /**
  * Repeat emotions in chat
@@ -287,6 +301,17 @@ function CheckBannedWords(message, username) {
 }
 
 /**
+ * Check channel name in message
+ * @param {String} message
+ * @returns {boolean}
+ */
+function CheckAuthorMessage(message) {
+    let check = false;
+    if (message.toLowerCase().indexOf(channelName) != -1) check = true;
+    return check;
+}
+
+/**
  * TODO add text in settings
  * Check message and answer user if need
  * @param {String} message
@@ -355,10 +380,18 @@ twitchClient.on("raided", (channel, username, viewers) => {
 });
 
 twitchClient.on("message", (channel, userstate, message, self) => {
-    if (self) return;
-
     const messageSplit = message.split(" ");
     const username = userstate['display-name'].toLowerCase();
+
+    if (CheckAuthorMessage(message) == true) chatLog.unshift(`${graph.bgWhite(graph.fgBlack(`${username}:\n${message}`))}\n----------------------`)
+    else chatLog.unshift(`${username}:\n${message}\n----------------------`)
+    if (chatLog.length > 10) {
+        while(chatLog.length > 10) {
+            chatLog.pop();
+        }
+    }
+
+    if (self) return;
 
     let userInfo = twitch.db.get(username);
     if (userInfo == false) userInfo = pattern;
