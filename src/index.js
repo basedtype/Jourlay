@@ -38,9 +38,14 @@ let twitchInfo = {
     messages: 0,
 };
 
+let chatInfo = {
+    log: [],
+    finish: [],
+    enable: process.argv[2]
+}
+
 let oldFollowers = [];
 let hiMans = [];
-let chatLog = [];
 
 // == == == == == == == == == == == == INTERVALS == == == == == == == == == == == == \\
 
@@ -51,7 +56,8 @@ setInterval(function () {
     try {
         tools.ClearCli();
         console.log(tools.TwitchIcon());
-        console.log(`
+        if (chatInfo.enable == 'logEnable') {
+            console.log(`
 Channel name: ${channelName}
 
 ╔════ Stream info ════
@@ -71,6 +77,25 @@ Channel name: ${channelName}
 
 ════════ Chat ════════
 ${chat()}`)
+        } else {
+            console.log(`
+Channel name: ${channelName}
+
+╔════ Stream info ════
+║ Uptime: ${twitchInfo.uptime}
+║ Viewers: ${twitchInfo.viewers}
+║ Game: ${twitchInfo.game}
+╠════ Stream stats ═══
+║ Max viewers: ${twitchInfo.maxViewers}
+║ Game with max viewers: ${twitchInfo.maxGame}
+╠═════ Chat stats ════
+║ Used commands: ${twitchInfo.commands}
+║ Chat clears: ${twitchInfo.chatClears}
+║ Bans: ${twitchInfo.bans}
+║ Timeouts: ${twitchInfo.timeouts}
+║ Messages: ${twitchInfo.messages}
+╚═════════════════════`)
+        }
     } catch { ; }
 }, tools.ConvertTime({seconds: 5}));
 
@@ -165,12 +190,11 @@ setInterval(function () {
 }, tools.ConvertTime({ minutes: 50 }));
 
 function chat() {
-    let chatFin = []
     for (let i = 0; i < 4; i++) {
-        if (chatLog[i]) chatFin.push(chatLog[i]);
-        else chatFin.push('');
+        if (chatInfo.log[i]) chatInfo.finish.push(chatInfo.log[i]);
+        else chatInfo.finish.push('');
     }
-    return chatFin.join('\n');
+    return chatInfo.finish.join('\n');
 }
 
 /**
@@ -383,11 +407,13 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     const messageSplit = message.split(" ");
     const username = userstate['display-name'].toLowerCase();
 
-    if (CheckAuthorMessage(message) == true) chatLog.unshift(`${graph.bgWhite(graph.fgBlack(`${username}:\n${message}`))}\n----------------------`)
-    else chatLog.unshift(`${username}:\n${message}\n----------------------`)
-    if (chatLog.length > 4) {
-        while(chatLog.length > 4) {
-            chatLog.pop();
+    if (chatInfo.enable == 'logEnable') {
+        if (CheckAuthorMessage(message) == true) chatInfo.log.unshift(`${graph.bgWhite(graph.fgBlack(`${username}:\n${message}`))}\n----------------------`)
+        else chatInfo.log.unshift(`${username}:\n${message}\n----------------------`)
+        if (chatInfo.log.length > 4) {
+            while(chatLog.length > 4) {
+                chatInfo.log.pop();
+            }
         }
     }
 
