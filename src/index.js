@@ -166,7 +166,7 @@ setInterval(function () {
 
 function chat() {
     let chatFin = []
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 4; i++) {
         if (chatLog[i]) chatFin.push(chatLog[i]);
         else chatFin.push('');
     }
@@ -385,8 +385,8 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     if (CheckAuthorMessage(message) == true) chatLog.unshift(`${graph.bgWhite(graph.fgBlack(`${username}:\n${message}`))}\n----------------------`)
     else chatLog.unshift(`${username}:\n${message}\n----------------------`)
-    if (chatLog.length > 10) {
-        while(chatLog.length > 10) {
+    if (chatLog.length > 4) {
+        while(chatLog.length > 4) {
             chatLog.pop();
         }
     }
