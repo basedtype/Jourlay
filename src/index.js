@@ -274,7 +274,7 @@ function CheckWhereIsKate(message, username) {
     const answer = settings.whereIsKate(lang, 'answer');
     const array = settings.whereIsKate(lang, 'ask');
     let check = false;
-    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
     if (check == true) twitch.say(`@${username}, ${tools.GetRandomElementFromArray(answer)}`);
     return check;
 }
@@ -287,9 +287,10 @@ function CheckWhereIsKate(message, username) {
  */
 function CheckWhen(message, username) {
     const answer = ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяца', 'тогда'];
-    const array = ['когда'];
+    const when = 'когда';
+    const askSymbol = '?'
     let check = false;
-    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    if (message.toLowerCase().indexOf(when) != -1 && message.toLowerCase().indexOf(askSymbol) != -1) check = true;
     if (check == true) twitch.say(`@${username}, ${tools.GetRandomElementFromArray(answer)}`);
     return check;
 }
@@ -437,7 +438,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     if (CheckChangeSub(message, username) == true) return;
     if (InfoAboutGames(message, username) == true) return;
     if (CheckWhereIsKate(message, username) == true) return;
-    if (CheckWhen(message, username) == true) return;
+    //if (CheckWhen(message, username) == true) return;
     if (CheckSetPlus(message, username) == true) return;
 
     switch (messageSplit[0]) {
