@@ -273,8 +273,9 @@ function CheckWhoAreU(message, username) {
 function CheckWhereIsKate(message, username) {
     const answer = settings.whereIsKate(lang, 'answer');
     const array = settings.whereIsKate(lang, 'ask');
+    const nickname = 'катя';
     let check = false;
-    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
+    for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
     if (check == true) twitch.say(`@${username}, ${tools.GetRandomElementFromArray(answer)}`);
     return check;
 }
@@ -286,7 +287,7 @@ function CheckWhereIsKate(message, username) {
  * @returns {boolean}
  */
 function CheckWhen(message, username) {
-    const answer = ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяца', 'тогда'];
+    const answer = ['завтра', 'когда рак на горе свистнет Kappa', 'через 7 минут', 'через 30 минут', 'послезавтра', 'в следующем году', 'в следующем месяце', 'тогда'];
     const when = 'когда';
     const askSymbol = '?'
     let check = false;
