@@ -16,16 +16,21 @@ const pattern = {
     message: 0, // Amount of messages
 }
 
-let emotions = {
+const timer = {
+    emotion: 0,
+    ask: 0,
+}
+
+const emotions = {
     timer: 0,
     array: ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa', 'LOL', ':D', 'D:', 'KEKW', 'OmegaLOL', '4HEader', '2HEader', 'Lois']
 };
 
-let ask = {
+const ask = {
     timer: 0,
 };
 
-let twitchInfo = {
+const twitchInfo = {
     viewers: 0,
     maxViewers: 0,
     game: 'None',
@@ -38,14 +43,14 @@ let twitchInfo = {
     messages: 0,
 };
 
-let chatInfo = {
+const chatInfo = {
     log: [],
     finish: [],
     enable: process.argv[2]
 }
 
-let oldFollowers = [];
-let hiMans = [];
+const oldFollowers = [];
+const hiMans = [];
 
 // == == == == == == == == == == == == INTERVALS == == == == == == == == == == == == \\
 
