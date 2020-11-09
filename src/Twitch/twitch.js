@@ -29,6 +29,7 @@ function onConnectedHandler() {
 
 client.on('connected', onConnectedHandler);
 client.connect();
+client.lang = 'ru';
 
 /**
  * @return {{}} client
