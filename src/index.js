@@ -7,27 +7,24 @@ const graph = require('./Tools/graph');
 const twitchClient = twitch.start()
 const channelName = twitch.getChannelName();
 const botName = twitch.getBotName();
-//const chatters = twitch.db.get();
-const lang = 'ru';
 
 const pattern = {
     sub: false, // State of subscriber
     balance: 0, // Amount of Pixels
     message: 0, // Amount of messages
-}
+};
 
 const timer = {
     emotion: 0,
     ask: 0,
-}
-
-const emotions = {
-    timer: 0,
-    array: ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa', 'LOL', ':D', 'D:', 'KEKW', 'OmegaLOL', '4HEader', '2HEader', 'Lois']
+    diskord: 0,
+    minecraft: 0,
+    uptime: 0,
+    pc: 0,
 };
 
-const ask = {
-    timer: 0,
+const emotions = {
+    array: ['Pog', 'PogChamp', 'LUL', 'Jebaited', 'CoolStoryBob', 'NotLikeThis', 'BibleThump', 'DarkMode', 'Kappa', 'LOL', ':D', 'D:', 'KEKW', 'OmegaLOL', '4HEader', '2HEader', 'Lois']
 };
 
 const twitchInfo = {
@@ -35,7 +32,7 @@ const twitchInfo = {
     maxViewers: 0,
     game: 'None',
     maxGame: 'None',
-    uptime: settings.offline(lang),
+    uptime: settings.offline(twitchClient.lang),
     commands: 0,
     chatClears: 0,
     bans: 0,
@@ -132,11 +129,11 @@ setInterval(function () {
                     let d = moment.duration(ms);
                     twitchInfo.uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
                 } else {
-                    twitchInfo.uptime = settings.offline(lang);
+                    twitchInfo.uptime = settings.offline(twitchClient.lang);
                 }
             } catch { ; }
         });
-    } catch { twitchInfo.uptime = settings.offline(lang); }
+    } catch { twitchInfo.uptime = settings.offline(twitchClient.lang); }
 }, tools.ConvertTime({seconds: 1}));
 
 /**
@@ -160,7 +157,7 @@ setInterval(function () {
                 else {
                     for (i in followers) {
                         if (!oldFollowers.includes(followers[i])) {
-                            twitch.say(`@${followers[i]}, ${settings.follow(lang)}`);
+                            twitch.say(`@${followers[i]}, ${settings.follow(twitchClient.lang)}`);
                             oldFollowers = followers;
                         }
                     }
@@ -175,8 +172,8 @@ setInterval(function () {
  */
 setInterval(function () {
     try {
-        if (twitchInfo.uptime != settings.offline(lang) && twitchInfo.viewers > 3) {
-            const rules = `| ${settings.rules(lang)}`;
+        if (twitchInfo.uptime != settings.offline(twitchClient.lang) && twitchInfo.viewers > 3) {
+            const rules = `| ${settings.rules(twitchClient.lang)}`;
             twitch.action(rules);
         }
     } catch { ; }
@@ -187,8 +184,8 @@ setInterval(function () {
  */
 setInterval(function () {
     try {
-        if (twitchInfo.uptime != settings.offline(lang) && twitchInfo.viewers > 3) {
-            const rules = `| ${settings.diskord(lang)}`;
+        if (twitchInfo.uptime != settings.offline(twitchClient.lang) && twitchInfo.viewers > 3) {
+            const rules = `| ${settings.diskord(twitchClient.lang)}`;
             //twitch.action(rules);
         }
     } catch { ; }
@@ -235,7 +232,7 @@ function InfoAboutGames(message, username) {
     const array = ['во что играешь', 'в какие игры'];
     let check = false;
     for (i in array) if (message.toLowerCase().indexOf(array[i]) != -1) check = true;
-    if (check) twitch.say(`@${username} ${settings.games(lang)}`);
+    if (check) twitch.say(`@${username} ${settings.games(twitchClient.lang)}`);
     return check;
 }
 
@@ -260,11 +257,11 @@ function CheckPartyPlay(message, username) {
  * @returns {boolean}
  */
 function CheckWhoAreU(message, username) {
-    const array = settings.whoAreYou(lang, 'ask');
+    const array = settings.whoAreYou(twitchClient.lang, 'ask');
     const nickname = '@' + botName;
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
-    if (check == true) twitch.say(`@${username}, ${settings.whoAreYou(lang, 'answer')}`);
+    if (check == true) twitch.say(`@${username}, ${settings.whoAreYou(twitchClient.lang, 'answer')}`);
     return check;
 }
 
@@ -276,8 +273,8 @@ function CheckWhoAreU(message, username) {
  * @returns {boolean}
  */
 function CheckWhereIsKate(message, username) {
-    const answer = settings.whereIsKate(lang, 'answer');
-    const array = settings.whereIsKate(lang, 'ask');
+    const answer = settings.whereIsKate(twitchClient.lang, 'answer');
+    const array = settings.whereIsKate(twitchClient.lang, 'ask');
     const nickname = 'катя';
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1 && message.toLowerCase().indexOf(nickname.toLowerCase()) != -1) check = true; }
@@ -349,7 +346,7 @@ function CheckAuthorMessage(message) {
  * @param {String} username
  */
 function HiMessage(message, username) {
-    const array = settings.hiMessage(lang);
+    const array = settings.hiMessage(twitchClient.lang);
     let check = false;
     if (!hiMans.includes(username) /* && username.toLocaleLowerCase() != channelName */) {
         for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
@@ -367,7 +364,7 @@ function HiMessage(message, username) {
  * @param {String} message 
  */
 function CheckSetPlus(message) {
-    const array = settings.setPlus(lang)
+    const array = settings.setPlus(twitchClient.lang)
     let check = false;
     for (i in array) { if (message.toLowerCase().indexOf(array[i]) != -1) check = true; }
     if (check == true) twitch.say(`+`);
@@ -379,7 +376,7 @@ function CheckSetPlus(message) {
  * Reaction when chat has been cleared
  */
 twitchClient.on("clearchat", (channel) => {
-    twitchClient.say(channel, settings.chatCleared(lang));
+    twitchClient.say(channel, settings.chatCleared(twitchClient.lang));
     twitchInfo.chatClears++;
 });
 
@@ -449,20 +446,36 @@ twitchClient.on("message", (channel, userstate, message, self) => {
 
     switch (messageSplit[0]) {
         case '!pc':
-            twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
-            twitchInfo.commands++;
+            if (username == channelName) twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
+            else if (twitchInfo && twitchInfo.viewers < 100) {
+                if (timer.pc == 0 && message.includes('?') && message.length > 6) {
+                    twitch.action(`| iMac 27" 5k retina. Играю на Windows`);
+                    timer.pc = 1;
+                    const setQuestionTime = () => timer.pc = 0;
+                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 5 }));
+                    twitchInfo.commands++;
+                }
+            }
             return;
         case '!minecraft':
-            twitch.action(`| ${settings.minecraft(lang)}`);
-            twitchInfo.commands++;
+            if (username == channelName) twitch.action(`| ${settings.minecraft(twitchClient.lang)}`);
+            else if (twitchInfo && twitchInfo.viewers < 100) {
+                if (timer.minecraft == 0 && message.includes('?') && message.length > 6) {
+                    twitch.action(`| ${settings.minecraft(twitchClient.lang)}`);
+                    timer.minecraft = 1;
+                    const setQuestionTime = () => timer.minecraft = 0;
+                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 5 }));
+                    twitchInfo.commands++;
+                }
+            }
             return;
         case '!q':
             if (username == channelName) twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
             else if (twitchInfo && twitchInfo.viewers < 100) {
-                if (ask.timer == 0 && message.includes('?') && message.length > 6) {
+                if (timer.ask == 0 && message.includes('?') && message.length > 6) {
                     twitch.say(`@${username}, ${tools.ChooseAnswer()}`);
-                    ask.timer = 1;
-                    const setQuestionTime = () => ask.timer = 0;
+                    timer.ask = 1;
+                    const setQuestionTime = () => timer.ask = 0;
                     setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 15 }));
                     twitchInfo.commands++;
                 }
@@ -470,16 +483,37 @@ twitchClient.on("message", (channel, userstate, message, self) => {
             return;
         case '!up':
         case '!uptime':
-            try {
-                if (twitchInfo.uptime != settings.offline(lang)) twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
-                else twitch.action(twitchInfo.uptime);
-            } catch { ; }
-            twitchInfo.commands++;
+            if (username == channelName) {
+                try {
+                    if (twitchInfo.uptime != settings.offline(twitchClient.lang)) twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
+                    else twitch.action(twitchInfo.uptime);
+                } catch { ; }
+            }
+            else if (twitchInfo && twitchInfo.viewers < 100) {
+                if (timer.uptime == 0 && message.includes('?') && message.length > 6) {
+                    try {
+                        if (twitchInfo.uptime != settings.offline(twitchClient.lang)) twitch.action(`| JOURLOY вещает на всю станцию уже ${twitchInfo.uptime} | Максимальное количество зрителей на стриме: ${twitchInfo.maxViewers} во время игры: ${twitchInfo.maxGame}`);
+                        else twitch.action(twitchInfo.uptime);
+                    } catch { ; }
+                    timer.uptime = 1;
+                    const setQuestionTime = () => timer.uptime = 0;
+                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 5 }));
+                    twitchInfo.commands++;
+                }
+            }
             return;
         case `!dis`:
         case `!discord`:
-            twitch.action(`| discord.gg/DVukvAu`);
-            twitchInfo.commands++;
+            if (username == channelName) twitch.action(`| discord.gg/DVukvAu`);
+            else if (twitchInfo && twitchInfo.viewers < 100) {
+                if (timer.diskord == 0 && message.includes('?') && message.length > 6) {
+                    twitch.action(`| discord.gg/DVukvAu`);
+                    timer.diskord = 1;
+                    const setQuestionTime = () => timer.diskord = 0;
+                    setTimeout(setQuestionTime, tools.ConvertTime({ seconds: 5 }));
+                    twitchInfo.commands++;
+                }
+            }
             return;
         case `!wow`:
         case `!wowC`:
@@ -508,7 +542,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case `!balance`:
             if (!twitch.checkMod(userstate)) return;
             const user = twitch.db.get(username);
-            twitch.say(`@${username}${settings.balance(lang)} ${user.balance.toString()} ${settings.valute(lang)}`);
+            twitch.say(`@${username}${settings.balance(twitchClient.lang)} ${user.balance.toString()} ${settings.valute(twitchClient.lang)}`);
             return;
     }
 
