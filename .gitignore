@@ -6,3 +6,4 @@ TwitchBot.code-workspace
 *.txt
 src/Data/chatters.json
 *.json
+*.code-workspace
