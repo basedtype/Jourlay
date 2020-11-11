@@ -1,4 +1,3 @@
-const fs = require("fs");
 const graph = require('./graph');
 
 function sleep(millis) {
