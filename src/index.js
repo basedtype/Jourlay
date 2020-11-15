@@ -58,48 +58,8 @@ setInterval(function () {
     try {
         tools.ClearCli();
         console.log(tools.TwitchIcon());
-        if (chatInfo.enable == 'logEnable') {
-            console.log(`
-Channel name: ${channelName}
-
-╔════ Stream info ════
-║ Uptime: ${twitchInfo.uptime}
-║ Viewers: ${twitchInfo.viewers}
-║ Game: ${twitchInfo.game}
-╠════ Stream stats ═══
-║ Max viewers: ${twitchInfo.maxViewers}
-║ Game with max viewers: ${twitchInfo.maxGame}
-╠═════ Chat stats ════
-║ Used commands: ${twitchInfo.commands}
-║ Chat clears: ${twitchInfo.chatClears}
-║ Bans: ${twitchInfo.bans}
-║ Timeouts: ${twitchInfo.timeouts}
-║ Messages: ${twitchInfo.messages}
-╚═════════════════════
-
-════════ Chat ════════
-${chat()}`)
-        } else {
-            console.log(`
-Channel name: ${channelName}
-
-╔════ Stream info ════
-║ Uptime: ${twitchInfo.uptime}
-║ Viewers: ${twitchInfo.viewers}
-║ Game: ${twitchInfo.game}
-╠════ Stream stats ═══
-║ Max viewers: ${twitchInfo.maxViewers}
-║ Game with max viewers: ${twitchInfo.maxGame}
-╠═════ Chat stats ════
-║ Used commands: ${twitchInfo.commands}
-║ Chat clears: ${twitchInfo.chatClears}
-║ Bans: ${twitchInfo.bans}
-║ Timeouts: ${twitchInfo.timeouts}
-║ Messages: ${twitchInfo.messages}
-╚═════════════════════`)
-        }
     } catch { ; }
-}, tools.ConvertTime({seconds: 5}));
+}, tools.ConvertTime({seconds: 0.1}));
 
 /**
  * Update uptime
