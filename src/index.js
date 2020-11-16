@@ -151,14 +151,6 @@ setInterval(function () {
     } catch { ; }
 }, tools.ConvertTime({ minutes: 50 }));
 
-function chat() {
-    for (let i = 0; i < 4; i++) {
-        if (chatInfo.log[i]) chatInfo.finish.push(chatInfo.log[i]);
-        else chatInfo.finish.push('');
-    }
-    return chatInfo.finish.join('\n');
-}
-
 /**
  * Repeat emotions in chat
  * @param {String} message
@@ -344,7 +336,7 @@ twitchClient.on("clearchat", (channel) => {
  * Reaction when user has been banned
  */
 twitchClient.on("ban", (channel, username, reason, userstate) => { 
-    twitchInfo.bans++; 
+    twitchInfo.bans++;
     twitch.db.delete(username);
 });
 
