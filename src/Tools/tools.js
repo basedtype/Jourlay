@@ -97,11 +97,14 @@ exports.ChooseHiMessage = function() {
  * @param {String} text 
  */
 exports.CheckString = function(message) {
+    return false;
     let check = false;
+    const allowArray = []
     for (i in message) {
         const buffer = Buffer.from(message[i]);
         const json = JSON.parse(JSON.stringify(buffer))
-        if (json.data.length > 2 && message[i] != '▬') check = true;
+        console.log(`${message[i]} | ${json.data.length}`)
+        if (json.data.length > 2 && !allowArray.includes(message[i])) check = true;
     }
     return check;
 }
