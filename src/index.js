@@ -393,7 +393,7 @@ twitchClient.on("message", (channel, userstate, message, self) => {
     if (CheckChangeSub(message, username) == true) return;
     if (InfoAboutGames(message, username) == true) return;
     if (CheckWhereIsKate(message, username) == true) return;
-    //if (CheckWhen(message, username) == true) return;
+    if (CheckWhen(message, username) == true) return;
     if (CheckSetPlus(message, username) == true) return;
 
     switch (messageSplit[0]) {
