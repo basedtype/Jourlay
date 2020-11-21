@@ -88,7 +88,7 @@ exports.ChooseAnswer = function() {
 }
 
 exports.ChooseHiMessage = function() {
-    const array = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'вот ваш напиток!', 'хеллоу!', 'хай!'];
+    const array = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'хеллоу!', 'хай!'];
     return `${array[this.RandomInt(0, array.length-1)]}`;
 }
 
