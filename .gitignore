@@ -7,3 +7,4 @@ TwitchBot.code-workspace
 src/Data/chatters.json
 *.json
 *.code-workspace
+*config.js
