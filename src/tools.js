@@ -23,6 +23,12 @@ const _ = {
             const element = array[randomInt(0, array.length-1)];
             return element;
         }
+    },
+    spliceArray: function(array, element) {
+        const newArray = [];
+
+        for (let i in array) if (array[i] !== element) newArray.push(array[i]);
+        return newArray;
     }
 }
 
@@ -36,7 +42,7 @@ const _twitch = {
             }
         }
         return false;
-    }
+    },
 }
 
 module.exports._ = _;
