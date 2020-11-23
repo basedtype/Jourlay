@@ -26,7 +26,16 @@ client.addChannel = (channelName) => {
     client.opts.channels.push(`#${channelName}`); 
     nodeDB.push('/joinChannels', {channels: client.opts.channels});
 }
-client.removeChannel = (channelName) => {}
+client.removeChannel = (channelName) => {
+    const nodeDB = new JsonDB(`Data/Channels/setting`, true, true, '/');
+    const channels = nodeDB.getData(`/joinChannels`);
+
+    const newArray = [];
+    for (let i in channels) if (channels[i] !== channelName) newArray.push(channels[i]);
+
+    client.opts.channels = newArray; 
+    nodeDB.push('/joinChannels', {channels: client.opts.channels});
+}
 
 client.botName = options.identity.username;
 client.lang = 'ru';
