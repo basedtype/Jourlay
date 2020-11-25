@@ -144,6 +144,16 @@ client.on('message', (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
     const messageSplit = message.split(' ');
 
+    if (channel === `#${client.botName}`) {
+        BotChannel(channel, userstate, message);
+        return;
+    }
+
+    if (channel === `#jourloy`) {
+        JOURLOYchannel(channel, userstate, message);
+        return;
+    }
+
     if (hiMessage(channel, message, username) === true) return;
     if (messageSplit[0] === '!q') {
         const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
@@ -340,6 +350,29 @@ function BotChannel(channel, userstate, message) {
 }
 
 function JOURLOYchannel(channel, userstate, message) {
+    const messageSplit = message.split(' ');
+    const username = userstate['display-name'].toLowerCase();
+
+    if (hiMessage(channel, message, username) === true) return;
+
+    if (messageSplit[0] === '!q') {
+        const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
+        if (username === 'jourloy') client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
+        else if (twitchInfo != null && twitchInfo.viewers < 1000) {
+            if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
+                client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
+                timers[channel].ask = 1;
+                const func = () => timers[channel].ask = 0;
+                setTimeout(func, _.convertTime(seconds=15));
+                twitchInfo.commands++;
+            }
+        }
+        return;
+    } else if (messageSplit[0] === '!up' || messageSplit[0] === '!uptime') {
+        if (twitchInfo[channel].uptime === 'оффлайн') client.say(channel, 'Стример сейчас оффлайн');
+        else client.say(channel, `Стример ведет трансляцию уже ${twitchInfo[channel].uptime}`);
+    }// else if (messageSplit[0] === '!')
+
 
 }
 
