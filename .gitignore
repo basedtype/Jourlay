@@ -9,3 +9,4 @@ src/Data/chatters.json
 *.code-workspace
 *config.js
 src/test.js
+tmi.js
