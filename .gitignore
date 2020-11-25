@@ -8,3 +8,4 @@ src/Data/chatters.json
 *.json
 *.code-workspace
 *config.js
+src/test.js
