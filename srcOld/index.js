@@ -477,7 +477,6 @@ twitchClient.on("message", (channel, userstate, message, self) => {
         case `!test`:
         case `!hack`:
             if (!twitch.checkMod(userstate)) return;
-            if (timer.)
             const allUsersNotSorted = twitch.db.get();
             const allUsersSorted = tools.sortArray(allUsersNotSorted);
             if (allUsersSorted.length > 0) {
