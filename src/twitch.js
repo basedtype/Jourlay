@@ -23,15 +23,17 @@ const client = new tmi.client(options);
 
 client.addChannel = (channelName) => { 
     const nodeDB = new JsonDB(`Data/Channels/setting`, true, true, '/');
-    client.opts.channels.push(`#${channelName}`); 
+    client.opts.channels.push(`#${channelName}`);
     nodeDB.push('/joinChannels', {channels: client.opts.channels});
 }
 client.removeChannel = (channelName) => {
     const nodeDB = new JsonDB(`Data/Channels/setting`, true, true, '/');
-    const channels = nodeDB.getData(`/joinChannels`);
+    const channels = nodeDB.getData(`/joinChannels`).channels;
+
+    console.log(channels)
 
     const newArray = [];
-    for (let i in channels) if (channels[i] !== channelName) newArray.push(channels[i]);
+    for (let i in channels) if (channels[i] !== `#${channelName}`) newArray.push(channels[i]);
 
     client.opts.channels = newArray; 
     nodeDB.push('/joinChannels', {channels: client.opts.channels});
@@ -40,7 +42,7 @@ client.removeChannel = (channelName) => {
 client.botName = options.identity.username;
 client.lang = 'ru';
 function onConnectedHandler() {
-    client.color("Red");
+    client.color("BlueViolet");
     console.log('>> Bot ready')
 }
 client.on('connected', onConnectedHandler);
