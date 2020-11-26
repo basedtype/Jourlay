@@ -1,0 +1,12 @@
+{
+    "joinChannels": {
+        "channels": [
+            "#jourlay",
+            "#jourloy"
+        ]
+    },
+    "#jourloy": {
+        "mod": true,
+        "id": "158466757"
+    }
+}
