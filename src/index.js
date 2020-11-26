@@ -116,7 +116,7 @@ client.on('chat', (channel, userstate, message, self) => {
                 intervals.push(`${channel}_uptime`)
             }
         }
-    } catch (err) { console.log(err) }
+    } catch {}
 })
 
 client.on('action', (channel, userstate, message, self) => {
@@ -193,6 +193,9 @@ client.on('message', (channel, userstate, message, self) => {
 })
 
 function BotChannel(channel, userstate, message) {
+    const messageSplit = message.split(' ');
+    const username = userstate['display-name'].toLowerCase();
+
     if (channel == `#${client.botName}` && messageSplit[0] === '!addChannel' && username === 'jourloy') {
         client.addChannel(messageSplit[1]);
         nodeDB.push(`/#${messageSplit[1]}`, {mod: false})
@@ -355,10 +358,11 @@ function JOURLOYchannel(channel, userstate, message) {
 
     if (hiMessage(channel, message, username) === true) return;
 
+    console.log(messageSplit[0])
+
     if (messageSplit[0] === '!q') {
         const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
-        if (username === 'jourloy') client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
-        else if (twitchInfo != null && twitchInfo.viewers < 1000) {
+        if (twitchInfo != null && twitchInfo[channel].viewers < 1000) {
             if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
                 client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
                 timers[channel].ask = 1;
@@ -368,12 +372,37 @@ function JOURLOYchannel(channel, userstate, message) {
             }
         }
         return;
-    } else if (messageSplit[0] === '!up' || messageSplit[0] === '!uptime') {
+    }
+    if (messageSplit[0] === '!up' || messageSplit[0] === '!uptime') {
         if (twitchInfo[channel].uptime === 'оффлайн') client.say(channel, 'Стример сейчас оффлайн');
         else client.say(channel, `Стример ведет трансляцию уже ${twitchInfo[channel].uptime}`);
-    }// else if (messageSplit[0] === '!')
+    } 
+    if (messageSplit[0] === '!followage') {
+        //if (username !== 'jourloy') return;
 
+        const userID = userstate['user-id'];
+        const myId = nodeDB.getData(`/${channel}`).id 
 
+        try {
+            client.api({
+                url: `https://api.twitch.tv/kraken/users/${userID}/follows/channels/${myId}`,
+                method: "GET",
+                headers: {
+                    'Accept': 'application/vnd.twitchtv.v5+json',
+                    "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                    'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+                }
+            }, (err, res, body) => {
+                let now = new Date();
+                let then = body.created_at;
+                let ms = moment(now).diff(moment(then));
+                let d = moment.duration(ms);
+                const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов и mm минут");
+
+                client.say(channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+            })
+        } catch (err) {console.log(err)}
+    }
 }
 
 function modChannel(channel, userstate, message) {
