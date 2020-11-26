@@ -4,6 +4,12 @@ const { userClass } = require(`./classes`);
 
 const DB = new JsonDB(`Data/Channels/setting`, true, true, '/');
 
+try { DB.getData('/joinChannels') } 
+catch { 
+    DB.push('/joinChannels', {});
+    console.log('>> Создание базы данных')
+}
+
 const options = {
     options: {
         debug: false
@@ -16,7 +22,7 @@ const options = {
         username: 'jourlay',
         password: 'oauth:q88yx70ba1uclc74xhxxv0lw3at9h7'
     },
-    channels:DB.getData('/joinChannels').channels || ['jourlay'],
+    channels:DB.getData('/joinChannels').channels,
 };
 
 const client = new tmi.client(options);
@@ -24,13 +30,12 @@ const client = new tmi.client(options);
 client.addChannel = (channelName) => { 
     const nodeDB = new JsonDB(`Data/Channels/setting`, true, true, '/');
     client.opts.channels.push(`#${channelName}`);
+    DB.push('/joinChannels', {channels: client.opts.channels});
     nodeDB.push('/joinChannels', {channels: client.opts.channels});
 }
 client.removeChannel = (channelName) => {
     const nodeDB = new JsonDB(`Data/Channels/setting`, true, true, '/');
     const channels = nodeDB.getData(`/joinChannels`).channels;
-
-    console.log(channels)
 
     const newArray = [];
     for (let i in channels) if (channels[i] !== `#${channelName}`) newArray.push(channels[i]);
@@ -47,6 +52,16 @@ function onConnectedHandler() {
 }
 client.on('connected', onConnectedHandler);
 client.connect();
+
+try { 
+    const data = DB.getData('/joinChannels').channels;
+    if (data == null || data.length === 0) {
+        client.addChannel('jourlay')
+        client.join('#jourlay');
+        console.log('>> Включение бота на его канале')
+    }
+} 
+catch (err) {console.log(err)}
 
 const twitch = {
     ban: (user) => { client.ban(user.channel, user.username, '[БОТ]') },
