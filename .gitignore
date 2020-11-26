@@ -4,8 +4,6 @@ node_modules
 .DS_Store
 TwitchBot.code-workspace
 *.txt
-src/Data/chatters.json
-*.json
 *.code-workspace
 *config.js
 src/test.js
