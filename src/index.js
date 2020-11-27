@@ -9,6 +9,7 @@ const twitchInfo = {}
 const arrays = {}
 const timers = {}
 const intervals = [];
+const followers = [];
 
 function hiMessage(channel, message, username) {
     if (timers[channel].hi == null || timers[channel].hi === 0) {
@@ -57,6 +58,7 @@ client.on('chat', (channel, userstate, message, self) => {
             hi: 0,
             ask: 0,
             basic: 0,
+            pc: 0,
         }
     }
 
@@ -115,6 +117,39 @@ client.on('chat', (channel, userstate, message, self) => {
                 }, _.convertTime(seconds=1));
                 intervals.push(`${channel}_uptime`)
             }
+        }
+    } catch {}
+
+    try {
+        const followerOn = nodeDB.getData(`/${channel}`).followNoftification;
+        if (followerOn === true && !intervals.includes(`${channel}_follows`)) {
+            const data = nodeDB.getData(`/${channel}`).id;
+            setInterval(function() {
+                twitchClient.api({
+                    url: `https://api.twitch.tv/kraken/channels/${data}/follows`,
+                    method: "GET",
+                    headers: {
+                        'Accept': 'application/vnd.twitchtv.v5+json',
+                        "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                        'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+                    }
+                }, (err, res, body) => {
+                    const newFollower = [];
+                    if (body && body.followers) {
+                        for (i in body.follows) newFollower.push(body.follows[i].user.display_name);
+                        if (followers.length == 0) followers = newFollower;
+                        else {
+                            for (i in newFollower) {
+                                if (!followers.includes(newFollower[i])) {
+                                    twitch.say(`@${newFollower[i]}, ${settings.follow(twitchClient.lang)}`);
+                                    followers = newFollower;
+                                }
+                            }
+                        }
+                    }
+                });
+            }, _.convertTime(seconds=10));
+            intervals.push(`${channel}_follows`);
         }
     } catch {}
 })
@@ -358,50 +393,66 @@ function JOURLOYchannel(channel, userstate, message) {
 
     if (hiMessage(channel, message, username) === true) return;
 
-    console.log(messageSplit[0])
+    switch(messageSplit[0]) {
+        case '!help':
+            client.action(channel, '==> !up - сколько идет трансляция | !pc - про комп | !q - задать вопрос боту | !followerage - сколько ты зафоловлен(а) на меня');
+            break;
 
-    if (messageSplit[0] === '!q') {
-        const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
-        if (twitchInfo != null && twitchInfo[channel].viewers < 1000) {
-            if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
-                client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
-                timers[channel].ask = 1;
-                const func = () => timers[channel].ask = 0;
-                setTimeout(func, _.convertTime(seconds=15));
-                twitchInfo.commands++;
-            }
-        }
-        return;
-    }
-    if (messageSplit[0] === '!up' || messageSplit[0] === '!uptime') {
-        if (twitchInfo[channel].uptime === 'оффлайн') client.say(channel, 'Стример сейчас оффлайн');
-        else client.say(channel, `Стример ведет трансляцию уже ${twitchInfo[channel].uptime}`);
-    } 
-    if (messageSplit[0] === '!followage') {
-        //if (username !== 'jourloy') return;
-
-        const userID = userstate['user-id'];
-        const myId = nodeDB.getData(`/${channel}`).id 
-
-        try {
-            client.api({
-                url: `https://api.twitch.tv/kraken/users/${userID}/follows/channels/${myId}`,
-                method: "GET",
-                headers: {
-                    'Accept': 'application/vnd.twitchtv.v5+json',
-                    "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-                    'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+        case '!q':
+            const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
+            if (twitchInfo != null && twitchInfo[channel].viewers < 1000) {
+                if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
+                    client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
+                    timers[channel].ask = 1;
+                    const func = () => timers[channel].ask = 0;
+                    setTimeout(func, _.convertTime(seconds=15));
+                    twitchInfo.commands++;
                 }
-            }, (err, res, body) => {
-                let now = new Date();
-                let then = body.created_at;
-                let ms = moment(now).diff(moment(then));
-                let d = moment.duration(ms);
-                const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов и mm минут");
+            }
+            break;
 
-                client.say(channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
-            })
-        } catch (err) {console.log(err)}
+        case '!pc':
+            if (twitchInfo && twitchInfo.viewers > 100) {
+                if (timers[channel].pc == 0 && message.includes('?') && message.length > 6) {
+                    client.action(channel, `| iMac 27" 5k retina. Играю на Windows`);
+                    timers[channel].pc = 1;
+                    const setQuestionTime = () => timers[channel].pc = 0;
+                    setTimeout(setQuestionTime, _.convertTime(seconds = 5));
+                }
+            } else client.action(channel, `| iMac 27" 5k retina. Играю на Windows`);
+            break;
+
+        case '!up':
+        case '!uptime':
+            if (twitchInfo[channel].uptime === 'оффлайн') client.say(channel, 'Стример сейчас оффлайн');
+            else client.say(channel, `Стример ведет трансляцию уже ${twitchInfo[channel].uptime}`);
+            break;
+
+        case '!followerage':
+            const userID = userstate['user-id'];
+            const myId = nodeDB.getData(`/${channel}`).id 
+
+            try {
+                client.api({
+                    url: `https://api.twitch.tv/kraken/users/${userID}/follows/channels/${myId}`,
+                    method: "GET",
+                    headers: {
+                        'Accept': 'application/vnd.twitchtv.v5+json',
+                        "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                        'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+                    }
+                }, (err, res, body) => {
+                    let now = new Date();
+                    let then = body.created_at;
+                    let ms = moment(now).diff(moment(then));
+                    let d = moment.duration(ms);
+                    const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов и mm минут");
+
+                    client.say(channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+                })
+            } catch {}
+            break;
+
     }
 }
 
