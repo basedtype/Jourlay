@@ -17,6 +17,7 @@ function hiMessage(channel, message, username) {
         const hello = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'хеллоу!', 'хай!'];
 
         if (_.checkString(message, '@')) return false;
+        if (_.checkString(message, 'передай')) return false;
         if (arrays[channel].hi.includes(username)) return false;
 
         for (let i in hi) {
