@@ -11,18 +11,24 @@ const timers = {}
 const intervals = [];
 const followers = [];
 
+/**
+ * Say hello message in a chat
+ * @param {string} channel 
+ * @param {string} message 
+ * @param {string} username 
+ */
 function hiMessage(channel, message, username) {
     if (timers[channel].hi == null || timers[channel].hi === 0) {
         const hi = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули', 'bonjour', 'бонжур'];
-        const hello = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'хеллоу!', 'хай!'];
+        const hello = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'хеллоу!', 'хай!', 'а я тебя ждал!'];
 
         if (_.checkString(message, '@')) return false;
-        if (_.checkString(message, 'передай')) return false;
+        if (_.checkString(message.toLowerCase(), 'передай')) return false;
         if (arrays[channel].hi.includes(username)) return false;
 
         for (let i in hi) {
             if (_.checkString(message.toLowerCase(), hi[i]) === true) {
-                client.say(channel, `@${username}, ${_.ramdom.elementFromArray(hello)} ShowOfHands ShowOfHands`);
+                client.say(channel, `@${username}, ${_.ramdom.elementFromArray(hello)} ShowOfHands`);
                 arrays[channel].hi.push(username);
                 timers[channel].hi = 1;
                 const func = () => timers[channel].hi = 0;
@@ -34,6 +40,92 @@ function hiMessage(channel, message, username) {
 
     return false;
 }
+
+/**
+ * Say answer on a ask
+ * @param {string} channel 
+ * @param {string} username 
+ * @param {number} length 
+ */
+function question(channel, username, length = 20) {
+    const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
+    if (twitchInfo != null && twitchInfo[channel].viewers < 1200) {
+        if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
+            client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
+            timers[channel].ask = 1;
+            const func = () => timers[channel].ask = 0;
+            setTimeout(func, _.convertTime(seconds=length));
+            twitchInfo.commands++;
+        }
+    }
+}
+
+/**
+ * How long play stream
+ * @param {string} channel 
+ */
+function uptime(channel) {
+    if (twitchInfo[channel].uptime === 'оффлайн') client.say(channel, 'Стример сейчас оффлайн');
+    else client.say(channel, `Стример ведет трансляцию уже ${twitchInfo[channel].uptime}. Я заметил, что на стриме сидело максимум ${twitchInfo[channel].maxViewers} зрителей.`);
+}
+
+/**
+ * How long you are follow this channel
+ * @param {string} channel 
+ * @param {{}} userstate 
+ */
+function followerAge(channel, userstate) {
+    const userID = userstate['user-id'];
+    const myId = nodeDB.getData(`/${channel}`).id 
+
+    try {
+        client.api({
+            url: `https://api.twitch.tv/kraken/users/${userID}/follows/channels/${myId}`,
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+            }
+        }, (err, res, body) => {
+            let now = new Date();
+            let then = body.created_at;
+            let ms = moment(now).diff(moment(then));
+            let d = moment.duration(ms);
+            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов и mm минут");
+
+            client.say(channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+        })
+    } catch {}
+}
+
+/**
+ * How long this user live on a twitch
+ * @param {string} channel 
+ * @param {string} username 
+ * @param {string} target
+ */
+function userAge(channel, username, target) {
+
+}
+
+twitchClient.on("raided", (channel, username, viewers) => {
+    switch(channel) {
+        case '#jourloy':
+            //client.action(channel, `==> ВНИМАНИЕ, НА НАС ПРОВОДИТСЯ РЕЙД. Во главе их войска стоит некий под именем "${username}". За ним пришло ${viewers} человек. ЧАТ! ПОДНЯЯЯЯЯЯТЬ ЩИТЫ`);
+            client.action(channel, `==> Огромное спасибо ${username} за то, что зарейдил, а также отдельное спасибо всем ${viewers} зрителям за то, что присоединились к рейду!`);
+            break;
+    }
+});
+
+twitchClient.on("clearchat", (channel) => {
+    switch(channel) {
+        case '#jourloy':
+            client.say(channel, 'Я первый Kappa');
+            break;
+    }
+});
+
 
 client.on('chat', (channel, userstate, message, self) => {
 
@@ -176,215 +268,53 @@ client.on('action', (channel, userstate, message, self) => {
 
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
-
     const username = userstate['display-name'].toLowerCase();
-    const messageSplit = message.split(' ');
-
-    if (channel === `#${client.botName}`) {
-        BotChannel(channel, userstate, message);
-        return;
-    }
-
-    if (channel === `#jourloy`) {
-        JOURLOYchannel(channel, userstate, message);
-        return;
-    }
-
     if (hiMessage(channel, message, username) === true) return;
-    if (messageSplit[0] === '!q') {
-        const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
-        if (username === 'jourloy') client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
-        else if (twitchInfo != null && twitchInfo.viewers < 1000) {
-            if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
-                client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
-                timers[channel].ask = 1;
-                const func = () => timers[channel].ask = 0;
-                setTimeout(func, _.convertTime(seconds=15));
-                twitchInfo.commands++;
-            }
-        }
-        return;
+
+    switch(channel) {
+        case `#${client.botName}`:
+            BotChannel(channel, userstate, message);
+            break;
+        
+        case `#jourloy`:
+            JOURLOYchannel(channel, userstate, message);
+            break;
+
+        case `#avatariaclub`:
+            AVATARIAchannel(channel, userstate, message);
+            break;
     }
-
-    if (timers[channel].basic == null || timers[channel].basic === 0) {
-        try {
-            const data = nodeDB.getData(`/${channel}_commands`);
-            const commands = data.command;
-            const answers = data.answer;
-
-            for (let i in commands) { 
-                if (commands[i] === message) {
-                    client.say(channel, answers[i]);
-                    timers[channel].basic = 1;
-                    const func = () => timers[channel].basic = 0;
-                    setTimeout(func, _.convertTime(seconds=30));
-                    twitchInfo.commands++;
-                }
-            }
-        } catch {}
-    }
-
-    if (twitch.mod(channel) === true) modChannel(channel, userstate, message);
-    else unmodChannel(channel, userstate, message);
 })
 
 function BotChannel(channel, userstate, message) {
+    if (username !== `jourloy`) return;
+
     const messageSplit = message.split(' ');
     const username = userstate['display-name'].toLowerCase();
 
-    if (channel == `#${client.botName}` && messageSplit[0] === '!addChannel' && username === 'jourloy') {
-        client.addChannel(messageSplit[1]);
-        nodeDB.push(`/#${messageSplit[1]}`, {mod: false})
-        client.color("Green");
-        client.action(channel, '==> канал добавлен');
-        client.color("BlueViolet");
-        client.join(`#${messageSplit[1]}`);
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!reg') {
-        client.addChannel(username);
-        nodeDB.push(`/#${username}`, {mod: false})
-        client.color("Green");
-        client.action(channel, '==> канал добавлен');
-        client.color("BlueViolet");
-        client.join(`#${username}`);
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!removeChannel' && username === 'jourloy') {
-        client.removeChannel(messageSplit[1]);
-        client.color("OrangeRed");
-        client.action(channel, '==> канал удален');
-        client.color("BlueViolet");
-        client.part(`#${messageSplit[1]}`);
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!addUser' && username === 'jourloy') {
-        try {
-            const data = nodeDB.getData('/allowusers').users;
-            data.push(messageSplit[1]);
-            nodeDB.push('allowusers', data);
+    switch(messageSplit[0]) {
+        case '!addChannel':
+            client.addChannel(messageSplit[1]);
+            nodeDB.push(`/#${messageSplit[1]}`, {mod: false})
             client.color("Green");
-            client.action(channel, '==> пользователь добавлен');
+            client.action(channel, '==> канал добавлен');
             client.color("BlueViolet");
-        } catch {
-            const data = [];
-            data.push(messageSplit[1]);
-            nodeDB.push('allowusers', data);
+            client.join(`#${messageSplit[1]}`);
+            break;
+        
+        case '!removeChannel':
+            client.removeChannel(messageSplit[1]);
+            client.color("OrangeRed");
+            client.action(channel, '==> канал удален');
+            client.color("BlueViolet");
+            client.part(`#${messageSplit[1]}`);
+            break;
+        
+        case '!ping':
             client.color("Green");
-            client.action(channel, '==> пользователь добавлен');
+            client.action(channel, '==> pong');
             client.color("BlueViolet");
-        }
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!removeUser' && username === 'jourloy') {
-        try {
-            const data = nodeDB.getData('/allowusers').users;
-            const newData = _.spliceArray(data, messageSplit[1]);
-            nodeDB.push('allowusers', newData);
-            client.color("OrangeRed");
-            client.action(channel, '==> пользователь удален');
-            client.color("BlueViolet");
-        } catch {
-            client.color("Red");
-            client.action(channel, '==> пользователь уже удален');
-            client.color("BlueViolet");
-        }
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!addCommand') {
-        const command = `!${messageSplit[1]}`;
-        let answer = [];
-        for (let i in messageSplit) if (i > 1) answer.push(messageSplit[i]);
-        answer = answer.join(' ');
-
-        try {
-            const data = nodeDB.getData(`/#${username}_commands`);
-            let users = [];
-            try {
-                const data = nodeDB.getData('/allowusers').users;
-                users = data;
-            } catch {};
-            if (!users.includes(username) && data.command.length == 5) {
-                client.color("Red");
-                client.action(channel, '==> кажется ты достиг(ла) лимита бесплатных команд. За 500р / месяц ты можешь получить безлимитное количество бесплатных команд, а за 1000р / месяц можно получить собственного бота (уникальное имя, любые команды, отправка сообщений по таймеру и прочее)');
-                client.color("BlueViolet");
-                return;
-            }
-            if (data.command.includes(command)) {
-                client.color("OrangeRed");
-                client.action(channel, '==> такая команда уже есть');
-                client.color("BlueViolet");
-                return;
-            }
-            data.command.push(command);
-            data.answer.push(answer);
-            nodeDB.push(`/#${username}_commands`, {command:  data.command, answer: data.answer});
-        } catch {
-            const comArray = [];
-            comArray.push(command);
-            const answArray = [];
-            answArray.push(answer);
-
-            nodeDB.push(`/#${username}_commands`, {command: comArray, answer: answArray});
-        }
-
-        client.color("Green");
-        client.action(channel, `==> команда добавлена. ${command} в своем чате`);
-        client.color("BlueViolet");
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!removeCommand') {
-        const command = `!${messageSplit[1]}`;
-
-        try {
-            const data = nodeDB.getData(`/#${username}_commands`);
-            console.log(command);
-            if (!data.command.includes(command)) {
-                client.color("Red");
-                client.action(channel, '==> такой команды нет');
-                client.color("BlueViolet");
-                return;
-            }
-            data.answer = _.spliceArray(data.answer, data.answer[data.command.indexOf(command)]);
-            data.command = _.spliceArray(data.command, command);
-
-            nodeDB.push(`/#${username}_commands`, {command:  data.command, answer: data.answer});
-
-            client.color("OrangeRed");
-            client.action(channel, `==> команда удалена`);
-            client.color("BlueViolet");
-        } catch {
-            client.color("OrangeRed");
-            client.action(channel, '==> такой команды нет');
-            client.color("BlueViolet");
-            return;
-        }
-    }
-
-    if (channel == `#${client.botName}` && messageSplit[0] === '!removeAllCommands') {
-        if (messageSplit[1] == null) {
-            try {
-                nodeDB.delete(`/#${username}_commands`)
-                client.color("OrangeRed");
-                client.action(channel, '==> все команды удалены');
-                client.color("BlueViolet");
-            } catch {
-                client.color("Red");
-                client.action(channel, '==> такой канал не найден');
-                client.color("BlueViolet");
-            }
-        } else if (messageSplit[1] != null && username === 'jourloy') {
-            try {
-                nodeDB.delete(`/#${messageSplit[1]}_commands`)
-                client.color("OrangeRed");
-                client.action(channel, '==> все команды удалены');
-                client.color("BlueViolet");
-            } catch {
-                client.color("Red");
-                client.action(channel, '==> такой канал не найден');
-                client.color("BlueViolet");
-            }
-        }
+            break;
     }
 }
 
@@ -392,7 +322,7 @@ function JOURLOYchannel(channel, userstate, message) {
     const messageSplit = message.split(' ');
     const username = userstate['display-name'].toLowerCase();
 
-    if (hiMessage(channel, message, username) === true) return;
+    if (_twitch.checkMessage(username, message) === true) return;
 
     switch(messageSplit[0]) {
         case '!help':
@@ -400,90 +330,53 @@ function JOURLOYchannel(channel, userstate, message) {
             break;
 
         case '!q':
-            const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
-            if (twitchInfo != null && twitchInfo[channel].viewers < 1000) {
-                if (timers[channel].ask == null || timers[channel].ask === 0 && message.includes('?') && message.length > 6) {
-                    client.say(channel, `@${username}, ${_.ramdom.elementFromArray(array)}`);
-                    timers[channel].ask = 1;
-                    const func = () => timers[channel].ask = 0;
-                    setTimeout(func, _.convertTime(seconds=15));
-                    twitchInfo.commands++;
-                }
-            }
+            question(channel, username);
             break;
 
         case '!pc':
             if (twitchInfo && twitchInfo.viewers > 100) {
                 if (timers[channel].pc == 0 && message.includes('?') && message.length > 6) {
-                    client.action(channel, `| iMac 27" 5k retina. Играю на Windows`);
+                    client.action(channel, `==> iMac 27" 5k retina. Играю на Windows`);
                     timers[channel].pc = 1;
                     const setQuestionTime = () => timers[channel].pc = 0;
                     setTimeout(setQuestionTime, _.convertTime(seconds = 5));
                 }
-            } else client.action(channel, `| iMac 27" 5k retina. Играю на Windows`);
+            } else client.action(channel, `==> iMac 27" 5k retina. Играю на Windows`);
             break;
+
+        case '!telegram':
+        case '!tg':
+            client.action(channel, '==> Вот ссылка на лучший телеграм канал, где можно узнать о всех новостях связанных со стримами: t.me/JourloyTwitch')
+            break
 
         case '!up':
         case '!uptime':
-            if (twitchInfo[channel].uptime === 'оффлайн') client.say(channel, 'Стример сейчас оффлайн');
-            else client.say(channel, `Стример ведет трансляцию уже ${twitchInfo[channel].uptime}`);
+            uptime(channel);
             break;
 
         case '!followerage':
-            const userID = userstate['user-id'];
-            const myId = nodeDB.getData(`/${channel}`).id 
-
-            try {
-                client.api({
-                    url: `https://api.twitch.tv/kraken/users/${userID}/follows/channels/${myId}`,
-                    method: "GET",
-                    headers: {
-                        'Accept': 'application/vnd.twitchtv.v5+json',
-                        "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-                        'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
-                    }
-                }, (err, res, body) => {
-                    let now = new Date();
-                    let then = body.created_at;
-                    let ms = moment(now).diff(moment(then));
-                    let d = moment.duration(ms);
-                    const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов и mm минут");
-
-                    client.say(channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
-                })
-            } catch {}
+            followerAge(channel, userstate);
             break;
 
     }
 }
 
-function modChannel(channel, userstate, message) {
-
+function AVATARIAchannel(channel, userstate, username) {
     const messageSplit = message.split(' ');
     const username = userstate['display-name'].toLowerCase();
 
-    let user = twitch.db.get(channel, username);
-    if (user === false) user = new userClass({
-        username: username,
-        channel: channel
-    });
-
-    if (_twitch.checkMessage(user, message) === true) return;
-
-    user.message++;
-    twitch.db.push(channel, user);
-}
-
-function unmodChannel(channel, userstate, message) {
-    const messageSplit = message.split(' ');
-    const username = userstate['display-name'].toLowerCase();
-
-    let user = twitch.db.get(channel, username);
-    if (user === false) user = new userClass({
-        username: username,
-        channel: channel
-    });
-
-    user.message++;
-    twitch.db.push(channel, user);
+    switch(messageSplit[0]) {
+        case '!q':
+            question(channel, username, 35);
+            break;
+        
+        case '!up':
+        case '!uptime':
+            uptime(channel);
+            break;
+        
+        case '!followerage':
+            followerAge(channel, userstate);
+            break;
+    }
 }
