@@ -1,7 +1,7 @@
 const { client, twitch } = require('./twitch');
 const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 
 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-'я бы всех Ни гресов в сарай загнал и сжег нахуй'];
+'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers '];
 
 function randomInt(min, max) {
     min = Math.ceil(min);
@@ -29,7 +29,8 @@ const _ = {
 
         for (let i in array) if (array[i] !== element) newArray.push(array[i]);
         return newArray;
-    }
+    },
+    clearCli: () => { console.log('\x1Bc') }
 }
 
 const _twitch = {
