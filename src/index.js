@@ -76,7 +76,8 @@ function uptime(channel) {
  */
 function followerAge(channel, userstate) {
     const userID = userstate['user-id'];
-    const myId = nodeDB.getData(`/${channel}`).id 
+    const myId = nodeDB.getData(`/${channel}`).id;
+    const username = userstate['display-name'].toLowerCase();
 
     try {
         client.api({
@@ -109,7 +110,7 @@ function userAge(channel, username, target) {
 
 }
 
-twitchClient.on("raided", (channel, username, viewers) => {
+client.on("raided", (channel, username, viewers) => {
     switch(channel) {
         case '#jourloy':
             //client.action(channel, `==> ВНИМАНИЕ, НА НАС ПРОВОДИТСЯ РЕЙД. Во главе их войска стоит некий под именем "${username}". За ним пришло ${viewers} человек. ЧАТ! ПОДНЯЯЯЯЯЯТЬ ЩИТЫ`);
@@ -118,13 +119,29 @@ twitchClient.on("raided", (channel, username, viewers) => {
     }
 });
 
-twitchClient.on("clearchat", (channel) => {
+client.on("clearchat", (channel) => {
     switch(channel) {
         case '#jourloy':
             client.say(channel, 'Я первый Kappa');
             break;
     }
 });
+
+setInterval(function() {
+    _.clearCli();
+
+    for (i in twitchInfo) {
+        const channel = twitchInfo[i];
+
+        console.log(`
+-------------
+Channel name: ${i}
+
+Uptime: ${channel.uptime}
+MaxViewers: ${channel.maxViewers}
+        `)
+    }
+}, _.convertTime(seconds=30))
 
 
 client.on('chat', (channel, userstate, message, self) => {
@@ -166,23 +183,6 @@ client.on('chat', (channel, userstate, message, self) => {
 
     try {
         const data = nodeDB.getData(`/${channel}`).id;
-        if (data == null) {
-            client.api({
-                url: `https://api.twitch.tv/kraken/users?login=${channel.slice(1)}`,
-                method: "GET",
-                headers: {
-                    'Accept': 'application/vnd.twitchtv.v5+json',
-                    "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-                    'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
-                }
-            }, (err, res, body) => {
-                nodeDB.push(`/${channel}`, {id: body.users[0]._id}, false)
-            })
-        }
-    } catch {}
-
-    try {
-        const data = nodeDB.getData(`/${channel}`).id;
         if (data != null && channel !== `#${client.botName}`) {
             if (!intervals.includes(`${channel}_uptime`)) {
                 setInterval(function () {
@@ -195,7 +195,7 @@ client.on('chat', (channel, userstate, message, self) => {
                             'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
                         }
                     }, (err, res, body) => {
-                        if (body.stream != null) {
+                        if (body != null && body.stream != null) {
                             twitchInfo[channel].viewers = body.stream.viewers;
                             if (twitchInfo[channel].viewers > twitchInfo[channel].maxViewers) twitchInfo[channel].maxViewers = body.stream.viewers;
                             let now = new Date();
@@ -210,6 +210,23 @@ client.on('chat', (channel, userstate, message, self) => {
                 }, _.convertTime(seconds=1));
                 intervals.push(`${channel}_uptime`)
             }
+        }
+    } catch {}
+
+    try {
+        const data = nodeDB.getData(`/${channel}`).id;
+        if (data == null) {
+            client.api({
+                url: `https://api.twitch.tv/kraken/users?login=${channel.slice(1)}`,
+                method: "GET",
+                headers: {
+                    'Accept': 'application/vnd.twitchtv.v5+json',
+                    "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                    'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+                }
+            }, (err, res, body) => {
+                nodeDB.push(`/${channel}`, {id: body.users[0]._id}, false)
+            })
         }
     } catch {}
 
@@ -269,7 +286,7 @@ client.on('action', (channel, userstate, message, self) => {
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
-    if (hiMessage(channel, message, username) === true) return;
+    //if (hiMessage(channel, message, username) === true) return;
 
     switch(channel) {
         case `#${client.botName}`:
@@ -287,10 +304,9 @@ client.on('message', (channel, userstate, message, self) => {
 })
 
 function BotChannel(channel, userstate, message) {
-    if (username !== `jourloy`) return;
-
     const messageSplit = message.split(' ');
     const username = userstate['display-name'].toLowerCase();
+    if (username !== `jourloy`) return;
 
     switch(messageSplit[0]) {
         case '!addChannel':
@@ -361,7 +377,7 @@ function JOURLOYchannel(channel, userstate, message) {
     }
 }
 
-function AVATARIAchannel(channel, userstate, username) {
+function AVATARIAchannel(channel, userstate, message) {
     const messageSplit = message.split(' ');
     const username = userstate['display-name'].toLowerCase();
 
