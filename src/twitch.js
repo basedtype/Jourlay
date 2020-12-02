@@ -48,7 +48,7 @@ client.botName = options.identity.username;
 client.lang = 'ru';
 function onConnectedHandler() {
     client.color("BlueViolet");
-    console.log('>> Bot ready')
+    console.log('>> Bot ready');
 }
 client.on('connected', onConnectedHandler);
 client.connect();
