@@ -279,8 +279,8 @@ client.on('action', (channel, userstate, message, self) => {
         twitch.timeout(user, _.convertTime(seconds = 20));
     }
 
-    user.message++;
-    twitch.db.push(channel, user);
+    //user.message++;
+    //twitch.db.push(channel, user);
 })
 
 client.on('message', (channel, userstate, message, self) => {
