@@ -127,7 +127,7 @@ client.on("clearchat", (channel) => {
     }
 });
 
-setInterval(function() {
+/* setInterval(function() {
     _.clearCli();
 
     for (i in twitchInfo) {
@@ -141,7 +141,7 @@ Uptime: ${channel.uptime}
 MaxViewers: ${channel.maxViewers}
         `)
     }
-}, _.convertTime(seconds=30))
+}, _.convertTime(seconds=30)) */
 
 
 client.on('chat', (channel, userstate, message, self) => {
@@ -286,7 +286,14 @@ client.on('action', (channel, userstate, message, self) => {
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
+    //if (uptime)
     //if (hiMessage(channel, message, username) === true) return;
+
+    if (twitchInfo[channel].uptime !== 0 && twitchInfo[channel].uptime !== 'оффлайн') {
+        if (twitchInfo[channel].uptime.split(' ')[0] === '0' && parseInt(twitchInfo[channel].uptime.split(' ')[3]) < 6) {
+            if (hiMessage(channel, message, username) === true) return;
+        }
+    }
 
     switch(channel) {
         case `#${client.botName}`:
