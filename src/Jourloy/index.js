@@ -1,5 +1,6 @@
 const { _, _twitch } = require('./tools');
 const { client, twitch } = require('./twitch');
+const { telegram } = require('./telegram');
 const moment = require('moment');
 
 /* PARAMS */
@@ -19,6 +20,17 @@ const timers = {
 const followers = [];
 
 /* INTERVALS */
+
+setInterval(function () {
+    if (uptime != null) {
+        const uptimeSplit = uptime.split(' ');
+
+        if (uptimeSplit[0] === 0 && uptimeSplit[2] === 0 && uptimeSplit[4] === 20) {
+            client.action(client.channel, `==> Наааачинаем!`);
+            telegram.noftification(null);
+        }
+    }
+}, _.convertTime(seconds=1));
 
 setInterval(function () {
     if (viewers > 5) client.action(channel, '==> Вот ссылка на лучший телеграм канал, где можно узнать о всех новостях связанных со стримами: t.me/JourloyTwitch');
@@ -42,7 +54,7 @@ setInterval(function () {
             let then = body.stream.created_at;
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
-            uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин.");
+            uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин. ss сек.");
         }
     })
 }, _.convertTime(seconds=1));
@@ -140,7 +152,6 @@ function question(username, message, length = 20) {
             timers.ask = 1;
             const func = () => timers.ask = 0;
             setTimeout(func, _.convertTime(seconds=length));
-            twitchInfo.commands++;
         }
     }
 }
