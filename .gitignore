@@ -6,6 +6,7 @@ TwitchBot.code-workspace
 *.txt
 *.code-workspace
 *config.js
+*conf.js
 src/test.js
 tmi.js
 Data/#*.json
