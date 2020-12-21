@@ -1,6 +1,5 @@
 const { _, _twitch } = require('./tools');
 const { client, twitch } = require('./twitch');
-const { telegram } = require('./telegram');
 const moment = require('moment');
 
 /* PARAMS */
@@ -20,17 +19,6 @@ const timers = {
 const followers = [];
 
 /* INTERVALS */
-
-setInterval(function () {
-    if (uptime != null) {
-        const uptimeSplit = uptime.split(' ');
-
-        if (uptimeSplit[0] === 0 && uptimeSplit[2] === 0 && uptimeSplit[4] === 20) {
-            client.action(client.channel, `==> Наааачинаем!`);
-            telegram.noftification(null);
-        }
-    }
-}, _.convertTime(seconds=1));
 
 setInterval(function () {
     if (viewers > 5) client.action(channel, '==> Вот ссылка на лучший телеграм канал, где можно узнать о всех новостях связанных со стримами: t.me/JourloyTwitch');
