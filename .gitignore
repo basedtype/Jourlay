@@ -10,3 +10,4 @@ TwitchBot.code-workspace
 src/test.js
 tmi.js
 Data/#*.json
+*.json
