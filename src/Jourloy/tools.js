@@ -1,8 +1,8 @@
-const { client, twitch } = require('./twitch');
+const { client, twitch } = require('./modules/twitch');
 
 const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 
 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers '];
+'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'bigfollows', 'тестJRJR'];
 
 function randomInt(min, max) {
     min = Math.ceil(min);
@@ -37,11 +37,9 @@ class _tool {
 }
 
 class _twitch {
-    static checkMessage(user, message) {
+    static checkMessage(message) {
         for (let i in bannedWords) {
             if (message.toLowerCase().indexOf(bannedWords[i]) !== -1) {
-                client.ban(user);
-                twitch.db.delete(user);
                 return true;
             }
         }
@@ -49,5 +47,5 @@ class _twitch {
     }
 }
 
-module.exports._ = _tool;
+module.exports._tool = _tool;
 module.exports._twitch = _twitch;
