@@ -1,3 +1,2 @@
-const { telegram } = require('./telegram');
-const { twitch } = require('./twitch');
+const { twitch } = require('./work/twitch');
 
