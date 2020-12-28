@@ -1,5 +1,3 @@
-const { client, twitch } = require('./modules/twitch');
-
 const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 
 'конча', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
 'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'bigfollows', 'тестJRJR'];
@@ -39,7 +37,7 @@ class _tool {
 class _twitch {
     static checkMessage(message) {
         for (let i in bannedWords) {
-            if (message.toLowerCase().indexOf(bannedWords[i]) !== -1) {
+            if (message.toLowerCase().includes(bannedWords[i]) === true) {
                 return true;
             }
         }
@@ -47,5 +45,5 @@ class _twitch {
     }
 }
 
-module.exports._tool = _tool;
+module.exports._ = _tool;
 module.exports._twitch = _twitch;
