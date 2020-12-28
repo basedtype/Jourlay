@@ -47,7 +47,7 @@ setInterval(function () {
 setInterval(function () {
     if (timers.socAD === 0) {
         if (viewers >= 5) {
-            client.action(channel, '==> У этого телеграм бота вы можете подключить персональные уведомления: @JOURLAY');
+            client.action(client.channel, '==> У этого телеграм бота вы можете подключить персональные уведомления: @JOURLAY');
             timers.socAD = 1;
             const func = () => timers.socAD = 0;
             setTimeout(func, _.convertTime(seconds=(60*30)));
@@ -60,7 +60,7 @@ setInterval(function () {
         const splitedUptime = uptime.split(' ');
 
         if (splitedUptime[0] === '0' && splitedUptime[2] === '03' && splitedUptime[4] === '30') {
-            client.say(client.channel, 'Стрим запустился, ура!');
+            client.say(client.channel, 'Всем привет, я пришел! :)');
             telegram.notification();
         }
     }
@@ -68,7 +68,7 @@ setInterval(function () {
 
 /* FUNCTIONS */
 
-function followerAge(userstate) {
+function followerAge(channel, userstate) {
     const userID = userstate['user-id'];
     const username = userstate['display-name'].toLowerCase();
 
@@ -86,7 +86,7 @@ function followerAge(userstate) {
             let then = body.created_at;
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
-            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов и mm минут");
+            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
 
             client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
         })
@@ -147,10 +147,6 @@ client.on("clearchat", (channel) => {
     client.say(channel, 'Я первый Kappa');
 });
 
-client.on('chat', (channel, userstate, message, self) => {
-    const username = userstate['display-name'].toLowerCase();
-})
-
 client.on('action', (channel, userstate, message, self) => {
     if (self) return;
 
@@ -158,6 +154,7 @@ client.on('action', (channel, userstate, message, self) => {
     if (twitch.isMod(channel, userstate) == true) return;
 
     twitch.timeout(username, _.convertTime(seconds = 10));
+    console.log(`Bot => Twitch => Timeout => ${username} (10 seconds)`);
 })
 
 client.on('message', (channel, userstate, message, self) => {
@@ -166,7 +163,7 @@ client.on('message', (channel, userstate, message, self) => {
 
     if (_twitch.checkMessage(message) === true) {
         client.ban(client.channel, username, '[ JOURLAY ]')
-        console.log(`Ban => ${username}`);
+        console.log(`Bot => Twitch => Ban => ${username}`);
     }
 
     if (hiMessage(channel, message, username) === true) return;
@@ -182,6 +179,7 @@ client.on('message', (channel, userstate, message, self) => {
             question(username, message);
             break;
 
+        case '!пк':
         case '!pc':
             if (viewers > 100) {
                 if (timers[channel].pc == 0 && message.includes('?') && message.length > 6) {
@@ -196,7 +194,13 @@ client.on('message', (channel, userstate, message, self) => {
         case '!telegram':
         case '!tg':
             client.action(channel, '==> У этого телеграм бота вы можете подключить персональные уведомления: @JOURLAY');
-            break
+            break;
+
+        case '!ютуб':
+        case '!youtube':
+        case '!yt':
+            client.action(channel, '==> Здесь вы можете посмотреть нарезки со стримов: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
+            break;
 
         case '!uptime':
         case '!up':
@@ -206,6 +210,5 @@ client.on('message', (channel, userstate, message, self) => {
         case '!followerage':
             followerAge(channel, userstate);
             break;
-
     }
 })
