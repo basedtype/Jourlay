@@ -1,5 +1,5 @@
 const tmi = require('tmi.js');
-const { _tool } = require('../tools');
+const { _ } = require('../tools');
 
 const options = {
     options: {
@@ -23,8 +23,7 @@ client.botName = options.identity.username;
 client.lang = 'ru';
 function onConnectedHandler() {
     client.color("BlueViolet");
-    _tool.clearCli();
-    console.log('>> Bot ready');
+    console.log('Bot => Twitch => Ready');
 }
 client.on('connected', onConnectedHandler);
 client.connect();
