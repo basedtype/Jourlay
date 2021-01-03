@@ -1,22 +1,30 @@
 const { client, twitch } = require('../modules/twitch');
-const { telegram } = require('../modules/telegram');
+const { telegram, bot } = require('../modules/telegram');
 const { _, _twitch } = require('../tools');
 const moment = require('moment');
+const { JsonDB } = require('node-json-db');
+
+const voteDB = new JsonDB('Data/votes', true, true, '/');
 
 /* PARAMS */
 
 let uptime = undefined;
 let viewers = 0;
 let maxViewers = 0;
+let voteName = undefined;
 
-const arrays = {
-    hi: []
+let arrays = {
+    hi: [],
+    vote: [],
 }
 const timers = {
     hi: 0,
     ask: 0,
     pc: 0,
     socAD: 0,
+    vote: 0,
+    bigBrain: 0,
+    roulette: 0,
 }
 
 /* INTERVALS */
@@ -44,7 +52,7 @@ setInterval(function () {
     })
 }, _.convertTime(seconds=1));
 
-setInterval(function () {
+/* setInterval(function () {
     if (timers.socAD === 0) {
         if (viewers >= 5) {
             client.action(client.channel, '==> У этого телеграм бота вы можете подключить персональные уведомления: @JOURLAY');
@@ -53,7 +61,7 @@ setInterval(function () {
             setTimeout(func, _.convertTime(seconds=(60*30)));
         }
     }
-}, _.convertTime(seconds=1));
+}, _.convertTime(seconds=1)); */
 
 setInterval(function () {
     if (uptime != undefined) {
@@ -98,9 +106,7 @@ function getUptime() {
     else client.say(client.channel, `Стример ведет трансляцию уже ${uptime}!`)
 }
 
-function hiMessage(message, username) {
-    const channel = client.channel;
-
+function hiMessage(channel, message, username) {
     if (timers.hi == null || timers.hi === 0) {
         const hi = ['привет', 'хелоу', 'хай', 'куку', 'ку-ку', 'здрасте', 'здрасти', 'здравствуйте', 'здравствуй', 'приветули', 'bonjour', 'бонжур'];
         const hello = ['привет!', 'приветули!', 'добро пожаловать!', 'вы посмотрите кто пришел!', 'хеллоу!', 'хай!', 'а я тебя ждал!'];
@@ -111,7 +117,7 @@ function hiMessage(message, username) {
 
         for (let i in hi) {
             if (_.checkString(message.toLowerCase(), hi[i]) === true) {
-                client.say(channel, `@${username}, ${_.ramdom.elementFromArray(hello)} ShowOfHands`);
+                client.say(channel, `@${username}, ${_.randomElementFromArray(hello)} ShowOfHands`);
                 arrays.hi.push(username);
                 timers.hi = 1;
                 const func = () => timers.hi = 0;
@@ -134,6 +140,18 @@ function question(username, message, length = 20) {
             const func = () => timers.ask = 0;
             setTimeout(func, _.convertTime(seconds=length));
         }
+    }
+}
+
+function bigBrain(username) {
+    const channel = client.channel;
+    const array = ['Не будешь врагом и будешь другом тогда', 'Самураев-сенсеев много, а твой - один', 'Не страшно, если целился высоко и не попал, страшно, если смотришь и не зафоловлен на канал', 'Зритель к стриму дорог', 'Колу не прольешь - не попьешь'];
+
+    if (timers.bigBrain == 0) {
+        client.say(channel, `@${username}, как говорил самурай-сенсей, "${_.randomElementFromArray(array)}"`);
+        timers.bigBrain = 1;
+        const func = () => timers.bigBrain = 0;
+        setTimeout(func, _.convertTime(minutes = 2));
     }
 }
 
@@ -171,10 +189,25 @@ client.on('message', (channel, userstate, message, self) => {
     const messageSplit = message.split(' ');
 
     switch(messageSplit[0]) {
-        case '!help':
-            client.action(channel, '==> !up - сколько идет трансляция | !pc - про комп | !tg - ссылка на бота | !q - задать вопрос боту | !followerage - сколько ты зафоловлен(а) на меня');
+        case '!1':
+        case '!2':
+        case '!3':
+        case '!4':
+        case '!5':
+        case '!6':
+            if (timers.vote == 1 && arrays.vote.includes(username) !== true) {
+                const vote = voteDB.getData(voteName).votes;
+                const choice = messageSplit[0].split('!')[1];
+                if (vote.length > (choice - 1)) return;
+                let count = 0;
+                for (let i in vote) {
+                    count++;
+                    if (count == choice) vote[i]++;
+                }
+                arrays.vote.push(username);
+            }
             break;
-
+        
         case '!q':
             question(username, message);
             break;
@@ -182,13 +215,13 @@ client.on('message', (channel, userstate, message, self) => {
         case '!пк':
         case '!pc':
             if (viewers > 100) {
-                if (timers[channel].pc == 0 && message.includes('?') && message.length > 6) {
-                    client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM`);
-                    timers[channel].pc = 1;
-                    const setQuestionTime = () => timers[channel].pc = 0;
+                if (timers.pc == 0 && message.includes('?') && message.length > 6) {
+                    client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM | Микрофон Razer Siren X`);
+                    timers.pc = 1;
+                    const setQuestionTime = () => timers.pc = 0;
                     setTimeout(setQuestionTime, _.convertTime(seconds = 5));
                 }
-            } else client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM`);
+            } else client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM | Микрофон Razer Siren X`);
             break;
 
         case '!telegram':
@@ -202,6 +235,12 @@ client.on('message', (channel, userstate, message, self) => {
             client.action(channel, '==> Здесь вы можете посмотреть нарезки со стримов: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
             break;
 
+        case '!ds':
+        case '!dis':
+        case '!discord':
+            client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
+            break;
+
         case '!uptime':
         case '!up':
             getUptime();
@@ -210,5 +249,72 @@ client.on('message', (channel, userstate, message, self) => {
         case '!followerage':
             followerAge(channel, userstate);
             break;
+        
+        case '!bigbrain':
+            bigBrain(username);
+            break;
+
+        case '!roulette':
+            const bullet = _.randomInt(1, 2);
+            const hole = _.randomInt(1, 2);
+
+            if (timers.roulette == 0) {
+                if (bullet === hole) client.say(channel, `@${username}, БАХ! Ты проиграл, хаха Kappa`);
+                else client.say(channel, `@${username}, удача пока что на твоей стороне`)
+
+                timers.roulette = 1;
+                const setQuestionTime = () => timers.roulette = 0;
+                setTimeout(setQuestionTime, _.convertTime(seconds = 30));
+            }
+
+            break;
     }
 })
+
+/* TELEGRAM */
+
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+    const message = msg.text.toLowerCase();
+
+    if (chatId == 466761645) {
+        if (message.includes('/vote')) {
+            if (timers.vote == 0) {
+                const splited = message.split('|');
+                client.color("Red");
+                client.action(client.channel, `==> ГОЛОСОВАНИЕ!`);
+                client.color("BlueViolet");
+                voteDB.push(`/${splited[1]}`, {}, true);
+                voteName = `/${splited[1]}`;
+                for (let i in splited) {
+                    if (i != 0 && i != 1) {
+                        let votes = {};
+                        votes[`${splited[i]}`] = 0;
+                        voteDB.push(`/${splited[1]}`, {votes}, false)
+                        client.action(client.channel, `==> !${i-1} - ${splited[i]}`);
+                    }
+                }
+                timers.vote = 1;
+                const setQuestionTime = () => {
+                    timers.vote = 0;
+                    arrays.vote = [];
+                }
+                setTimeout(setQuestionTime, _.convertTime(seconds = 30));
+
+                const voteResult = () => {
+                    const vote = voteDB.getData(voteName).votes;
+                    let maxVote = 0;
+                    let win = null;
+                    for (let i in vote) {
+                        if (vote[i] > maxVote) {
+                            maxVote = vote[i];
+                            win = i;
+                        }
+                    }
+                    client.action(client.channel, `==> Голосование подошло к концу. Победитель [${win}]. Проголосовали за этот вариант ${maxVote} юных самурая`);
+                }
+                setTimeout(voteResult, _.convertTime(seconds = 31));
+            }
+        }
+    }
+});
