@@ -32,6 +32,10 @@ class _tool {
     static clearCli() {
         console.log('\x1Bc');
     }
+
+    static randomInt(min, max) {
+        return randomInt(min, max);
+    }
 }
 
 class _twitch {
