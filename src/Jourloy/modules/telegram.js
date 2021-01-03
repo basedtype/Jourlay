@@ -63,3 +63,4 @@ bot.on('message', (msg) => {
 });
 
 module.exports.telegram = telegram;
+module.exports.bot = bot;
