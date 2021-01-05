@@ -1,5 +1,5 @@
 const { client, twitch } = require('../modules/twitch');
-const { telegram, bot } = require('../modules/telegram');
+const { telegram, tg } = require('../modules/telegram');
 const { _, _twitch } = require('../tools');
 const moment = require('moment');
 const { JsonDB } = require('node-json-db');
@@ -238,7 +238,7 @@ client.on('message', (channel, userstate, message, self) => {
         case '!ds':
         case '!dis':
         case '!discord':
-            client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
+            client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: discord.gg/zCATPVRp6p');
             break;
 
         case '!uptime':
@@ -255,8 +255,8 @@ client.on('message', (channel, userstate, message, self) => {
             break;
 
         case '!roulette':
-            const bullet = _.randomInt(1, 2);
-            const hole = _.randomInt(1, 2);
+            const bullet = _.randomInt(1, 4);
+            const hole = _.randomInt(1, 4);
 
             if (timers.roulette == 0) {
                 if (bullet === hole) client.say(channel, `@${username}, БАХ! Ты проиграл, хаха Kappa`);
@@ -273,7 +273,7 @@ client.on('message', (channel, userstate, message, self) => {
 
 /* TELEGRAM */
 
-bot.on('message', (msg) => {
+tg.on('message', (msg) => {
     const chatId = msg.chat.id;
     const message = msg.text.toLowerCase();
 
@@ -315,6 +315,12 @@ bot.on('message', (msg) => {
                 }
                 setTimeout(voteResult, _.convertTime(seconds = 31));
             }
+        } else if (message === '/nf') telegram.notification();
+    } else {
+        if (message === '/start') {
+            database.push(chatId);
+            telegram.send(chatId, 'Уведомления подключены')
+            console.log('Bot => Telegram => Noftification => Add new user');
         }
     }
 });
