@@ -4,7 +4,7 @@ const { _, _twitch } = require('../tools');
 const conf = require('./conf');
 
 const nodeDB = new JsonDB('Data/Users', true, true, '/');
-const bot = new TelegramBot(conf.token, {polling: true});
+const bot = new TelegramBot(conf.tg_token, {polling: true});
 _.clearCli()
 console.log('Bot => Telegram => Ready');
 
@@ -47,20 +47,5 @@ class telegram {
 
 try { nodeDB.getData('/chatID') } catch { database.create() }
 
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const message = msg.text.toLowerCase();
-
-    if (chatId == 466761645) {
-        if (message === '/nf') telegram.notification();
-    } else {
-        if (message === '/start') {
-            database.push(chatId);
-            telegram.send(chatId, 'Уведомления подключены')
-            console.log('Bot => Telegram => Noftification => Add new user');
-        }
-    }
-});
-
 module.exports.telegram = telegram;
-module.exports.bot = bot;
+module.exports.tg = bot;
