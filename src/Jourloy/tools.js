@@ -1,7 +1,5 @@
-const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 
-'конча', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'bigfollows', 'тестJRJR'];
-
+const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
+'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇'];
 function randomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -41,7 +39,7 @@ class _tool {
 class _twitch {
     static checkMessage(message) {
         for (let i in bannedWords) {
-            if (message.toLowerCase().includes(bannedWords[i]) === true) {
+            if (message.toLowerCase().indexOf(bannedWords[i]) != -1) {
                 return true;
             }
         }
