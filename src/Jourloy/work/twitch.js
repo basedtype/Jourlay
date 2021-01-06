@@ -16,6 +16,7 @@ let voteName = undefined;
 let arrays = {
     hi: [],
     vote: [],
+    users: [],
 }
 const timers = {
     hi: 0,
@@ -25,6 +26,23 @@ const timers = {
     vote: 0,
     bigBrain: 0,
     roulette: 0,
+}
+
+/* CLASS */
+
+class user {
+    constructor(username) {
+        this.username = username;
+        this.timers = {
+            ask: 0,
+            pc: 0,
+            socAD: 0,
+            bigBrain: 0,
+            roulette: 0,
+        }
+
+        arrays.users.push(this);
+    }
 }
 
 /* INTERVALS */
@@ -76,7 +94,15 @@ setInterval(function () {
 
 /* FUNCTIONS */
 
-function followerAge(channel, userstate) {
+function userClass(username) {
+    for (let i in arrays.users) {
+        if (username === arrays.users[i].username) return arrays.users[i];
+    }
+
+    return new user(username);
+}
+
+function followerAge(userstate) {
     const userID = userstate['user-id'];
     const username = userstate['display-name'].toLowerCase();
 
@@ -90,6 +116,11 @@ function followerAge(channel, userstate) {
                 'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
             }
         }, (err, res, body) => {
+            console.log(body)
+            if (body.message && body.message === 'Follow not found') {
+                client.say(client.channel, `@${username}, а ты зафоловлен?`);
+                return;
+            }
             let now = new Date();
             let then = body.created_at;
             let ms = moment(now).diff(moment(then));
@@ -130,15 +161,49 @@ function hiMessage(channel, message, username) {
     return false;
 }
 
-function question(username, message, length = 20) {
+function boyfriend(channel, message, username) {
+    const boy = ['парень кати'];
+
+    for (let i in boy) {
+        if (message.includes(boy[i]) === true) {
+            client.say(channel, `@${username}, ну елки-палки. Он не парень Кати, он Джулай!`);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function question(user, message) {
     const channel = client.channel;
-    const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','без шансов','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
-    if (viewers < 1200) {
-        if (timers.ask == null || timers.ask === 0 && message.includes('?') && message.length > 6) {
+    const username = user.username;
+
+    const allowList = ['jourloy'];
+    const banList = [];
+
+    if (allowList.includes(username) === true) {
+        const array = ['Я не могу ответить на этот вопрос'];
+        if (user.timers.ask === 0 && message.includes('?') && message.length > 6) {
+            client.say(channel, `@${username} -сан, ${_.randomElementFromArray(array)}`);
+            user.timers.ask = 1;
+            const func = () => user.timers.ask = 0;
+            setTimeout(func, _.convertTime(seconds=10));
+        }
+    } else if (banList.includes(username) === true) {
+        const array = ['я не хочу отвечать','не знаю','странный вопрос','может сменим тему?',];
+        if (user.timers.ask === 0 && message.includes('?') && message.length > 6) {
             client.say(channel, `@${username}, ${_.randomElementFromArray(array)}`);
-            timers.ask = 1;
-            const func = () => timers.ask = 0;
-            setTimeout(func, _.convertTime(seconds=length));
+            user.timers.ask = 1;
+            const func = () => user.timers.ask = 0;
+            setTimeout(func, _.convertTime(seconds=50));
+        }
+    } else {
+        const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
+        if (user.timers.ask === 0 && message.includes('?') && message.length > 6) {
+            client.say(channel, `@${username}, ${_.randomElementFromArray(array)}`);
+            user.timers.ask = 1;
+            const func = () => user.timers.ask = 0;
+            setTimeout(func, _.convertTime(seconds=20));
         }
     }
 }
@@ -152,6 +217,58 @@ function bigBrain(username) {
         timers.bigBrain = 1;
         const func = () => timers.bigBrain = 0;
         setTimeout(func, _.convertTime(minutes = 2));
+    }
+}
+
+function roulette(user) {
+    const channel = client.channel;
+    const username = user.username;
+
+    const allowList = ['jourloy'];
+    const banList = [];
+
+    if (allowList.includes(username) === true) {
+        const bullet = _.randomInt(1, 4);
+        const hole = _.randomInt(1, 4);
+
+        if (user.timers.roulette == 0) {
+            if (bullet === hole) client.say(channel, `@${username} -сан, пуля должна была попасть в вас, но я подставился и вы в безопасности`);
+            else client.say(channel, `@${username} -сан, удача пока что на вашей стороне`)
+
+            user.timers.roulette = 1;
+            const setQuestionTime = () => user.timers.roulette = 0;
+            setTimeout(setQuestionTime, _.convertTime(seconds = 10));
+        }
+    } else if (banList.includes(username) === true) {
+        const bullet = _.randomInt(1, 20);
+        const hole = _.randomInt(1, 20);
+
+        if (user.timers.roulette == 0) {
+            if (bullet === hole) {
+                client.say(channel, `@${username}, на этот раз тебе повезло`);
+                twitch.timeout(username, 20)
+            }
+            else client.say(channel, `@${username}, выстрел был совершен, но пистолет выпустил не одну, а ${bullet + hole} пуль, сорян Kappa`)
+
+            user.timers.roulette = 1;
+            const setQuestionTime = () => user.timers.roulette = 0;
+            setTimeout(setQuestionTime, _.convertTime(seconds = 50));
+        }
+    } else {
+        const bullet = _.randomInt(1, 12);
+        const hole = _.randomInt(1, 12);
+
+        if (user.timers.roulette == 0) {
+            if (bullet === hole) {
+                client.say(channel, `@${username}, БАХ! Ты проиграл(а), хаха Kappa`);
+                twitch.timeout(username, 2);
+            }
+            else client.say(channel, `@${username}, удача пока что на твоей стороне`)
+
+            user.timers.roulette = 1;
+            const setQuestionTime = () => user.timers.roulette = 0;
+            setTimeout(setQuestionTime, _.convertTime(seconds = 30));
+        }
     }
 }
 
@@ -179,11 +296,15 @@ client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
 
+    const user = userClass(username);
+
     if (_twitch.checkMessage(message) === true) {
-        client.ban(client.channel, username, '[ JOURLAY ]')
-        console.log(`Bot => Twitch => Ban => ${username}`);
+        //client.ban(client.channel, username, '[ JOURLAY ]')
+        client.timeout(client.channel, username, 20);
+        console.log(`Bot => Twitch => Timeout => ${username}`);
     }
 
+    if (boyfriend(channel, message, username) === true) return;
     if (hiMessage(channel, message, username) === true) return;
 
     const messageSplit = message.split(' ');
@@ -209,7 +330,7 @@ client.on('message', (channel, userstate, message, self) => {
             break;
         
         case '!q':
-            question(username, message);
+            question(user, message);
             break;
 
         case '!пк':
@@ -247,7 +368,7 @@ client.on('message', (channel, userstate, message, self) => {
             break;
 
         case '!followerage':
-            followerAge(channel, userstate);
+            followerAge(userstate);
             break;
         
         case '!bigbrain':
@@ -255,18 +376,7 @@ client.on('message', (channel, userstate, message, self) => {
             break;
 
         case '!roulette':
-            const bullet = _.randomInt(1, 4);
-            const hole = _.randomInt(1, 4);
-
-            if (timers.roulette == 0) {
-                if (bullet === hole) client.say(channel, `@${username}, БАХ! Ты проиграл, хаха Kappa`);
-                else client.say(channel, `@${username}, удача пока что на твоей стороне`)
-
-                timers.roulette = 1;
-                const setQuestionTime = () => timers.roulette = 0;
-                setTimeout(setQuestionTime, _.convertTime(seconds = 30));
-            }
-
+            roulette(user, channel);
             break;
     }
 })
