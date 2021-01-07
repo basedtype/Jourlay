@@ -1,5 +1,6 @@
 const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇'];
+'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫'];
+
 function randomInt(min, max) {
     min = Math.ceil(min);
     max = Math.floor(max);
