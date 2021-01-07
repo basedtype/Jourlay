@@ -179,7 +179,7 @@ function question(user, message) {
     const username = user.username;
 
     const allowList = ['jourloy'];
-    const banList = [];
+    const banList = ['anna_scorpion05'];
 
     if (allowList.includes(username) === true) {
         const array = ['Я не могу ответить на этот вопрос'];
@@ -189,15 +189,8 @@ function question(user, message) {
             const func = () => user.timers.ask = 0;
             setTimeout(func, _.convertTime(seconds=10));
         }
-    } else if (banList.includes(username) === true) {
-        const array = ['я не хочу отвечать','не знаю','странный вопрос','может сменим тему?',];
-        if (user.timers.ask === 0 && message.includes('?') && message.length > 6) {
-            client.say(channel, `@${username}, ${_.randomElementFromArray(array)}`);
-            user.timers.ask = 1;
-            const func = () => user.timers.ask = 0;
-            setTimeout(func, _.convertTime(seconds=50));
-        }
-    } else {
+    } else if (banList.includes(username) === true) return
+    else {
         const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
         if (user.timers.ask === 0 && message.includes('?') && message.length > 6) {
             client.say(channel, `@${username}, ${_.randomElementFromArray(array)}`);
@@ -225,7 +218,7 @@ function roulette(user) {
     const username = user.username;
 
     const allowList = ['jourloy'];
-    const banList = [];
+    const banList = ['anna_scorpion05'];
 
     if (allowList.includes(username) === true) {
         const bullet = _.randomInt(1, 4);
@@ -239,22 +232,8 @@ function roulette(user) {
             const setQuestionTime = () => user.timers.roulette = 0;
             setTimeout(setQuestionTime, _.convertTime(seconds = 10));
         }
-    } else if (banList.includes(username) === true) {
-        const bullet = _.randomInt(1, 20);
-        const hole = _.randomInt(1, 20);
-
-        if (user.timers.roulette == 0) {
-            if (bullet === hole) {
-                client.say(channel, `@${username}, на этот раз тебе повезло`);
-                twitch.timeout(username, 20)
-            }
-            else client.say(channel, `@${username}, выстрел был совершен, но пистолет выпустил не одну, а ${bullet + hole} пуль, сорян Kappa`)
-
-            user.timers.roulette = 1;
-            const setQuestionTime = () => user.timers.roulette = 0;
-            setTimeout(setQuestionTime, _.convertTime(seconds = 50));
-        }
-    } else {
+    } else if (banList.includes(username) === true) return;
+    else {
         const bullet = _.randomInt(1, 12);
         const hole = _.randomInt(1, 12);
 
@@ -300,12 +279,18 @@ client.on('message', (channel, userstate, message, self) => {
 
     if (_twitch.checkMessage(message) === true) {
         //client.ban(client.channel, username, '[ JOURLAY ]')
-        client.timeout(client.channel, username, 20);
+        if (twitch.isMod(userstate) === true) {
+            client.unmod(channel, username);
+            client.timeout(client.channel, username, 1);
+            client.mod(channel, username);
+        } else {
+            client.timeout(client.channel, username, 20);
+        }
         console.log(`Bot => Twitch => Timeout => ${username}`);
     }
 
     if (boyfriend(channel, message, username) === true) return;
-    if (hiMessage(channel, message, username) === true) return;
+    //if (hiMessage(channel, message, username) === true) return;
 
     const messageSplit = message.split(' ');
 
