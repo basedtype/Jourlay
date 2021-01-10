@@ -32,12 +32,12 @@ class telegram {
         bot.sendMessage(chatID, `${message}`);
     }
 
-    static notification() {
+    static notification(game) {
         const chatID = nodeDB.getData('/chatID').ID;
         console.log('Bot => Telegram => Noftification => Start');
         for (let i in chatID) {
-            if (chatID !== 466761645) {
-                this.send(chatID[i], 'Ку-ку! Тут стрим запустился, а тебя нет среди зрителей. Залетай => twitch.com/jourloy');
+            if (chatID != 466761645) {
+                this.send(chatID[i], `Привет! А стример запускает ${game}, давай присоединяйся, посмотрим на стрим вместе ==> twitch.com/jourloy`);
                 console.log(`Bot => Telegram => Noftification => Send (${chatID[i]})`);
             } else console.log(`Bot => Telegram => Noftification => *Send (466761645)*`);
         }
