@@ -27,6 +27,17 @@ class database {
     }
 }
 
+bot.on('message', msg => {
+    const chatId = msg.chat.id;
+    const message = msg.text.toLowerCase();
+    
+    if (message == '/start') {
+        database.push(chatId);
+        telegram.send(chatId, 'Уведомления подключены')
+        console.log('Bot => Telegram => Noftification => Add new user');
+    }
+})
+
 class telegram {
     static send(chatID, message) {
         bot.sendMessage(chatID, `${message}`);
