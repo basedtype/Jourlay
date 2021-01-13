@@ -90,12 +90,12 @@ setInterval(function () {
 
 /* FUNCTIONS */
 
-function userClass(username) {
+function userClass(username, id) {
     for (let i in arrays.users) {
         if (username === arrays.users[i].username) return arrays.users[i];
     }
 
-    return new user(username);
+    return new user(username, id);
 }
 
 function followerAge(user) {
@@ -135,6 +135,33 @@ function followerAge(user) {
             } else client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
 
             user.counters.followerAge++;
+        })
+    } catch {}
+}
+
+function watchTime(user) {
+    const userID = user.id;
+    const username = user.username;
+
+    const banList = ['anna_scorpion05'];
+
+    try {
+        client.api({
+            url: `https://api.twitch.tv/kraken/streams/158466757`,
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+            }
+        }, (err, res, body) => {
+            console.log(body);
+
+            let now = new Date();
+            let then = body.created_at;
+            let ms = moment(now).diff(moment(then));
+            let d = moment.duration(ms);
+            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
         })
     } catch {}
 }
@@ -349,6 +376,11 @@ client.on('message', (channel, userstate, message, self) => {
         case '!roulette':
             roulette(user, channel);
             break;
+
+        case '!test_new_mega_function':
+            if (twitch.isMod(userstate) != true) return;
+            watchTime(user);
+            break;
     }
 })
 
@@ -375,12 +407,7 @@ tg.on('message', (msg) => {
     const message = msg.text.toLowerCase();
 
     if (chatId == 466761645) {
-        if (message === '/nf') telegram.notification();
-    } else {
-        if (message === '/start') {
-            database.push(chatId);
-            telegram.send(chatId, 'Уведомления подключены')
-            console.log('Bot => Telegram => Noftification => Add new user');
-        }
+        if (message == '/nf') telegram.notification();
+        if (message == 'ping') tg.sendMessage(chatId, 'pong');
     }
 });
