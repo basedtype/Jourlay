@@ -20,13 +20,6 @@ let noftification = null;
 
 /* FUNCTIONS */
 
-function generateString(length) {
-    const chars = '0123456789abcdefghij';
-    let result = '';
-    for (let i = 0; i < length; i++) result += chars[Math.floor(Math.random() * chars.length)];
-    return result;
-}
-
 /* INTERVALS */
 
 setInterval(function () {
