@@ -275,7 +275,7 @@ function roulette(user) {
         if (user.timers.roulette == 0) {
             if (bullet === hole) {
                 client.say(channel, `@${username}, БАХ! Ты проиграл(а), хаха Kappa`);
-                twitch.timeout(username, 2);
+                client.timeout(channel, username, 20, 'Пуля не промахнулась');
             }
             else client.say(channel, `@${username}, удача пока что на твоей стороне`)
 
@@ -284,6 +284,20 @@ function roulette(user) {
             setTimeout(setQuestionTime, _.convertTime(seconds = 30));
         }
     }
+}
+
+function deleteMessage(message) {
+    const inList = ['pr_'];
+    const list = ['ava', 'аватария', 'ава'];
+
+    for (let i in inList) {
+        if (message.indexOf(inList[i]) === true) return true;
+    }
+
+    for (let i in list) {
+        if (message.includes(list[i]) !== -1) return true;
+    }
+    return false;    
 }
 
 /* REACTIONS */
@@ -313,6 +327,14 @@ client.on('message', (channel, userstate, message, self) => {
 
     const user = userClass(username, id);
 
+    if (deleteMessage === true) {
+        const id = userstate['id'];
+
+        client.deletemessage(channel, id);
+        return;
+    }
+
+
     if (_twitch.checkMessage(message) === true) {
         if (twitch.isMod(userstate) === true) {
             client.say(channel, `@${username}, ну зачееееем? BibleThump BibleThump`)
@@ -320,6 +342,7 @@ client.on('message', (channel, userstate, message, self) => {
             client.timeout(client.channel, username, 20);
         }
         console.log(`Bot => Twitch => Timeout => ${username}`);
+        return;
     }
 
     if (boyfriend(channel, message, username) === true) return;
