@@ -11,10 +11,10 @@ const channelsID = {
     moderatorOnly: '748407718414385183',
     create: {
         duo: '798853439610159146',
+        trio: '799559562909974538',
+        squad_4: '799559861285158982',
+        squad_5: '799560553525542922',
     }
-}
-const arrays = {
-    channels: [],
 }
 let noftification = null;
 
@@ -23,6 +23,22 @@ let noftification = null;
 /* INTERVALS */
 
 setInterval(function () {
+    const deleteFunc = (channelNew) => {
+        if (channelNew.members.array().length === 0) {
+            channelNew.delete();
+            return true;
+        }
+        return false;
+    }
+
+    const repeatCheck = function(channelNew) {
+        setTimeout(function() {deleteChannel(channelNew)}, 1000*1);
+    }
+
+    const deleteChannel = function(channelNew) {
+        if (deleteFunc(channelNew) === false) repeatCheck(channelNew);
+    };
+
     client.channels.fetch(channelsID.create.duo).then(channel => {
         if (channel.full == null || channel.full === false) return;
 
@@ -48,23 +64,99 @@ setInterval(function () {
                 client.channels.fetch(idNew).then(channel => {
                     channelNew = channel;
                     user.setChannel(channelNew);
+                    repeatCheck(channelNew);
+                });
+            });
+        })
+    });
 
-                    const deleteFunc = (channelNew) => {
-                        if (channelNew.members.array().length === 0) {
-                            channelNew.delete();
-                            return true;
-                        }
-                        return false;
-                    }
+    client.channels.fetch(channelsID.create.trio).then(channel => {
+        if (channel.full == null || channel.full === false) return;
 
-                    const repeatCheck = function(channelNew) {
-                        setTimeout(function() {deleteChannel(channelNew)}, 1000*1);
-                    }
+        const parent = channel.parent;
+        const guild = channel.guild;
+        const name = `TRIO`;
+        const options = {
+            type: 'voice',
+            userLimit: 3,
+            position: channel.position+1,
+            parent: parent,
+        }
+        
+        let user = channel.members.array()[0].user;
 
-                    const deleteChannel = function(channelNew) {
-                        if (deleteFunc(channelNew) === false) repeatCheck(channelNew);
-                    };
+        guild.members.fetch(user.id).then(data => {
+            user = data.guild.voiceStates.cache.array()[0];
+            let idNew = null;
 
+            guild.channels.create(name, options).then(data => {
+                idNew = data.id;
+                let channelNew = undefined;
+                client.channels.fetch(idNew).then(channel => {
+                    channelNew = channel;
+                    user.setChannel(channelNew);
+                    repeatCheck(channelNew);
+                });
+            });
+        })
+    });
+
+    client.channels.fetch(channelsID.create.squad_4).then(channel => {
+        if (channel.full == null || channel.full === false) return;
+
+        const parent = channel.parent;
+        const guild = channel.guild;
+        const name = `SQUAD`;
+        const options = {
+            type: 'voice',
+            userLimit: 4,
+            position: channel.position+1,
+            parent: parent,
+        }
+        
+        let user = channel.members.array()[0].user;
+
+        guild.members.fetch(user.id).then(data => {
+            user = data.guild.voiceStates.cache.array()[0];
+            let idNew = null;
+
+            guild.channels.create(name, options).then(data => {
+                idNew = data.id;
+                let channelNew = undefined;
+                client.channels.fetch(idNew).then(channel => {
+                    channelNew = channel;
+                    user.setChannel(channelNew);
+                    repeatCheck(channelNew);
+                });
+            });
+        })
+    });
+
+    client.channels.fetch(channelsID.create.squad_5).then(channel => {
+        if (channel.full == null || channel.full === false) return;
+
+        const parent = channel.parent;
+        const guild = channel.guild;
+        const name = `SQUAD`;
+        const options = {
+            type: 'voice',
+            userLimit: 5,
+            position: channel.position+1,
+            parent: parent,
+        }
+        
+        let user = channel.members.array()[0].user;
+
+        guild.members.fetch(user.id).then(data => {
+            user = data.guild.voiceStates.cache.array()[0];
+            let idNew = null;
+
+            guild.channels.create(name, options).then(data => {
+                idNew = data.id;
+                let channelNew = undefined;
+                client.channels.fetch(idNew).then(channel => {
+                    channelNew = channel;
+                    user.setChannel(channelNew);
                     repeatCheck(channelNew);
                 });
             });
