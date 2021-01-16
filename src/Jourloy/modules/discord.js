@@ -84,17 +84,92 @@ setInterval(function () {
 
 /* REACTIONS */
 
+client.on('message', msg => {
+    if (msg.author.bot) return;
+    const channel = msg.channel;
+
+    if (channel.name === 'moderator-only') {
+        if (msg.content.startsWith('!test')) discord.noftification('Satisfactory');
+    } else if (channel.name === 'bot-create-embed') {
+        if (msg.content === '!ex') {
+            channel.send('channel id | title | description')
+        } else {
+            const text = msg.content;
+            const textSplited = text.split('|');
+
+            client.channels.fetch(textSplited[0]).then(ch => {
+                const embed = new Discord.MessageEmbed()
+                .setTitle(textSplited[1])
+                .setColor(0xff0000)
+                .setDescription(textSplited[2]);
+                ch.send(embed);
+            });
+        }
+    } else if (channel.name === 'bot-create-free-game') {
+        const text = msg.content;
+        if (text === '!ex') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`Пример`)
+            .setColor(0x00ff00)
+            .setDescription(`Игра | Описание | Где | Как забрать | Ссылка | Минимальные характеристики ПК`);
+            channel.send(embed);
+        } else {
+            const textSplited = text.split('|');
+
+            const game = textSplited[0];
+            const description = textSplited[1];
+            const source = textSplited[2];
+            const how = textSplited[3];
+            const url = textSplited[4];
+            const need = textSplited[5];
+            const destChannel = '799554767713206302';
+
+            client.channels.fetch(destChannel).then(ch => {
+                if (ch == null) channel.send('ERR_CH_IS_NULL');
+                else {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`${game}`)
+                    .setColor(0x00ff00)
+                    .setURL(url)
+                    .setDescription(description)
+                    .addFields(
+                        { name: 'Где раздается', value: source },
+                        { name: 'Что сделать, чтобы получить', value: how},
+                        { name: 'Минимальные характеристики', value: need},
+                    );
+                    ch.send(embed);
+                }
+            });
+        }
+    } else if (channel.name === 'bot') {
+        const text = msg.content;
+        const textSplited = text.split(' ');
+
+        if (textSplited[0] === '!test_mention') {
+            const message = `СТРИМ НА КАНАЛЕ | НАЧИНАЕМ С TEST
+Привет, @everyone. А у нас тут стрим, давай подрубайся, а то без тебя не начать
+
+Ссылка: https://www.twitch.tv/jourloy`;
+            channel.send(message);
+        }
+    }
+
+    if (msg.content.startsWith('!clear') && msg.author.username === 'JOURLOY') {
+        // remove all messages
+    }
+
+})
+
 /* CLASSES */
 
 class discord {
     static noftification(game) {
         if (noftification == null) return false;
-        const embed = new Discord.MessageEmbed()
-        .setTitle(`СТРИМ НА КАНАЛЕ | НАЧИНАЕМ С ${game}`)
-        .setColor(0xff0000)
-        .setDescription(`Приветик, @everyone. А у нас тут стрим, давай подрубайся. Жми на заголовок, чтобы перейти на канал!`)
-        .setURL('https://twitch.tv/jourloy')
-        noftification.send(embed)
+        const message = `СТРИМ НА КАНАЛЕ | НАЧИНАЕМ С ${game}
+Привет, @everyone. А у нас тут стрим, давай подрубайся, а то без тебя не начать
+
+Ссылка: https://www.twitch.tv/jourloy`;
+        noftification.send(message)
         return true;
     }
 }
