@@ -62,7 +62,8 @@ setInterval(function () {
             'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
         }
     }, (err, res, body) => {
-        if (body != null && body.stream != null) {
+        if (body.stream == null) uptime = 'Стример сейчас оффлайн';
+        else if (body != null && body.stream != null) {
             viewers = body.stream.viewers;
             if (viewers > maxViewers) maxViewers = viewers;
             game = body.stream.game;
@@ -80,7 +81,7 @@ setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
-        if (splitedUptime[0] === '0' && splitedUptime[2] === '03' && splitedUptime[4] === '30') {
+        if (splitedUptime[0] === '0' && splitedUptime[2] === '03' && splitedUptime[4] === '00') {
             client.say(client.channel, 'Всем привет, я пришел! :)');
             telegram.notification(game);
             discord.noftification(game);
@@ -377,27 +378,9 @@ client.on('message', (channel, userstate, message, self) => {
             roulette(user, channel);
             break;
 
-        case '!test_new_mega_function':
-            if (twitch.isMod(userstate) != true) return;
-            watchTime(user);
+        case '!test_api':
             break;
     }
-})
-
-/* DISCORD */
-
-ds.on('message', msg => {
-    if (msg.author.bot) return;
-    const channel = msg.channel.name;
-
-    if (channel === 'moderator-only') {
-        if (msg.content.startsWith('!test')) discord.noftification('Satisfactory');
-    }
-
-    if (msg.content.startsWith('!clear') && msg.author.username === 'JOURLOY') {
-        // remove all messages
-    }
-
 })
 
 /* TELEGRAM */
