@@ -62,7 +62,7 @@ setInterval(function () {
             'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
         }
     }, (err, res, body) => {
-        if (body.stream == null) uptime = 'Стример сейчас оффлайн';
+        if (body == null || body.stream == null) uptime = 'Стример сейчас оффлайн';
         else if (body != null && body.stream != null) {
             viewers = body.stream.viewers;
             if (viewers > maxViewers) maxViewers = viewers;
