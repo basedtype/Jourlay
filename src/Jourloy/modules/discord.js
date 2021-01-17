@@ -55,7 +55,10 @@ setInterval(function () {
         let user = channel.members.array()[0].user;
 
         guild.members.fetch(user.id).then(data => {
-            user = data.guild.voiceStates.cache.array()[0];
+
+            for (let i in data.guild.voiceStates.cache.array()) {
+                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
+            }
             let idNew = null;
 
             guild.channels.create(name, options).then(data => {
@@ -86,7 +89,10 @@ setInterval(function () {
         let user = channel.members.array()[0].user;
 
         guild.members.fetch(user.id).then(data => {
-            user = data.guild.voiceStates.cache.array()[0];
+
+            for (let i in data.guild.voiceStates.cache.array()) {
+                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
+            }
             let idNew = null;
 
             guild.channels.create(name, options).then(data => {
@@ -117,7 +123,10 @@ setInterval(function () {
         let user = channel.members.array()[0].user;
 
         guild.members.fetch(user.id).then(data => {
-            user = data.guild.voiceStates.cache.array()[0];
+
+            for (let i in data.guild.voiceStates.cache.array()) {
+                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
+            }
             let idNew = null;
 
             guild.channels.create(name, options).then(data => {
@@ -148,7 +157,10 @@ setInterval(function () {
         let user = channel.members.array()[0].user;
 
         guild.members.fetch(user.id).then(data => {
-            user = data.guild.voiceStates.cache.array()[0];
+
+            for (let i in data.guild.voiceStates.cache.array()) {
+                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
+            }
             let idNew = null;
 
             guild.channels.create(name, options).then(data => {
