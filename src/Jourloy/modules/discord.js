@@ -237,12 +237,15 @@ client.on('message', msg => {
         const text = msg.content;
         const textSplited = text.split(' ');
 
-        if (textSplited[0] === '!test_mention') {
-            const message = `СТРИМ НА КАНАЛЕ | НАЧИНАЕМ С TEST
-Привет, @everyone. А у нас тут стрим, давай подрубайся, а то без тебя не начать
-
-Ссылка: https://www.twitch.tv/jourloy`;
-            channel.send(message);
+        if (textSplited[0] === '!t') {
+            const game = 'Satisfactory'
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`СТРИМ НА КАНАЛЕ | ${game}`)
+            .setColor(0x00ff00)
+            .setDescription('Хей :wave: \nСтример уже в эфире, но что-то тебя не видно в чате, давай подключайся скорее! \n\n**Нажми на заголовок для перехода на канал**')
+            .setURL('https://www.twitch.tv/jourloy')
+            .setImage('https://i.pinimg.com/564x/63/83/bb/6383bb4b5da0e94ac3a26fa49fb3208e.jpg');
+            channel.send('@everyone', { embed: embed })
         }
     }
 
@@ -257,11 +260,13 @@ client.on('message', msg => {
 class discord {
     static noftification(game) {
         if (noftification == null) return false;
-        const message = `СТРИМ НА КАНАЛЕ | НАЧИНАЕМ С ${game}
-Привет, @everyone. А у нас тут стрим, давай подрубайся, а то без тебя не начать
-
-Ссылка: https://www.twitch.tv/jourloy`;
-        noftification.send(message)
+        const embed = new Discord.MessageEmbed()
+        .setTitle(`СТРИМ НА КАНАЛЕ | ${game}`)
+        .setColor(0x00ff00)
+        .setDescription('Хей :wave: \nСтример уже в эфире, но что-то тебя не видно в чате, давай подключайся скорее! \n\n**Нажми на заголовок для перехода на канал**')
+        .setURL('https://www.twitch.tv/jourloy')
+        .setImage('https://i.pinimg.com/564x/63/83/bb/6383bb4b5da0e94ac3a26fa49fb3208e.jpg');
+        noftification.send('@everyone', { embed: embed })
         return true;
     }
 }
