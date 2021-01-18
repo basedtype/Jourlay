@@ -81,7 +81,7 @@ setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
-        if (splitedUptime[0] === '0' && splitedUptime[2] === '03' && splitedUptime[4] === '00') {
+        if (splitedUptime[0] === '0' && splitedUptime[2] === '01' && splitedUptime[4] === '00') {
             client.say(client.channel, 'Всем привет, я пришел! :)');
             telegram.notification(game);
             discord.noftification(game);
