@@ -29,6 +29,15 @@ const timers = {
     roulette: 0,
 }
 
+let streamLive = 0;
+let spy = {
+    bool: false,
+    was: false,
+    found: false,
+    name: null,
+    banChat: false,
+}
+
 /* CLASS */
 
 class user {
@@ -81,15 +90,76 @@ setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
-        if (splitedUptime[0] === '0' && splitedUptime[2] === '01' && splitedUptime[4] === '00') {
+        if (streamLive === 0 && splitedUptime[0] === '0' && splitedUptime[2] === '01' && splitedUptime[4] === '00') {
             client.say(client.channel, 'Всем привет, я пришел! :)');
             telegram.notification(game);
             discord.noftification(game);
+        }
+
+        if (streamLive === 0) {
+            if (splitedUptime[0] === '0' && splitedUptime[2] === '00' && splitedUptime[4] === '00') return;
+            streamLive = 1;
+            const spyStream = _.randomInt(0,1);
+            if (spyStream === 1 && spy.bool === false) {
+                spy.bool = true;
+                const spyCome = () => {
+                    spy.was = true;
+                    const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб'];
+
+                    spy.name = names[_.randomInt(0, names.length-1)]
+                    const name = caesarCipher(spy.name);
+
+                    client.say(client.channel, `Чат, у нас проблема, к нам проник`);
+                    client.color("Red");
+                    client.action(client.channel, `ШПИОН`);
+                    client.color("BlueViolet");
+                    client.say(client.channel, `Если вы не найдете его, то он доберется до нас`);
+                    client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только это:`);
+                    client.color("Green");
+                    client.action(client.channel, name);
+                    client.color("BlueViolet");
+                    client.say(client.channel, `Давайте, юные и не только самураи, не подведите своего даймё!`);
+
+                    const banChat = () => {
+                        if (spy.found === false) {
+                            client.clear(client.channel);
+                            client.emoteonly(client.channel);
+                            client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
+                            const unbanChat = () => {
+                                client.emoteonlyoff(client.channel);
+                            }
+                            setTimeout(unbanChat, _.convertTime(seconds = 30));
+                        }
+                    }
+                    setTimeout(banChat, _.convertTime(minutes = _.randomInt(2, 5)));
+                }
+                setTimeout(spyCome, _.convertTime(minutes = _.randomInt(10, 180)));
+            }
+            const reset = () => streamLive = 0;
+            setTimeout(reset, _.convertTime(hours = 5));
         }
     }
 }, _.convertTime(seconds=1));
 
 /* FUNCTIONS */
+
+function caesarCipher(str){  
+    const alphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЪЫЭЮЯ'.toLowerCase();
+    let newStr = '';
+    const int = _.randomInt(1, 7);
+
+    for (let i in str) {
+        const index = alphabet.indexOf(str[i].toLowerCase());
+        let step = index + int;
+        if (step > alphabet.length - 1) {
+            step = step - alphabet.length - 1;
+        }
+        newStr += alphabet[step];
+    }
+
+    return newStr;
+}
+  
 
 function userClass(username, id) {
     for (let i in arrays.users) {
@@ -238,10 +308,11 @@ function question(user, message) {
 
 function bigBrain(username) {
     const channel = client.channel;
-    const array = ['Не будешь врагом и будешь другом тогда', 'Самураев-сенсеев много, а твой - один', 'Не страшно, если целился высоко и не попал, страшно, если смотришь и не зафоловлен на канал', 'Зритель к стриму дорог', 'Колу не прольешь - не попьешь'];
+    const array = ['Не будешь врагом и будешь другом тогда', 'Даймё много, а твой - один', 'Не страшно, если целился высоко и не попал, страшно, если смотришь и не зафоловлен на канал', 'Зритель к стриму дорог', 'Колу не прольешь - не попьешь', 'Опоздал на стрим - йены не получил',
+    'Не трать йены просто так, трать йены на награды', 'Кто сражается и следует за даймё, тот получает 250 йен', 'Победил - молодец, проиграл - jourloPressF'];
 
     if (timers.bigBrain == 0) {
-        client.say(channel, `@${username}, как говорил самурай-сенсей, "${_.randomElementFromArray(array)}"`);
+        client.say(channel, `@${username}, как говорил даймё, "${_.randomElementFromArray(array)}"`);
         timers.bigBrain = 1;
         const func = () => timers.bigBrain = 0;
         setTimeout(func, _.convertTime(minutes = 2));
@@ -338,11 +409,22 @@ client.on('message', (channel, userstate, message, self) => {
     if (_twitch.checkMessage(message) === true) {
         if (twitch.isMod(userstate) === true) {
             client.say(channel, `@${username}, ну зачееееем? BibleThump BibleThump`)
-        } else {
+        } else { 
             client.timeout(client.channel, username, 20);
         }
         console.log(`Bot => Twitch => Timeout => ${username}`);
         return;
+    }
+
+    if (spy.bool === true && spy.was === true) {
+        if (message === spy.name.toLowerCase()) {
+            spy.found = true;
+            client.color("Green");
+            client.action(client.channel, `ПОЗДРАВЛЯЮ`);
+            client.color("BlueViolet");
+            client.say(client.channel, `${username}, спас всех нас. Мы нашли этого шпиона и посадили в тюрьму. Отдыхаем, юные и не только самураи`);
+            return;
+        }
     }
 
     if (boyfriend(channel, message, username) === true) return;
@@ -401,7 +483,38 @@ client.on('message', (channel, userstate, message, self) => {
             roulette(user, channel);
             break;
 
-        case '!test_api':
+        case '!spawn':
+            spy.bool = true;
+            const spyCome = () => {
+                spy.was = true;
+                const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб'];
+
+                spy.name = names[_.randomInt(0, names.length-1)]
+                const name = caesarCipher(spy.name);
+
+                client.say(client.channel, `Чат, у нас проблема, к нам проник`);
+                client.color("Red");
+                client.action(client.channel, `ШПИОН`);
+                client.color("BlueViolet");
+                client.say(client.channel, `Если вы не найдете его, то он доберется до нас. Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только это:`);
+                client.color("Green");
+                client.action(client.channel, name);
+                client.color("BlueViolet");
+                client.say(client.channel, `Давайте, юные и не только самураи, не подведите своего даймё!`);
+
+                const banChat = () => {
+                    if (spy.found === false) {
+                        client.emoteonly(client.channel);
+                        client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
+                        const unbanChat = () => {
+                            client.emoteonlyoff(client.channel);
+                        }
+                        setTimeout(unbanChat, _.convertTime(seconds = 30));
+                    }
+                }
+                setTimeout(banChat, _.convertTime(seconds = _.randomInt(30, 35)));
+            }
+            setTimeout(spyCome, _.convertTime(seconds = _.randomInt(5, 10)));
             break;
     }
 })
