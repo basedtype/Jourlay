@@ -27,6 +27,7 @@ const timers = {
     vote: 0,
     bigBrain: 0,
     roulette: 0,
+    emoji: 0,
 }
 
 let streamLive = 0;
@@ -53,6 +54,7 @@ class user {
         }
         this.counters = {
             followerAge: 0,
+            roulette: 0,
         }
 
         arrays.users.push(this);
@@ -71,7 +73,7 @@ setInterval(function () {
             'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
         }
     }, (err, res, body) => {
-        if (body == null || body.stream == null) uptime = 'Стример сейчас оффлайн';
+        if (body == null || body.stream == null) uptime = null;
         else if (body != null && body.stream != null) {
             viewers = body.stream.viewers;
             if (viewers > maxViewers) maxViewers = viewers;
@@ -90,8 +92,9 @@ setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
-        if (streamLive === 0 && splitedUptime[0] === '0' && splitedUptime[2] === '01' && splitedUptime[4] === '00') {
+        if (splitedUptime[0] === '0' && splitedUptime[2] === '03' && splitedUptime[4] === '00') {
             client.say(client.channel, 'Всем привет, я пришел! :)');
+            setTimeout(emoute, _.convertTime(null, 30));
             telegram.notification(game);
             discord.noftification(game);
         }
@@ -99,12 +102,12 @@ setInterval(function () {
         if (streamLive === 0) {
             if (splitedUptime[0] === '0' && splitedUptime[2] === '00' && splitedUptime[4] === '00') return;
             streamLive = 1;
-            const spyStream = _.randomInt(0,1);
+            const spyStream = 1;
             if (spyStream === 1 && spy.bool === false) {
                 spy.bool = true;
                 const spyCome = () => {
                     spy.was = true;
-                    const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб'];
+                    const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб', 'Картинка', 'Язашифровался'];
 
                     spy.name = names[_.randomInt(0, names.length-1)]
                     const name = caesarCipher(spy.name);
@@ -114,7 +117,7 @@ setInterval(function () {
                     client.action(client.channel, `ШПИОН`);
                     client.color("BlueViolet");
                     client.say(client.channel, `Если вы не найдете его, то он доберется до нас`);
-                    client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только это:`);
+                    client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только то, что он очень любит Цезаря и это:`);
                     client.color("Green");
                     client.action(client.channel, name);
                     client.color("BlueViolet");
@@ -131,9 +134,9 @@ setInterval(function () {
                             setTimeout(unbanChat, _.convertTime(seconds = 30));
                         }
                     }
-                    setTimeout(banChat, _.convertTime(minutes = _.randomInt(2, 5)));
+                    setTimeout(banChat, _.convertTime(null, _.randomInt(2, 5)));
                 }
-                setTimeout(spyCome, _.convertTime(minutes = _.randomInt(10, 180)));
+                setTimeout(spyCome, _.convertTime(null, _.randomInt(10, 180)));
             }
             const reset = () => streamLive = 0;
             setTimeout(reset, _.convertTime(hours = 5));
@@ -141,7 +144,20 @@ setInterval(function () {
     }
 }, _.convertTime(seconds=1));
 
+setInterval(function() {
+    if (viewers > 15) emoute();
+}, 1000);
+
 /* FUNCTIONS */
+
+function emoute() {
+    if (timers.emoji === 0) {
+        client.action(client.channel, '==> KEKW EZ для тебя просто текст? Чтобы видеть больше смайлов, необходимо установить расширение https://frankerfacez.com, а затем перейти в настройки расширения --> Аддоны --> Включить там аддон BetterTTV.');
+        timers.emoji = 1;
+        const set = () => timers.emoji = 0;
+        setTimeout(set, _.convertTime(null, 30));
+    }
+}
 
 function caesarCipher(str){  
     const alphabet = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЬЪЫЭЮЯ'.toLowerCase();
@@ -201,38 +217,11 @@ function followerAge(user) {
                 } else {
                     const int = _.randomInt(0,1)
                     if (int === 0) client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`);
-                    else client.say(client.channel, `@${username}, вижу что ты зафоловлена. По времени норм, поверишь?`);
+                    else client.say(client.channel, `@${username}, вижу что ты зафоловлен(а). По времени норм, поверишь?`);
                 }
             } else client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
 
             user.counters.followerAge++;
-        })
-    } catch {}
-}
-
-function watchTime(user) {
-    const userID = user.id;
-    const username = user.username;
-
-    const banList = ['anna_scorpion05'];
-
-    try {
-        client.api({
-            url: `https://api.twitch.tv/kraken/streams/158466757`,
-            method: "GET",
-            headers: {
-                'Accept': 'application/vnd.twitchtv.v5+json',
-                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
-            }
-        }, (err, res, body) => {
-            console.log(body);
-
-            let now = new Date();
-            let then = body.created_at;
-            let ms = moment(now).diff(moment(then));
-            let d = moment.duration(ms);
-            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
         })
     } catch {}
 }
@@ -309,13 +298,13 @@ function question(user, message) {
 function bigBrain(username) {
     const channel = client.channel;
     const array = ['Не будешь врагом и будешь другом тогда', 'Даймё много, а твой - один', 'Не страшно, если целился высоко и не попал, страшно, если смотришь и не зафоловлен на канал', 'Зритель к стриму дорог', 'Колу не прольешь - не попьешь', 'Опоздал на стрим - йены не получил',
-    'Не трать йены просто так, трать йены на награды', 'Кто сражается и следует за даймё, тот получает 250 йен', 'Победил - молодец, проиграл - jourloPressF'];
+    'Не трать йены просто так, трать йены на награды', 'Кто сражается и следует за даймё, тот получает 250 йен', 'Победил - молодец, проиграл - jourloPressF', 'На каждое отверстие есть болт и хитрая гайка... А пробка - вещь неуничтожимая... Как легендарная набедренная повязка огра...', 'Да я и не спорю... С катаной в моих руках со мной почему-то никто не спорит...'];
 
     if (timers.bigBrain == 0) {
         client.say(channel, `@${username}, как говорил даймё, "${_.randomElementFromArray(array)}"`);
         timers.bigBrain = 1;
         const func = () => timers.bigBrain = 0;
-        setTimeout(func, _.convertTime(minutes = 2));
+        setTimeout(func, _.convertTime(null, 2));
     }
 }
 
@@ -337,38 +326,75 @@ function roulette(user) {
             user.timers.roulette = 1;
             const setQuestionTime = () => user.timers.roulette = 0;
             setTimeout(setQuestionTime, _.convertTime(seconds = 10));
+            user.counters.roulette++;
         }
-    } else if (banList.includes(username) === true) return;
-    else {
-        const bullet = _.randomInt(1, 12);
-        const hole = _.randomInt(1, 12);
+    } else if (banList.includes(username) === true) {
+        const bullet = _.randomInt(1, 15);
+        const hole = _.randomInt(1, 15);
 
         if (user.timers.roulette == 0) {
             if (bullet === hole) {
                 client.say(channel, `@${username}, БАХ! Ты проиграл(а), хаха Kappa`);
-                client.timeout(channel, username, 20, 'Пуля не промахнулась');
+                client.timeout(channel, username, user.counters.roulette * 5 + 40, 'Пуля не промахнулась');
+                user.counters.roulette = -1;
+            }
+            else client.say(channel, `@${username}, удача пока что на твоей стороне`);
+
+            user.timers.roulette = 1;
+            const setQuestionTime = () => user.timers.roulette = 0;
+            setTimeout(setQuestionTime, _.convertTime(seconds = 30));
+            user.counters.roulette++;
+        }
+    } else {
+        const bullet = _.randomInt(1, 10);
+        const hole = _.randomInt(1, 10);
+
+        if (user.timers.roulette == 0) {
+            if (bullet === hole) {
+                client.say(channel, `@${username}, БАХ! Ты проиграл(а), хаха Kappa`);
+                client.timeout(channel, username, user.counters.roulette * 5 + 20, 'Пуля не промахнулась');
+                user.counters.roulette = -1;
             }
             else client.say(channel, `@${username}, удача пока что на твоей стороне`)
 
             user.timers.roulette = 1;
             const setQuestionTime = () => user.timers.roulette = 0;
             setTimeout(setQuestionTime, _.convertTime(seconds = 30));
+            user.counters.roulette++;
         }
     }
 }
 
 function deleteMessage(message) {
     const inList = ['pr_'];
-    const list = ['ava', 'аватария', 'ава'];
+    const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали'];
+    const splited = message.split(' ');
 
-    for (let i in inList) {
-        if (message.indexOf(inList[i]) === true) return true;
+    for (let i in splited) {
+        if (inList.indexOf(splited[i]) !== -1) return true;
     }
 
-    for (let i in list) {
-        if (message.includes(list[i]) !== -1) return true;
+    for (let i in splited) {
+        if (list.includes(splited[i].toLowerCase()) === true) return true;
     }
     return false;    
+}
+
+function spamDefence(message) {
+    const split = message.split(' ');
+
+    for (let i in split) {
+        let count = 0;
+
+        for (let j in split) {
+            if (split[j] === split[i]) count++; 
+            if (count > 3) return true;
+        }
+    }
+
+    if (split[0].length > 20) return true;
+
+    return false;
 }
 
 /* REACTIONS */
@@ -398,10 +424,17 @@ client.on('message', (channel, userstate, message, self) => {
 
     const user = userClass(username, id);
 
-    if (deleteMessage === true) {
+    if (deleteMessage(message) === true) {
         const id = userstate['id'];
+        if (twitch.isMod(userstate) === true) client.say(channel, 'Я пытался');
+        else client.deletemessage(channel, id);
+        return;
+    }
 
-        client.deletemessage(channel, id);
+    if (spamDefence(message) === true) {
+        const id = userstate['id'];
+        if (twitch.isMod(userstate) === true) client.say(channel, 'Я пытался');
+        else client.deletemessage(channel, id);
         return;
     }
 
@@ -482,39 +515,13 @@ client.on('message', (channel, userstate, message, self) => {
         case '!roulette':
             roulette(user, channel);
             break;
-
-        case '!spawn':
-            spy.bool = true;
-            const spyCome = () => {
-                spy.was = true;
-                const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб'];
-
-                spy.name = names[_.randomInt(0, names.length-1)]
-                const name = caesarCipher(spy.name);
-
-                client.say(client.channel, `Чат, у нас проблема, к нам проник`);
-                client.color("Red");
-                client.action(client.channel, `ШПИОН`);
-                client.color("BlueViolet");
-                client.say(client.channel, `Если вы не найдете его, то он доберется до нас. Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только это:`);
-                client.color("Green");
-                client.action(client.channel, name);
-                client.color("BlueViolet");
-                client.say(client.channel, `Давайте, юные и не только самураи, не подведите своего даймё!`);
-
-                const banChat = () => {
-                    if (spy.found === false) {
-                        client.emoteonly(client.channel);
-                        client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
-                        const unbanChat = () => {
-                            client.emoteonlyoff(client.channel);
-                        }
-                        setTimeout(unbanChat, _.convertTime(seconds = 30));
-                    }
-                }
-                setTimeout(banChat, _.convertTime(seconds = _.randomInt(30, 35)));
-            }
-            setTimeout(spyCome, _.convertTime(seconds = _.randomInt(5, 10)));
+        
+        case '!emoute':
+            emoute();
+            break;
+        
+        case '!ping':
+            if (twitch.isMod(userstate) === true) client.action(channel, '==> pong');
             break;
     }
 })
