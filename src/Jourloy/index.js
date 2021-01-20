@@ -223,7 +223,7 @@ function followerAge(user) {
 
             user.counters.followerAge++;
         })
-    } catch {}
+    } catch { a = 0; }
 }
 
 function getUptime() {
