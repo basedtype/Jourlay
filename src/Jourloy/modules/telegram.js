@@ -56,7 +56,7 @@ class telegram {
     }
 }
 
-try { nodeDB.getData('/chatID') } catch { database.create() }
+try { nodeDB.getData('/chatID') } catch (e) { database.create() }
 
 module.exports.telegram = telegram;
 module.exports.tg = bot;
