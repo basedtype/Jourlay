@@ -103,8 +103,8 @@ setInterval(function () {
             if (splitedUptime[0] === '0' && splitedUptime[2] === '00' && splitedUptime[4] === '00') return;
             streamLive = 1;
             const spyStream = 1;
-            if (spyStream === 1 && spy.bool === false) {
-                spy.bool = true;
+            //if (spyStream === 1 && spy.bool === false) {
+                /* spy.bool = true;
                 const spyCome = () => {
                     spy.was = true;
                     const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб', 'Картинка', 'Язашифровался'];
@@ -125,7 +125,6 @@ setInterval(function () {
 
                     const banChat = () => {
                         if (spy.found === false) {
-                            client.clear(client.channel);
                             client.emoteonly(client.channel);
                             client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
                             const unbanChat = () => {
@@ -136,8 +135,8 @@ setInterval(function () {
                     }
                     setTimeout(banChat, _.convertTime(null, _.randomInt(2, 5)));
                 }
-                setTimeout(spyCome, _.convertTime(null, _.randomInt(10, 180)));
-            }
+                setTimeout(spyCome, _.convertTime(null, _.randomInt(10, 20)));
+            } */
             const reset = () => streamLive = 0;
             setTimeout(reset, _.convertTime(hours = 5));
         }
