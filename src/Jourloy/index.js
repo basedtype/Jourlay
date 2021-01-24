@@ -392,7 +392,7 @@ class ChatDefence {
         if (user.timers.resetMessage === 0) {
             user.timers.resetMessage = 1;
             setTimeout(function() {
-                user.counters.message = 0;
+                ChatDefence.resetUser(user)
             } , _.convertTime(5));
         }
     }
@@ -405,6 +405,7 @@ class ChatDefence {
             this.resetUser(user);
             return false;
         }
+        console.log(user.counters.message)
         return true;
     }
 
@@ -413,10 +414,13 @@ class ChatDefence {
         const split = message.split(' ');
         for (let i in split) {
             let count = 0;
+            let kekw = 0;
             for (let j in split) {
-                if (split[j] === split[i]) count++; 
-                if (count > 3) check = true;
+                if (split[j] === split[i]) count++;
+                if (count > 5) check = true;
             }
+            if (split[i] === 'KEKW') kekw++;
+            if (kekw > 3) check = true;
         }
         if (split[0].length > 20) check = true;
         if (check === true) {
