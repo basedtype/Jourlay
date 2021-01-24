@@ -4,6 +4,7 @@ const { discord, ds } = require('./modules/discord');
 const { _, _twitch } = require('./tools');
 const moment = require('moment');
 const { JsonDB } = require('node-json-db');
+const { duration } = require('moment');
 
 const voteDB = new JsonDB('Data/votes', true, true, '/');
 
@@ -42,8 +43,9 @@ let spy = {
 /* CLASS */
 
 class user {
-    constructor(username, id) {
+    constructor(username, id, userstate) {
         this.username = username;
+        this.userstate = userstate;
         this.id = id;
         this.timers = {
             ask: 0,
@@ -51,10 +53,12 @@ class user {
             socAD: 0,
             bigBrain: 0,
             roulette: 0,
+            resetMessage: 0,
         }
         this.counters = {
             followerAge: 0,
             roulette: 0,
+            message: 0,
         }
 
         arrays.users.push(this);
@@ -103,8 +107,8 @@ setInterval(function () {
             if (splitedUptime[0] === '0' && splitedUptime[2] === '00' && splitedUptime[4] === '00') return;
             streamLive = 1;
             const spyStream = 1;
-            //if (spyStream === 1 && spy.bool === false) {
-                /* spy.bool = true;
+            if (spyStream === 1 && spy.bool === false) {
+                spy.bool = true;
                 const spyCome = () => {
                     spy.was = true;
                     const names = ['Иван', 'Петр', 'Мария', 'Шпион', 'Джулай', 'Самурай', 'Наруто', 'Фолловер', 'Зритель', 'Глеб', 'НеШпион', 'Ютубер', 'Ансаб', 'Картинка', 'Язашифровался'];
@@ -117,7 +121,7 @@ setInterval(function () {
                     client.action(client.channel, `ШПИОН`);
                     client.color("BlueViolet");
                     client.say(client.channel, `Если вы не найдете его, то он доберется до нас`);
-                    client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только то, что он очень любит Цезаря и это:`);
+                    client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только то, что он очень любит салат Цезарь и это:`);
                     client.color("Green");
                     client.action(client.channel, name);
                     client.color("BlueViolet");
@@ -127,6 +131,7 @@ setInterval(function () {
                         if (spy.found === false) {
                             client.emoteonly(client.channel);
                             client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
+                            spy.found = true;
                             const unbanChat = () => {
                                 client.emoteonlyoff(client.channel);
                             }
@@ -136,7 +141,7 @@ setInterval(function () {
                     setTimeout(banChat, _.convertTime(null, _.randomInt(2, 5)));
                 }
                 setTimeout(spyCome, _.convertTime(null, _.randomInt(10, 20)));
-            } */
+            }
             const reset = () => streamLive = 0;
             setTimeout(reset, _.convertTime(hours = 5));
         }
@@ -176,12 +181,12 @@ function caesarCipher(str){
 }
   
 
-function userClass(username, id) {
+function userClass(username, id, userstate) {
     for (let i in arrays.users) {
         if (username === arrays.users[i].username) return arrays.users[i];
     }
 
-    return new user(username, id);
+    return new user(username, id, userstate);
 }
 
 function followerAge(user) {
@@ -311,6 +316,9 @@ function roulette(user) {
     const channel = client.channel;
     const username = user.username;
 
+    const answer = ['удача пока на твоей стороне', 'удача пока на твоей стороне, но это пока', 'пистолет выстрелил, но я случайно дернул рукой и мы разбили люстру', 'БАХ! А нет, не бах, пистолет не могу найти'];
+    const botAnswer = _.randomElementFromArray(answer);
+
     const allowList = ['jourloy', 'kartinka_katerinka'];
     const banList = ['anna_scorpion05'];
 
@@ -320,7 +328,7 @@ function roulette(user) {
 
         if (user.timers.roulette == 0) {
             if (bullet === hole) client.say(channel, `@${username} -сан, пуля должна была попасть в вас, но я подставился и вы в безопасности`);
-            else client.say(channel, `@${username} -сан, удача пока что на вашей стороне`)
+            else client.say(channel, `@${username} -сан, ${botAnswer}`)
 
             user.timers.roulette = 1;
             const setQuestionTime = () => user.timers.roulette = 0;
@@ -337,7 +345,7 @@ function roulette(user) {
                 client.timeout(channel, username, user.counters.roulette * 5 + 40, 'Пуля не промахнулась');
                 user.counters.roulette = -1;
             }
-            else client.say(channel, `@${username}, удача пока что на твоей стороне`);
+            else client.say(channel, `@${username}, ${botAnswer}`);
 
             user.timers.roulette = 1;
             const setQuestionTime = () => user.timers.roulette = 0;
@@ -354,7 +362,7 @@ function roulette(user) {
                 client.timeout(channel, username, user.counters.roulette * 5 + 20, 'Пуля не промахнулась');
                 user.counters.roulette = -1;
             }
-            else client.say(channel, `@${username}, удача пока что на твоей стороне`)
+            else client.say(channel, `@${username}, ${botAnswer}`)
 
             user.timers.roulette = 1;
             const setQuestionTime = () => user.timers.roulette = 0;
@@ -364,39 +372,105 @@ function roulette(user) {
     }
 }
 
-function deleteMessage(message) {
-    const inList = ['pr_'];
-    const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали'];
-    const splited = message.split(' ');
-
-    for (let i in splited) {
-        if (inList.indexOf(splited[i]) !== -1) return true;
+class ChatDefence {
+    static run(user, message, userstate) {
+        user.counters.message++;
+        this.resetMessage(user);
+        if (this.messageCountCheck(user, userstate) === false) return false;
+        if (this.lengthCheck(user, message) === false) return false;
+        if (this.wordCheck(message, userstate) === false) return false;
+        if (this.messageCheck(user, message) === false) return false;
+        return true;
     }
 
-    for (let i in splited) {
-        if (list.includes(splited[i].toLowerCase()) === true) return true;
+    static resetUser(user) {
+        user.counters.message = 0;
+        user.timers.resetMessage = 0;
     }
-    return false;    
-}
 
-function spamDefence(message) {
-    const split = message.split(' ');
-
-    for (let i in split) {
-        let count = 0;
-
-        for (let j in split) {
-            if (split[j] === split[i]) count++; 
-            if (count > 3) return true;
+    static resetMessage(user) {
+        if (user.timers.resetMessage === 0) {
+            user.timers.resetMessage = 1;
+            setTimeout(function() {
+                user.counters.message = 0;
+            } , _.convertTime(5));
         }
     }
 
-    if (split[0].length > 20) return true;
+    static messageCountCheck(user, userstate) {
+        if (user.counters.message >= 10) {
+            if (twitch.isMod(userstate) === true) client.say(client.channel, `jourloWTF`);
+            else client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
+            console.log(`Bot => Twitch => Chat defence => Timeout (20) => ${user.username}`);
+            this.resetUser(user);
+            return false;
+        }
+        return true;
+    }
 
-    return false;
+    static lengthCheck(user, message) {
+        let check = false
+        const split = message.split(' ');
+        for (let i in split) {
+            let count = 0;
+            for (let j in split) {
+                if (split[j] === split[i]) count++; 
+                if (count > 3) check = true;
+            }
+        }
+        if (split[0].length > 20) check = true;
+        if (check === true) {
+            client.timeout(client.channel, user.username, message.length, 'Давай без длинных слов, а то в чате не красиво');
+            console.log(`Bot => Twitch => Chat defence => Timeout (${message.length}) => ${user.username}`);
+            this.resetUser(user);
+            return false;
+        }
+        return true;
+    }
+
+    static wordCheck(message, userstate) {
+        let check = false;
+        const inList = ['pr_'];
+        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали'];
+        const splited = message.split(' ');
+
+        for (let i in splited) if (inList.indexOf(splited[i]) !== -1) check = true;
+        for (let i in splited) if (list.includes(splited[i].toLowerCase()) === true) check = true;
+        
+        if (check === true) {
+            const id = userstate['id'];
+            if (twitch.isMod(userstate) === true) client.say(channel, 'Я пытался');
+            else client.deletemessage(channel, id);
+            return false;
+        }
+        return true;
+    }
+
+    static messageCheck(user, message) {
+        let check = false;
+        const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
+'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫'];
+        const split = message.split(' ');
+
+        for (let i in split) {
+            if (bannedWords.includes(split[i]) === true) check = true;
+        }
+
+        if (check === true) {
+            client.timeout(client.channel, user.username, 100, 'Запрещенное слово, ай-ай');
+            console.log(`Bot => Twitch => Chat defence => Timeout (100) => ${username}`);
+            this.resetUser(user);
+            return false;
+        }
+        return true;
+    }
 }
 
 /* REACTIONS */
+
+client.on("timeout", (channel, username, reason, duration) => {
+    if (duration === 600) client.say(channel, `OMEGALUL => @${username}`);
+});
 
 client.on("raided", (channel, username, viewers) => {
     client.action(channel, `==> Огромное спасибо ${username} за то, что зарейдил, а также отдельное спасибо всем ${viewers} зрителям за то, что присоединились к рейду!`);
@@ -421,34 +495,11 @@ client.on('message', (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
     const id = userstate['user-id'];
 
-    const user = userClass(username, id);
+    const user = userClass(username, id, userstate);
 
-    if (deleteMessage(message) === true) {
-        const id = userstate['id'];
-        if (twitch.isMod(userstate) === true) client.say(channel, 'Я пытался');
-        else client.deletemessage(channel, id);
-        return;
-    }
+    if (ChatDefence.run(user, message, userstate) === false) return;
 
-    if (spamDefence(message) === true) {
-        const id = userstate['id'];
-        if (twitch.isMod(userstate) === true) client.say(channel, 'Я пытался');
-        else client.deletemessage(channel, id);
-        return;
-    }
-
-
-    if (_twitch.checkMessage(message) === true) {
-        if (twitch.isMod(userstate) === true) {
-            client.say(channel, `@${username}, ну зачееееем? BibleThump BibleThump`)
-        } else { 
-            client.timeout(client.channel, username, 20);
-        }
-        console.log(`Bot => Twitch => Timeout => ${username}`);
-        return;
-    }
-
-    if (spy.bool === true && spy.was === true) {
+    if (spy.bool === true && spy.was === true && spy.found === false) {
         if (message === spy.name.toLowerCase()) {
             spy.found = true;
             client.color("Green");
@@ -522,6 +573,45 @@ client.on('message', (channel, userstate, message, self) => {
         case '!ping':
             if (twitch.isMod(userstate) === true) client.action(channel, '==> pong');
             break;
+
+        case '!spawn':
+            if (twitch.isMod(userstate) !== true) return;
+            spy.bool = true;
+            const spyCome = () => {
+            spy.was = true;
+            const names = ['Тест'];
+
+            spy.name = names[_.randomInt(0, names.length-1)]
+            const name = caesarCipher(spy.name);
+
+            client.say(client.channel, `Чат, у нас проблема, к нам проник`);
+            client.color("Red");
+            client.action(client.channel, `ШПИОН`);
+            client.color("BlueViolet");
+            client.say(client.channel, `Если вы не найдете его, то он доберется до нас`);
+            client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только то, что он очень любит Цезаря и это:`);
+            client.color("Green");
+            client.action(client.channel, name);
+            client.color("BlueViolet");
+            client.say(client.channel, `Давайте, юные и не только самураи, не подведите своего даймё!`);
+
+            const banChat = () => {
+                if (spy.found === false) {
+                    client.emoteonly(client.channel);
+                    client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
+                    spy.found = true;
+                    const unbanChat = () => {
+                        client.emoteonlyoff(client.channel);
+                    }
+                    setTimeout(unbanChat, _.convertTime(seconds = 30));
+                }
+            }
+            setTimeout(banChat, _.convertTime(_.randomInt(30, 35)));
+        }
+        setTimeout(spyCome, _.convertTime(_.randomInt(10, 20)));
+        break;
+
+
     }
 })
 
