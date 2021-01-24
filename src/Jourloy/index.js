@@ -469,6 +469,21 @@ class ChatDefence {
     }
 }
 
+class Help {
+    static run(message) {
+        const split = message.split(' ');
+
+        if (split[1] == null) client.action(client.channel, '==> вводи !help [комманда] чтобы получить помощь. Например: !help roulette');
+        if (split[1] === 'roulette') this.roulette();
+        return;
+    }
+
+    static roulette() {
+        client.action(client.channel, '==> крутится пуля в барабане и производится выстрел из пистолета. Если пуля вылетела и попала в тебя, то ты отправляешься в таймаут, причем время таймаута неограниченно');
+        return;
+    }
+}
+
 /* REACTIONS */
 client.on("cheer", (channel, userstate, message) => {
     const bits = userstate.bits;
@@ -527,6 +542,9 @@ client.on('message', (channel, userstate, message, self) => {
     const messageSplit = message.split(' ');
 
     switch(messageSplit[0]) {
+        case '!help':
+            Help.run(message);
+            break;
         case '!q':
             question(user, message);
             break;
