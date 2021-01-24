@@ -405,7 +405,6 @@ class ChatDefence {
             this.resetUser(user);
             return false;
         }
-        console.log(user.counters.message)
         return true;
     }
 
