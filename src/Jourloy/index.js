@@ -470,6 +470,14 @@ class ChatDefence {
 }
 
 /* REACTIONS */
+client.on("cheer", (channel, userstate, message) => {
+    const bits = userstate.bits;
+    if (bits <= 100) client.action(channel, `==> Спасибо за ${bits}, @${username}. Мне приятно`);
+    if (bits > 100 && bits <= 500) client.action(channel, `==> Воу, @${username}, спасибо за щедрость, мне приятно`);
+    if (bits > 500 && bits <= 1000) client.action(channel, `==> ОМГ, сегодня не день, сегодня счастье. Спасибо за ${bits}, @${username}`);
+    if (bits > 1000 && bits <= 2000) client.action(channel, `==> Благодаря @${username} я, кажется, сейчас выключу стрим и пойду переезжать`);
+    if (bits > 2000) client.action(channel, `==> @${username}, жесть ты шейх, спасибо тебе огромное. Перееду на днях в Дубаи, я думаю денег теперь мне хватит`);
+});
 
 client.on("timeout", (channel, username, reason, duration) => {
     if (duration === 600) client.say(channel, `OMEGALUL => @${username}`);
