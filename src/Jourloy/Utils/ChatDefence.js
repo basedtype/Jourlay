@@ -9,13 +9,13 @@ const { _ } = require('../tools');
 
 /* CLASSES */
 class ChatDefence {
-    static run(user, message, userstate) {
+    static run(user, message, userstate, client) {
         user.counters.message++;
         this.resetMessage(user);
-        if (this.messageCountCheck(user) === false) return false;
-        if (this.lengthCheck(user, message) === false) return false;
-        if (this.wordCheck(message, userstate) === false) return false;
-        if (this.messageCheck(user, message) === false) return false;
+        if (this.messageCountCheck(user, client) === false) return false;
+        if (this.lengthCheck(user, message, client) === false) return false;
+        if (this.wordCheck(message, userstate, client) === false) return false;
+        if (this.messageCheck(user, message, client) === false) return false;
         return true;
     }
 
@@ -33,7 +33,7 @@ class ChatDefence {
         }
     }
 
-    static messageCountCheck(user) {
+    static messageCountCheck(user, client) {
         if (user.counters.message >= 10) {
             client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
             console.log(`Bot => Twitch => Chat defence => Timeout (20) => ${user.username}`);
@@ -43,7 +43,7 @@ class ChatDefence {
         return true;
     }
 
-    static lengthCheck(user, message) {
+    static lengthCheck(user, message, client) {
         let check = false
         const split = message.split(' ');
         for (let i in split) {
@@ -66,7 +66,7 @@ class ChatDefence {
         return true;
     }
 
-    static wordCheck(message, userstate) {
+    static wordCheck(message, userstate, client) {
         let check = false;
         const inList = ['pr_'];
         const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали'];
@@ -83,7 +83,7 @@ class ChatDefence {
         return true;
     }
 
-    static messageCheck(user, message) {
+    static messageCheck(user, message, client) {
         let check = false;
         const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
 'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫'];
