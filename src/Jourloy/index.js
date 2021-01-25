@@ -1,4 +1,5 @@
 const { ChatDefence } = require('./Utils/ChatDefence');
+const { ChatUser } = require('./Utils/ChatUser');
 const { Coins } = require('./Utils/Coins');
 
 const { client, twitch } = require('./modules/twitch');
@@ -56,12 +57,17 @@ class user {
             bigBrain: 0,
             roulette: 0,
             resetMessage: 0,
-            raid: 0,
         }
         this.counters = {
             followerAge: 0,
             roulette: 0,
             message: 0,
+        }
+        this.raid = {
+            bool: false,
+            created_at: null,
+            fail: false,
+            invMax: 3,
         }
 
         arrays.users.push(this);
@@ -95,7 +101,7 @@ setInterval(function () {
     })
 }, _.convertTime(seconds=1));
 
-setInterval(function () {
+/* setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
@@ -148,7 +154,7 @@ setInterval(function () {
             setTimeout(reset, _.convertTime(hours = 5));
         }
     }
-}, _.convertTime(seconds=1));
+}, _.convertTime(seconds=1)); */
 
 setInterval(function() {
     if (viewers > 15) emoute();
@@ -424,20 +430,21 @@ client.on('action', (channel, userstate, message, self) => {
 
 client.on('redeem', (channel, username, rewardType, tags) => {
     if (rewardType === '6aa74658-1b0a-49ed-8bc2-2ff0de3f6cef') {
-        Coins.plusCoins(username, 10);
-        client.say(channel, `@${username}, отлично, я перевел 10 осколков душ на ваш счет. Проверить кошелек можно командой !wallet. Спасибо, что используете ДжапанБанк`);
+        Coins.plusCoins(username, 1);
+        client.say(channel, `@${username}, отлично, я перевел 1 осколок душ на ваш счет. Проверить кошелек можно командой !wallet. Спасибо, что используете ДжапанБанк`);
     }
 });
 
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
+
+    if (ChatUser.getUser(username) === 'ERR_NOT_FIND_USER') ChatUser.create(username, userstate);
+
     const id = userstate['user-id'];
-
     const user = userClass(username, id, userstate);
-    Coins.plusCoins(username, 0.1);
 
-    if (ChatDefence.run(user, message, userstate) === false) return;
+    if (ChatDefence.run(user, message, userstate, client) === false) return;
 
     if (spy.bool === true && spy.was === true && spy.found === false) {
         if (message === spy.name.toLowerCase()) {
@@ -526,16 +533,30 @@ client.on('message', (channel, userstate, message, self) => {
             break;
 
         case '!register':
-            if (Coins.addUser(username) === true) client.say(channel, `@${username}, спасибо что выбрали ДжапанБанк! С нами ваши осколки душ в безопасности!`);
+            if (Coins.addUser(username) === true) client.say(channel, `@${username}, спасибо что выбрали ДжапанБанк! С нами ваши осколки душ в безопасности! На ваш счет зачислено 10 осколков душ`);
             break;
 
         case '!wallet':
-            client.say(channel, `@${username}, у вас на счету ${Coins.getAmount(username).coins} осколков душ. Спасибо, что используете ДжапанБанк`);
+            client.say(channel, `@${username}, у вас на счету ${Coins.getAmount(username)} осколков душ. Спасибо, что используете ДжапанБанк`);
             break;
 
+        case '!buy':
+            const invArray = Coins.getInv(username, true);
+            if (invArray != null && invArray.length >= user.raid.invMax) {
+                client.say(channel, `@${username}, твой склад заполнен`);
+                return;
+            }
+            Coins.buy(username, message, client);
+            break;
+
+        case '!inv':
+            const inv = Coins.getInv(username);
+            if (inv == null) client.say(channel, `@${username}, твой склад пуст`);
+            else client.say(channel, `@${username}, на твоем складе есть: ${inv}`);
+
         case '!raid':
-            const coins = Coins.getAmount(username).coins;
-            if (coins >= 1 && user.timers.raid === 0) {
+            const coins = Coins.getAmount(username);
+            if (coins >= 5 && user.timers.raid === 0) {
                 user.timers.raid = 1;
                 let time = _.randomInt(25, 180);
                 client.say(channel, `@${username}, ты отправляешься в рейд на территорию запрета. За проход ты отдал(а) 5 осколоков души. Если вернешься живым - получишь их обратно. Время рейда около ${time} минут.`);
@@ -547,7 +568,7 @@ client.on('message', (channel, userstate, message, self) => {
                         const back = _.randomInt(120, 230);
                         client.say(channel, `@${username}, тебя сильно раниили в рейде. Возвращение займет ${back} минут`);
                         const restFunc = () => user.timers.raid = 0;
-                        setTimeout(restFunc, _.convertTime(back));
+                        setTimeout(restFunc, _.convertTime(null, back));
                     } else {
                         const rand = _.randomInt(0, 3);
                         if (rand < 3) {
@@ -556,18 +577,18 @@ client.on('message', (channel, userstate, message, self) => {
                             client.say(channel, `@${username}, рейд окончен. Тебе вернули 5 осколоков, а также в рейде было найдено ${find} осколков души. Отдых займет около ${rest} минут`);
                             Coins.plusCoins(username, find+5);
                             const restFunc = () => user.timers.raid = 0;
-                            setTimeout(restFunc, _.convertTime(rest));
+                            setTimeout(restFunc, _.convertTime(null, rest));
                         } else {
                             const find = _.randomInt(1, 2);
                             const rest = _.randomInt(70, 100);
                             Coins.plusCoins(username, find+5);
                             client.say(channel, `@${username}, рейд окончен. Тебе вернули 1 осколок, а также в рейде было найдено ${find} осколков души. Рейд был тяжелым, так что отдых займет около ${rest} минут`);
                             const restFunc = () => user.timers.raid = 0;
-                            setTimeout(restFunc, _.convertTime(rest));
+                            setTimeout(restFunc, _.convertTime(null, rest));
                         }
                     }
                 }
-                setTimeout(func, _.convertTime(time));
+                setTimeout(func, _.convertTime(null, time));
             }
 
         case '!stock':
