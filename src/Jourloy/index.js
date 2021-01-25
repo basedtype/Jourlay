@@ -1,5 +1,7 @@
+const { ChatDefence } = require('./Utils/ChatDefence');
+const { Coins } = require('./Utils/Coins');
+
 const { client, twitch } = require('./modules/twitch');
-const { telegram, tg } = require('./modules/telegram');
 const { discord, ds } = require('./modules/discord');
 const { _, _twitch } = require('./tools');
 const moment = require('moment');
@@ -54,6 +56,7 @@ class user {
             bigBrain: 0,
             roulette: 0,
             resetMessage: 0,
+            raid: 0,
         }
         this.counters = {
             followerAge: 0,
@@ -96,10 +99,9 @@ setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
-        if (splitedUptime[0] === '0' && splitedUptime[2] === '03' && splitedUptime[4] === '00') {
+        if (splitedUptime[0] === '0' && splitedUptime[2] === '05' && splitedUptime[4] === '00') {
             client.say(client.channel, 'Всем привет, я пришел! :)');
             setTimeout(emoute, _.convertTime(null, 30));
-            telegram.notification(game);
             discord.noftification(game);
         }
 
@@ -372,114 +374,18 @@ function roulette(user) {
     }
 }
 
-class ChatDefence {
-    static run(user, message, userstate) {
-        user.counters.message++;
-        this.resetMessage(user);
-        if (this.messageCountCheck(user, userstate) === false) return false;
-        if (this.lengthCheck(user, message) === false) return false;
-        if (this.wordCheck(message, userstate) === false) return false;
-        if (this.messageCheck(user, message) === false) return false;
-        return true;
-    }
-
-    static resetUser(user) {
-        user.counters.message = 0;
-        user.timers.resetMessage = 0;
-    }
-
-    static resetMessage(user) {
-        if (user.timers.resetMessage === 0) {
-            user.timers.resetMessage = 1;
-            setTimeout(function() {
-                ChatDefence.resetUser(user)
-            } , _.convertTime(5));
-        }
-    }
-
-    static messageCountCheck(user, userstate) {
-        if (user.counters.message >= 10) {
-            if (twitch.isMod(userstate) === true) client.say(client.channel, `jourloWTF`);
-            else client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
-            console.log(`Bot => Twitch => Chat defence => Timeout (20) => ${user.username}`);
-            this.resetUser(user);
-            return false;
-        }
-        return true;
-    }
-
-    static lengthCheck(user, message) {
-        let check = false
-        const split = message.split(' ');
-        for (let i in split) {
-            let count = 0;
-            let kekw = 0;
-            for (let j in split) {
-                if (split[j] === split[i]) count++;
-                if (count > 5) check = true;
-            }
-            if (split[i] === 'KEKW') kekw++;
-            if (kekw > 3) check = true;
-        }
-        if (split[0].length > 20) check = true;
-        if (check === true) {
-            client.timeout(client.channel, user.username, message.length, 'Давай без длинных слов, а то в чате не красиво');
-            console.log(`Bot => Twitch => Chat defence => Timeout (${message.length}) => ${user.username}`);
-            this.resetUser(user);
-            return false;
-        }
-        return true;
-    }
-
-    static wordCheck(message, userstate) {
-        let check = false;
-        const inList = ['pr_'];
-        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали'];
-        const splited = message.split(' ');
-
-        for (let i in splited) if (inList.indexOf(splited[i]) !== -1) check = true;
-        for (let i in splited) if (list.includes(splited[i].toLowerCase()) === true) check = true;
-        
-        if (check === true) {
-            const id = userstate['id'];
-            if (twitch.isMod(userstate) === true) client.say(channel, 'Я пытался');
-            else client.deletemessage(channel, id);
-            return false;
-        }
-        return true;
-    }
-
-    static messageCheck(user, message) {
-        let check = false;
-        const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫'];
-        const split = message.split(' ');
-
-        for (let i in split) {
-            if (bannedWords.includes(split[i]) === true) check = true;
-        }
-
-        if (check === true) {
-            client.timeout(client.channel, user.username, 100, 'Запрещенное слово, ай-ай');
-            console.log(`Bot => Twitch => Chat defence => Timeout (100) => ${username}`);
-            this.resetUser(user);
-            return false;
-        }
-        return true;
-    }
-}
-
 class Help {
     static run(message) {
         const split = message.split(' ');
 
-        if (split[1] == null) client.action(client.channel, '==> вводи !help [комманда] чтобы получить помощь. Например: !help roulette');
         if (split[1] === 'roulette') this.roulette();
+        if (split[1] === 'ДжапанБанк') Coins.help(client);
+        if (split[1] === 'send') client.action(client.channel, '==> !send | Этой командой можно отправить осколки душ другому человеку. Комиссия за перевод составляет 5%');
         return;
     }
 
     static roulette() {
-        client.action(client.channel, '==> крутится пуля в барабане и производится выстрел из пистолета. Если пуля вылетела и попала в тебя, то ты отправляешься в таймаут, причем время таймаута неограниченно');
+        client.action(client.channel, '==> !roulette | Крутится пуля в барабане и производится выстрел из пистолета. Если пуля вылетела и попала в тебя, то ты отправляешься в таймаут, причем время таймаута неограниченно');
         return;
     }
 }
@@ -495,7 +401,7 @@ client.on("cheer", (channel, userstate, message) => {
 });
 
 client.on("timeout", (channel, username, reason, duration) => {
-    if (duration === 600) client.say(channel, `OMEGALUL => @${username}`);
+    if (duration >= 600) client.say(channel, `OMEGALUL => @${username}`);
 });
 
 client.on("raided", (channel, username, viewers) => {
@@ -516,12 +422,20 @@ client.on('action', (channel, userstate, message, self) => {
     console.log(`Bot => Twitch => Timeout => ${username} (10 seconds)`);
 })
 
+client.on('redeem', (channel, username, rewardType, tags) => {
+    if (rewardType === '6aa74658-1b0a-49ed-8bc2-2ff0de3f6cef') {
+        Coins.plusCoins(username, 10);
+        client.say(channel, `@${username}, отлично, я перевел 10 осколков душ на ваш счет. Проверить кошелек можно командой !wallet. Спасибо, что используете ДжапанБанк`);
+    }
+});
+
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
     const id = userstate['user-id'];
 
     const user = userClass(username, id, userstate);
+    Coins.plusCoins(username, 0.1);
 
     if (ChatDefence.run(user, message, userstate) === false) return;
 
@@ -602,56 +516,61 @@ client.on('message', (channel, userstate, message, self) => {
         case '!ping':
             if (twitch.isMod(userstate) === true) client.action(channel, '==> pong');
             break;
+        
+        case '!stop':
+            if (twitch.isMod(userstate) === false) return;
+            throw 'Exit';
+        
+        case '!ban':
+            if (twitch.isMod(userstate) === false) return;
+            break;
 
-        case '!spawn':
-            if (twitch.isMod(userstate) !== true) return;
-            spy.bool = true;
-            const spyCome = () => {
-            spy.was = true;
-            const names = ['Тест'];
+        case '!register':
+            if (Coins.addUser(username) === true) client.say(channel, `@${username}, спасибо что выбрали ДжапанБанк! С нами ваши осколки душ в безопасности!`);
+            break;
 
-            spy.name = names[_.randomInt(0, names.length-1)]
-            const name = caesarCipher(spy.name);
+        case '!wallet':
+            client.say(channel, `@${username}, у вас на счету ${Coins.getAmount(username).coins} осколков душ. Спасибо, что используете ДжапанБанк`);
+            break;
 
-            client.say(client.channel, `Чат, у нас проблема, к нам проник`);
-            client.color("Red");
-            client.action(client.channel, `ШПИОН`);
-            client.color("BlueViolet");
-            client.say(client.channel, `Если вы не найдете его, то он доберется до нас`);
-            client.say(client.channel, `Чтобы найти его вам необходимо узнать его имя, но он зашифровался и нам известно только то, что он очень любит Цезаря и это:`);
-            client.color("Green");
-            client.action(client.channel, name);
-            client.color("BlueViolet");
-            client.say(client.channel, `Давайте, юные и не только самураи, не подведите своего даймё!`);
-
-            const banChat = () => {
-                if (spy.found === false) {
-                    client.emoteonly(client.channel);
-                    client.say(client.channel, 'Чаааааат... Мы... Не... Смогли...');
-                    spy.found = true;
-                    const unbanChat = () => {
-                        client.emoteonlyoff(client.channel);
+        case '!raid':
+            const coins = Coins.getAmount(username).coins;
+            if (coins >= 1 && user.timers.raid === 0) {
+                user.timers.raid = 1;
+                let time = _.randomInt(25, 180);
+                client.say(channel, `@${username}, ты отправляешься в рейд на территорию запрета. За проход ты отдал(а) 5 осколоков души. Если вернешься живым - получишь их обратно. Время рейда около ${time} минут.`);
+                Coins.minusCoins(username, 5);
+                const fail = _.randomInt(0, 2);
+                if (fail === 2) time = Math.round(time / 2);
+                const func = () => {
+                    if (fail === 2) {
+                        const back = _.randomInt(120, 230);
+                        client.say(channel, `@${username}, тебя сильно раниили в рейде. Возвращение займет ${back} минут`);
+                        const restFunc = () => user.timers.raid = 0;
+                        setTimeout(restFunc, _.convertTime(back));
+                    } else {
+                        const rand = _.randomInt(0, 3);
+                        if (rand < 3) {
+                            const find = _.randomInt(1, 4);
+                            const rest = _.randomInt(40, 60);
+                            client.say(channel, `@${username}, рейд окончен. Тебе вернули 5 осколоков, а также в рейде было найдено ${find} осколков души. Отдых займет около ${rest} минут`);
+                            Coins.plusCoins(username, find+5);
+                            const restFunc = () => user.timers.raid = 0;
+                            setTimeout(restFunc, _.convertTime(rest));
+                        } else {
+                            const find = _.randomInt(1, 2);
+                            const rest = _.randomInt(70, 100);
+                            Coins.plusCoins(username, find+5);
+                            client.say(channel, `@${username}, рейд окончен. Тебе вернули 1 осколок, а также в рейде было найдено ${find} осколков души. Рейд был тяжелым, так что отдых займет около ${rest} минут`);
+                            const restFunc = () => user.timers.raid = 0;
+                            setTimeout(restFunc, _.convertTime(rest));
+                        }
                     }
-                    setTimeout(unbanChat, _.convertTime(seconds = 30));
                 }
+                setTimeout(func, _.convertTime(time));
             }
-            setTimeout(banChat, _.convertTime(_.randomInt(30, 35)));
-        }
-        setTimeout(spyCome, _.convertTime(_.randomInt(10, 20)));
-        break;
 
-
+        case '!stock':
+            break;
     }
 })
-
-/* TELEGRAM */
-
-tg.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const message = msg.text.toLowerCase();
-
-    if (chatId == 466761645) {
-        if (message == '/nf') telegram.notification();
-        if (message == 'ping') tg.sendMessage(chatId, 'pong');
-    }
-});
