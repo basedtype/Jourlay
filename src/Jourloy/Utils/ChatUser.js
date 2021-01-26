@@ -1,5 +1,6 @@
 /* IMPORTS */
 const { JsonDB } = require('node-json-db');
+const { client } = require('../modules/twitch');
 
 /* PARAMS */
 const database = new JsonDB('Data/Users', true, true, '/');
@@ -35,10 +36,17 @@ class ChatUser {
             },
             raid: {
                 bool: false,
+                rest: false,
                 created_at: null,
                 fail: false,
-                invMax: 3,
-            }
+                invMax: 10,
+            },
+            exp: {
+                level: 1,
+                points: 0,
+            },
+            wallet: 10,
+            inv: [],
         }
         db[username] = user;
         database.push('/Users', db);
@@ -62,9 +70,15 @@ class ChatUser {
         return ERR_NOT_FIND_USER;
     }
 
-    static getCounters(username) {
+    static getRaid(username) {
         const db = database.getData('/Users');
         for (let i in db) if (i === username) return db[i].raid;
+        return ERR_NOT_FIND_USER;
+    }
+
+    static getExp(username) {
+        const db = database.getData('/Users');
+        for (let i in db) if (i === username) return db[i].exp;
         return ERR_NOT_FIND_USER;
     }
 
@@ -86,6 +100,20 @@ class ChatUser {
         return ERR_NOT_FIND_USER;
     }
 
+    static addExp(username, exp, client) {
+        const db = database.getData('/Users');
+        for (let i in db) if (i === username) {
+            db[username].exp.points += exp;
+            if (db[username].exp.points > ((db[username].exp.level * 100) + (db[username].exp.level * 10))) {
+                db[username].exp.level++;
+                db[username].exp.points = db[username].exp.points - ((db[username].exp.level * 100) + (db[username].exp.level * 10));
+                client.say(client.channel, `@${username}, поздравляю, ты достиг ${db[username].exp.level} уровня!`);
+            }
+            database.push('/Users', db, true);
+        }
+        return ERR_NOT_FIND_USER;
+    }
+
     static updateTimers(username, timers) {
         const db = database.getData('/Users');
         for (let i in db) if (i === username) {
@@ -95,7 +123,7 @@ class ChatUser {
         return ERR_NOT_FIND_USER;
     }
 
-    static updateTimers(username, counters) {
+    static updateCounetrs(username, counters) {
         const db = database.getData('/Users');
         for (let i in db) if (i === username) {
             db[username].counters = counters;
@@ -104,12 +132,28 @@ class ChatUser {
         return ERR_NOT_FIND_USER;
     }
 
-    static updateTimers(username, raid) {
+    static updateRaid(username, raid) {
         const db = database.getData('/Users');
         for (let i in db) if (i === username) {
             db[username].raid = raid;
             database.push('/Users', db, true);
         }
+        return ERR_NOT_FIND_USER;
+    }
+
+    static updateExp(username, exp) {
+        const db = database.getData('/Users');
+        for (let i in db) if (i === username) {
+            db[username].exp = exp;
+            database.push('/Users', db, true);
+        }
+        return ERR_NOT_FIND_USER;
+    }
+
+    static deleteUser(username) {
+        const db = database.getData('/Users');
+        delete db[username];
+        database.push('/Users', db, true);
         return ERR_NOT_FIND_USER;
     }
 }
