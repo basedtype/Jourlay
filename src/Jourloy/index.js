@@ -101,17 +101,17 @@ setInterval(function () {
     })
 }, _.convertTime(seconds=1));
 
-/* setInterval(function () {
+setInterval(function () {
     if (uptime != null && game != null) {
         const splitedUptime = uptime.split(' ');
 
-        if (splitedUptime[0] === '0' && splitedUptime[2] === '05' && splitedUptime[4] === '00') {
+        if (splitedUptime[0] === '0' && splitedUptime[2] === '11' && splitedUptime[4] === '00') {
             client.say(client.channel, 'Всем привет, я пришел! :)');
             setTimeout(emoute, _.convertTime(null, 30));
             discord.noftification(game);
         }
 
-        if (streamLive === 0) {
+        /* if (streamLive === 0) {
             if (splitedUptime[0] === '0' && splitedUptime[2] === '00' && splitedUptime[4] === '00') return;
             streamLive = 1;
             const spyStream = 1;
@@ -148,13 +148,13 @@ setInterval(function () {
                     }
                     setTimeout(banChat, _.convertTime(null, _.randomInt(2, 5)));
                 }
-                setTimeout(spyCome, _.convertTime(null, _.randomInt(10, 20)));
+                setTimeout(spyCome, _.convertTime(null, _.randomInt(1, 5)));
             }
             const reset = () => streamLive = 0;
             setTimeout(reset, _.convertTime(hours = 5));
-        }
+        } */
     }
-}, _.convertTime(seconds=1)); */
+}, _.convertTime(seconds=1));
 
 setInterval(function() {
     if (viewers > 15) emoute();
