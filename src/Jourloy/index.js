@@ -439,6 +439,7 @@ client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
 
+    console.log(ChatUser.getUser(username))
     if (ChatUser.getUser(username) === 'ERR_NOT_FIND_USER') ChatUser.create(username, userstate);
 
     const id = userstate['user-id'];
@@ -532,9 +533,9 @@ client.on('message', (channel, userstate, message, self) => {
             if (twitch.isMod(userstate) === false) return;
             break;
 
-        case '!register':
+        /* case '!register':
             if (Coins.addUser(username) === true) client.say(channel, `@${username}, спасибо что выбрали ДжапанБанк! С нами ваши осколки душ в безопасности! На ваш счет зачислено 10 осколков душ`);
-            break;
+            break; */
 
         case '!wallet':
             client.say(channel, `@${username}, у вас на счету ${Coins.getAmount(username)} осколков душ. Спасибо, что используете ДжапанБанк`);
@@ -549,47 +550,33 @@ client.on('message', (channel, userstate, message, self) => {
             Coins.buy(username, message, client);
             break;
 
+        case '!i':
         case '!inv':
+        case '!inventory':
             const inv = Coins.getInv(username);
-            if (inv == null) client.say(channel, `@${username}, твой склад пуст`);
+            if (inv == null || inv == [] || inv == ' ') client.say(channel, `@${username}, твой склад пуст`);
             else client.say(channel, `@${username}, на твоем складе есть: ${inv}`);
+            break;
 
+        case '!r':
         case '!raid':
-            const coins = Coins.getAmount(username);
-            if (coins >= 5 && user.timers.raid === 0) {
-                user.timers.raid = 1;
-                let time = _.randomInt(25, 180);
-                client.say(channel, `@${username}, ты отправляешься в рейд на территорию запрета. За проход ты отдал(а) 5 осколоков души. Если вернешься живым - получишь их обратно. Время рейда около ${time} минут.`);
-                Coins.minusCoins(username, 5);
-                const fail = _.randomInt(0, 2);
-                if (fail === 2) time = Math.round(time / 2);
-                const func = () => {
-                    if (fail === 2) {
-                        const back = _.randomInt(120, 230);
-                        client.say(channel, `@${username}, тебя сильно раниили в рейде. Возвращение займет ${back} минут`);
-                        const restFunc = () => user.timers.raid = 0;
-                        setTimeout(restFunc, _.convertTime(null, back));
-                    } else {
-                        const rand = _.randomInt(0, 3);
-                        if (rand < 3) {
-                            const find = _.randomInt(1, 4);
-                            const rest = _.randomInt(40, 60);
-                            client.say(channel, `@${username}, рейд окончен. Тебе вернули 5 осколоков, а также в рейде было найдено ${find} осколков души. Отдых займет около ${rest} минут`);
-                            Coins.plusCoins(username, find+5);
-                            const restFunc = () => user.timers.raid = 0;
-                            setTimeout(restFunc, _.convertTime(null, rest));
-                        } else {
-                            const find = _.randomInt(1, 2);
-                            const rest = _.randomInt(70, 100);
-                            Coins.plusCoins(username, find+5);
-                            client.say(channel, `@${username}, рейд окончен. Тебе вернули 1 осколок, а также в рейде было найдено ${find} осколков души. Рейд был тяжелым, так что отдых займет около ${rest} минут`);
-                            const restFunc = () => user.timers.raid = 0;
-                            setTimeout(restFunc, _.convertTime(null, rest));
-                        }
-                    }
-                }
-                setTimeout(func, _.convertTime(null, time));
+            Coins.raid(username, client);
+            break;
+
+        case '!st':
+        case '!status':
+            const raid = ChatUser.getRaid(username);
+            if (raid.bool === true && raid.rest !== true) client.say(channel, `@${username}, вы еще в вылазке. К сожеление мы не помним когда вы ушли, поэтому сказать время до возвращения я пока не могу`);
+            else if (raid.bool === true && raid.rest === true) client.say(channel, `@${username}, вы все еще отдыхаете`);
+            else if (raid.bool === false) client.say(channel, `@${username}, вы жаждете приключений. Отправляйтесь в путь | !raid`);
+            else {
+                console.log(raid);
             }
+            break;
+
+        case '!exp':
+            const exp = ChatUser.getExp(username);
+            client.say(channel, `@${username}, у тебя ${exp.points} очков опыта и ${exp.level} уровень`)
 
         case '!stock':
             break;
