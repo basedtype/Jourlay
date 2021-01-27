@@ -1,10 +1,9 @@
 /* IMPORTS */
-const { JsonDB } = require('node-json-db');
+const moment = require('moment');
 const { _ } = require('../tools');
-const { ChatUser } = require('./ChatUser');
+const { Database } = require('./Database');
 
 /* PARAMS */
-const database = new JsonDB('Data/Users', true, true, '/');
 const price = {
     eat: 5,
     armour: {
@@ -32,106 +31,26 @@ const ERR_NOT_ENOUGH_COINS = 'NOT_ENOUGH_COINS';
 const ERR_ALREADY_IN_RAID = 'ERR_ALREADY_IN_RAID';
 
 /* CODE */
-try { database.getData('/Users') } 
-catch { database.push('/Users', {}, true) }
 
 /* CLASSES */
 class Coins {
     static help(client) {
-        client.action(client.channel, `==> учавствуя в мини-играх и просто общаясь в чате, ты получаешь на свой счет в ДжапанБанке "осколки душ". Их можно тратить на награды и участие в платных мини-играх. Они отличаются от йен только способом получения. В будущем йены можно будет конвентировать в осколки душ`);
+        client.action(client.channel, `==> учавствуя в мини-играх и просто общаясь в чате, ты получаешь на свой счет в ДжапанБанке "осколки душ". Их можно тратить на награды и участие в платных мини-играх. Они отличаются от йен только способом получения`);
         return true;
-    }
-
-    /**
-     * 
-     * @param {String} username 
-     */
-    static getAmount(username) {
-        const db = database.getData('/Users');
-        for (let i in db) if (i === username) return db[i].wallet;
-        return ERR_NOT_FIND_USER;
-    }
-
-    /**
-     * 
-     * @param {String} username 
-     * @param {Number} amount 
-     */
-    static plusCoins(username, amount) {
-        const db = database.getData('/Users');
-        let user = undefined;
-        for (let i in db) if (i === username) user = db[i];
-        if (user == null) return ERR_NOT_FIND_USER;
-
-        db[username].wallet += amount;
-        database.push('/Users', db, true);
-        return true;
-    }
-
-    /**
-     * 
-     * @param {String} username 
-     * @param {Number} amount 
-     */
-    static minusCoins(username, amount) {
-        const db = database.getData('/Users');
-        let user = undefined;
-        for (let i in db) if (i === username) user = db[i];
-        if (user == null) return ERR_NOT_FIND_USER;
-
-        db[username].wallet -= amount;
-        database.push('/Users', db, true);
-        return true;
-    }
-
-    /**
-     * 
-     * @param {String} username 
-     * @param {Boolean} array
-     */
-    static getInv(username, array) {
-        const db = database.getData('/Users');
-        let user = undefined;
-        for (let i in db) if (i === username) user = db[i].inv;
-        if (user != undefined) {
-            if (user.length > 0) {
-                if (array == null || array === false) user = user.join(', ');
-            }
-            else user = [];
-            return user;
-        }
-        else return ERR_NOT_FIND_USER;
     }
 
     static raid(username, client) {
-        const coins = this.getAmount(username);
+        const coins = Database.getCoins(username);
         if (coins < price.raid) return ERR_NOT_ENOUGH_COINS;
-        this.minusCoins(username, 10);
-        const userRaid = ChatUser.getRaid;
+        Database.removeCoins(username, price.raid);
+
+        const userRaid = Database.getRaid(username);
         if (userRaid.bool === true) return ERR_ALREADY_IN_RAID;
 
         userRaid.bool = true;
-        ChatUser.updateRaid(username, userRaid);
+        userRaid.created_at = Math.floor(moment.now() / 1000);
 
-        const inventory = this.getInv(username, true);
-        let lucky = 80;
-        if (inventory.includes('Броня 1 уровня') === true) lucky += 1;
-        if (inventory.includes('Броня 2 уровня') === true) lucky += 3;
-        if (inventory.includes('Броня 3 уровня') === true) lucky += 5;
-        if (inventory.includes('Оружие 1 уровня') === true) lucky += 1;
-        if (inventory.includes('Оружие 2 уровня') === true) lucky += 3;
-        if (inventory.includes('Оружие 3 уровня') === true) lucky += 5;
-        if (inventory.includes('Еда') === true) lucky += 5;
-        let fail = _.randomInt(0, 100);
-
-        if (lucky >= fail) fail = false;
-        if (lucky < fail) fail = true;
-
-        fail = false; // Will change. Because small chat
-
-        let time = undefined;
-        if (lucky === false) time = _.randomInt(7200, 32340);
-        else time = _.randomInt(7200, 10800);
+        let time = _.randomInt(7200, 32340);
 
         if (username === 'jourloy' || username === 'kartinka_katerinka') time = 65;
 
@@ -145,7 +64,10 @@ class Coins {
             seconds.toString().padStart(2, '0')
         ].join(':');
 
-        client.say(client.channel, `@${username}, ДжапанБанк предоставляет вам одноразовую лицензию для прохода в запретные земли. Если вы вернете ее, то получите обратно свои осколки душ. Спасибо, что пользуетесь ДжапанБанк. Вы вернетесь в город через ${formatted}`);
+        userRaid.time = time;
+        Database.updateRaid(username, userRaid);
+
+        client.say(client.channel, `@${username}, ДжапанБанк предоставляет вам одноразовый пропуск для прохода в запретные земли. Если вы вернете его, то получите обратно свои осколки душ. Спасибо, что пользуетесь ДжапанБанк. Вы вернетесь в город через ${formatted}`);
 
         setTimeout(function() {
             let shards = null;
@@ -164,18 +86,23 @@ class Coins {
                 exp = _.randomInt(25, 30);
             }
 
-            const rest = _.randomInt(50, 80);
+            let rest = _.randomInt(50, 80);
+            if (username === 'jourloy') rest = 1;
+            userRaid.time = rest*60;
             client.say(client.channel, `@${username}, вылазка окончена. ДжапанБанк рад видеть вас! Вы получаете ${shards} осколков на счет, а также ${exp} очков опыта. Отдых займет ${rest} минут`);
             userRaid.rest = true;
-            ChatUser.updateRaid(username, userRaid);
-            Coins.plusCoins(username, shards);
-            ChatUser.addExp(username, exp, client);
+            userRaid.created_at = Math.floor(moment.now() / 1000);
+            Database.updateRaid(username, userRaid);
+            Database.addCoins(username, shards + price.raid);
+            Database.addExp(username, exp, client);
 
             setTimeout(function() {
-                const raid = ChatUser.getRaid(username);
+                const raid = Database.getRaid(username);
                 raid.bool = false;
                 raid.rest = false;
-                ChatUser.updateRaid(username, raid);
+                raid.created_at = null;
+                raid.time = null;
+                Database.updateRaid(username, raid);
             }, _.convertTime(rest*60));
 
         }, _.convertTime(time));
