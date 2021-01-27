@@ -68,7 +68,6 @@ client.on('message', (channel, userstate, message, self) => {
         client.say(channel, `@${username}, склад в данный момент не доступен. Спасибо, что используете ДжапанБанк`);
         return;
     } else if (messageSplit[0] === '!raid' || messageSplit[0] === '!r') {
-        if (username !== 'jourloy') return;
         Coins.raid(username, client);
         return;
     } else if (messageSplit[0] === '!exp' || messageSplit[0] === '!e') {
