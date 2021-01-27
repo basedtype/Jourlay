@@ -81,13 +81,14 @@ client.on('message', (channel, userstate, message, self) => {
         client.say(channel, `@${username}, перевод в данный момент не доступен. Спасибо, что используете ДжапанБанк`);
         return;
     } else if (messageSplit[0] === '!addShards') {
+        if (username !== 'jourloy') return;
         const shards = parseInt(messageSplit[1]);
         const to = messageSplit[2];
         Database.addCoins(to, shards);
         client.say(channel, `@${username}, ${shards} осколков душ зачислено на счет, владельцем которого является ${to}. Спасибо, что используете ДжапанБанк`);
         return;
     } else if (messageSplit[0] === '!курс') {
-        client.action(channel, `==> Текущий курс йен по отношению к осколкам душ: 10 йен на 1 осколок. Спасибо, что используете ДжапанБанк`);
+        client.action(channel, `==> Текущий курс йен по отношению к осколкам душ: 100 йен на 1 осколок. Спасибо, что используете ДжапанБанк`);
         return;
     } else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
         const raid = Database.getRaid(username);
