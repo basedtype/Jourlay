@@ -9,7 +9,9 @@ const ERR_NOT_FIND_USER = 'ERR_NOT_FIND_USER';
 const ERR_USER_ALREADY_EXIST = 'ERR_USER_ALREADY_EXIST';
 
 /* CODE */
-try { database.getData('/Users') } 
+try { 
+    const data = database.getData('/Users');
+} 
 catch { database.push('/Users', {}, true) }
 
 /* CLASSES */
