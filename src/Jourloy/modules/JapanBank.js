@@ -59,7 +59,10 @@ client.on('message', (channel, userstate, message, self) => {
         if (username !== 'jourloy') return;
         throw 'Exit';
     } else if (messageSplit[0] === '!wallet' || messageSplit[0] === '!w') {
-        client.say(channel, `@${username}, у вас на счету ${Database.getCoins(username)} осколков душ. Спасибо, что используете ДжапанБанк`);
+        if (username === 'jourloy') {
+            const to = messageSplit[1];
+            client.say(channel, `@${username}, у ${to} на счету ${Database.getCoins(to)} осколков душ. Спасибо, что используете ДжапанБанк`);
+        } else client.say(channel, `@${username}, у вас на счету ${Database.getCoins(username)} осколков душ. Спасибо, что используете ДжапанБанк`);
         return;
     } else if (messageSplit[0] === '!buy' || messageSplit[0] === '!b') {
         client.say(channel, `@${username}, магазин в данный момент не доступен. Спасибо, что используете ДжапанБанк`);
@@ -87,46 +90,92 @@ client.on('message', (channel, userstate, message, self) => {
         Database.addCoins(to, shards);
         client.say(channel, `@${username}, ${shards} осколков душ зачислено на счет, владельцем которого является ${to}. Спасибо, что используете ДжапанБанк`);
         return;
+    } else if (messageSplit[0] === '!removeShards') {
+        if (username !== 'jourloy') return;
+        const shards = parseInt(messageSplit[1]);
+        const to = messageSplit[2];
+        Database.removeCoins(to, shards);
+        client.say(channel, `@${username}, ${shards} осколков душ убрано со счета, владельцем которого является ${to}. Спасибо, что используете ДжапанБанк`);
+        return;
     } else if (messageSplit[0] === '!курс') {
         client.action(channel, `==> Текущий курс йен по отношению к осколкам душ: 100 йен на 1 осколок. Спасибо, что используете ДжапанБанк`);
         return;
     } else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
-        const raid = Database.getRaid(username);
-        if (raid.bool === true && raid.rest === false) {
-            const now = Math.floor(moment.now() / 1000);
-            const created_at = raid.created_at;
-            const time = raid.time;
+        if (username === 'jourloy') {
+            const raid = Database.getRaid(messageSplit[1]);
+            if (raid.bool === true && raid.rest === false) {
+                const now = Math.floor(moment.now() / 1000);
+                const created_at = raid.created_at;
+                const time = raid.time;
 
-            let about = Math.floor((created_at + time) - now);
-            let hours = Math.floor(about/60/60);
-            let minutes = Math.floor(about/60)-(hours*60);
-            let seconds = about%60
+                let about = Math.floor((created_at + time) - now);
+                let hours = Math.floor(about/60/60);
+                let minutes = Math.floor(about/60)-(hours*60);
+                let seconds = about%60
 
-            const formatted = [
-                hours.toString().padStart(2, '0'),
-                minutes.toString().padStart(2, '0'),
-                seconds.toString().padStart(2, '0')
-            ].join(':');
+                const formatted = [
+                    hours.toString().padStart(2, '0'),
+                    minutes.toString().padStart(2, '0'),
+                    seconds.toString().padStart(2, '0')
+                ].join(':');
 
-            client.say(channel, `@${username}, вы находитесь в рейде. До возвращения еще ${formatted}. Спасибо, что используете ДжапанБанк`);
-        } else if (raid.bool === true && raid.rest === true) {
-            const now = Math.floor(moment.now() / 1000);
-            const created_at = raid.created_at;
-            const time = raid.time;
+                client.say(channel, `@${username}, ${messageSplit[1]} находится в рейде. До возвращения еще ${formatted}. Спасибо, что используете ДжапанБанк`);
+            } else if (raid.bool === true && raid.rest === true) {
+                const now = Math.floor(moment.now() / 1000);
+                const created_at = raid.created_at;
+                const time = raid.time;
 
-            let about = Math.floor((created_at + time) - now);
-            let hours = Math.floor(about/60/60);
-            let minutes = Math.floor(about/60)-(hours*60);
-            let seconds = about%60
+                let about = Math.floor((created_at + time) - now);
+                let hours = Math.floor(about/60/60);
+                let minutes = Math.floor(about/60)-(hours*60);
+                let seconds = about%60
 
-            const formatted = [
-                hours.toString().padStart(2, '0'),
-                minutes.toString().padStart(2, '0'),
-                seconds.toString().padStart(2, '0')
-            ].join(':');
+                const formatted = [
+                    hours.toString().padStart(2, '0'),
+                    minutes.toString().padStart(2, '0'),
+                    seconds.toString().padStart(2, '0')
+                ].join(':');
 
-            client.say(channel, `@${username}, вы восстанавливаете силы. До полного восстановления ${formatted}. Спасибо, что используете ДжапанБанк`);
-        } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Пропуск стоит 10 осколков душ. Отправиться в рейд можно командой !raid. Спасибо, что используете ДжапанБанк`);
+                client.say(channel, `@${username}, ${messageSplit[1]} восстанавливает силы. До полного восстановления ${formatted}. Спасибо, что используете ДжапанБанк`);
+            } else client.say(channel, `@${username}, ${messageSplit[1]} готов отправиться в запретные земли. Спасибо, что используете ДжапанБанк`);
+        } else {
+            const raid = Database.getRaid(username);
+            if (raid.bool === true && raid.rest === false) {
+                const now = Math.floor(moment.now() / 1000);
+                const created_at = raid.created_at;
+                const time = raid.time;
+
+                let about = Math.floor((created_at + time) - now);
+                let hours = Math.floor(about/60/60);
+                let minutes = Math.floor(about/60)-(hours*60);
+                let seconds = about%60
+
+                const formatted = [
+                    hours.toString().padStart(2, '0'),
+                    minutes.toString().padStart(2, '0'),
+                    seconds.toString().padStart(2, '0')
+                ].join(':');
+
+                client.say(channel, `@${username}, вы находитесь в рейде. До возвращения еще ${formatted}. Спасибо, что используете ДжапанБанк`);
+            } else if (raid.bool === true && raid.rest === true) {
+                const now = Math.floor(moment.now() / 1000);
+                const created_at = raid.created_at;
+                const time = raid.time;
+
+                let about = Math.floor((created_at + time) - now);
+                let hours = Math.floor(about/60/60);
+                let minutes = Math.floor(about/60)-(hours*60);
+                let seconds = about%60
+
+                const formatted = [
+                    hours.toString().padStart(2, '0'),
+                    minutes.toString().padStart(2, '0'),
+                    seconds.toString().padStart(2, '0')
+                ].join(':');
+
+                client.say(channel, `@${username}, вы восстанавливаете силы. До полного восстановления ${formatted}. Спасибо, что используете ДжапанБанк`);
+            } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Пропуск стоит 10 осколков душ. Отправиться в рейд можно командой !raid. Спасибо, что используете ДжапанБанк`);
+        }
         return;
     }
 });
