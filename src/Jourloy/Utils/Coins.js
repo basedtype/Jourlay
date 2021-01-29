@@ -42,11 +42,11 @@ class Coins {
     static raid(username, client) {
         const coins = Database.getCoins(username);
         if (coins < price.raid) return ERR_NOT_ENOUGH_COINS;
-        Database.removeCoins(username, price.raid);
 
         const userRaid = Database.getRaid(username);
         if (userRaid.bool === true) return ERR_ALREADY_IN_RAID;
 
+        Database.removeCoins(username, price.raid);
         userRaid.bool = true;
         userRaid.created_at = Math.floor(moment.now() / 1000);
 
