@@ -40,7 +40,7 @@ setInterval(function () {
     };
 
     client.channels.fetch(channelsID.create.duo).then(channel => {
-        if (channel.full == null || channel.full === false) return;
+        if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
         const guild = channel.guild;
@@ -74,7 +74,7 @@ setInterval(function () {
     });
 
     client.channels.fetch(channelsID.create.trio).then(channel => {
-        if (channel.full == null || channel.full === false) return;
+        if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
         const guild = channel.guild;
@@ -108,7 +108,7 @@ setInterval(function () {
     });
 
     client.channels.fetch(channelsID.create.squad_4).then(channel => {
-        if (channel.full == null || channel.full === false) return;
+        if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
         const guild = channel.guild;
@@ -142,7 +142,7 @@ setInterval(function () {
     });
 
     client.channels.fetch(channelsID.create.squad_5).then(channel => {
-        if (channel.full == null || channel.full === false) return;
+        if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
         const guild = channel.guild;
