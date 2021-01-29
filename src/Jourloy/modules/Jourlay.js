@@ -39,6 +39,7 @@ let uptime = undefined;
 let viewers = 0;
 let maxViewers = 0;
 let game = undefined;
+let gameHistory = [];
 
 const timers = {
     hi: 0,
@@ -53,7 +54,14 @@ const timers = {
 /* FUNCTIONS */
 function getUptime() {
     if (uptime == undefined) client.say(client.channel, `Стример сейчас оффлайн`);
-    else client.say(client.channel, `Стример ведет трансляцию уже ${uptime}!`)
+    else {
+        let message = `Стример ведет трансляцию уже ${uptime} | Игры на стриме: `
+        for (let i in gameHistory) {
+            if (i == 1) message += gameHistory[i];
+            else message += ` => ${gameHistory[i]}`;
+        }
+        client.say(client.channel, message);
+    }
 }
 
 function question(username, message) {
@@ -147,6 +155,7 @@ setInterval(function () {
             viewers = body.stream.viewers;
             if (viewers > maxViewers) maxViewers = viewers;
             game = body.stream.game;
+            if (gameHistory.includes(game) === false) gameHistory.push(game);
 
             let now = new Date();
             let then = body.stream.created_at;
@@ -246,12 +255,16 @@ client.on('message', (channel, userstate, message, self) => {
             if (username === 'jourloy') client.action(channel, '==> pong');
             break;
         
-        case '!stop_jourlay':
-            if (username === 'jourloy') return;
+        case '!stop':
+            if (username !== 'jourloy') return;
             throw 'Exit';
         
         case '!ban':
-            if (username === 'jourloy') return;
+            if (username !== 'jourloy') return;
+            break;
+
+        case '!цель':
+            client.say(channel, 'нашей целью в Satisfactory является строительство небесной платформы, на которой будут идти все процессы производства (а именно производство тяжелых модульных каркасов). На земле только добыча руды. Цель необходимо завершить до 28 февраля включительно, иначе будет отправлено 3 подарочные сабки');
             break;
     }
 });
