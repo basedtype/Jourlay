@@ -27,7 +27,7 @@ class ChatDefence {
 
     static messageCountCheck(username, client) {
         const user = Database.getChatDefence(username);
-        if (user.messages >= 10) {
+        if (user.messages >= 8) {
             client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
             console.log(`Jourlay => Twitch => Chat defence => Timeout (20) => ${user.username}`);
             return false;
@@ -68,12 +68,12 @@ class ChatDefence {
         
         if (check === true) {
             const id = userstate['id'];
-            client.deletemessage(channel, id);
+            client.deletemessage(client.channel, id);
             return false;
         }
         return true;
     }
-    
+
     static messageCheck(username, message, client) {
         let check = false;
         const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
