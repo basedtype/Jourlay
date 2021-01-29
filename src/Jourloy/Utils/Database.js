@@ -112,6 +112,23 @@ class Database {
         // TODO
     }
 
+    static getTop() {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+
+        let maxWallet = 0
+        let user = '';
+
+        for (i in db) {
+            if (db[i].wallet > maxWallet) {
+                maxWallet = db[i].wallet;
+                user = i;
+            }
+        }
+
+        return {username: user, wallet: maxWallet};
+    }
+
     static addMessage(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
