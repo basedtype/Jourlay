@@ -113,7 +113,7 @@ client.on('message', (channel, userstate, message, self) => {
     } else if (messageSplit[0] === '!allowRaid') {
         if (username !== 'jourloy') return;
         client.action(channel, `==> Ворота из города ОТКРЫТЫ, посты охраны убраны`);
-        stopRaid = true;
+        stopRaid = false;
         return;
     }  else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
         if (username === 'jourloy') {
