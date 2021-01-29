@@ -119,7 +119,7 @@ class Database {
         let maxWallet = 0
         let user = '';
 
-        for (i in db) {
+        for (let i in db) {
             if (db[i].wallet > maxWallet) {
                 maxWallet = db[i].wallet;
                 user = i;
