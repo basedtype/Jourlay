@@ -89,16 +89,16 @@ class Coins {
 
             let rest = _.randomInt(50, 80);
             if (username === 'jourloy') rest = 1;
-            userRaid = Database.getRaid(username);
-            userRaid.time = rest*60;
+            const Raid = Database.getRaid(username);
+            Raid.time = rest*60;
             client.say(client.channel, `@${username}, вылазка окончена. ДжапанБанк рад видеть вас! Вы получаете ${shards} осколков на счет, а также ${exp} очков опыта. Проверить счет можно командой !wallet, а уровень командой !exp. Отдых займет ${rest} минут`);
             console.log(`JapanBank => Twitch => Raid => ${username} => End raid => ${rest}`);
-            userRaid.rest = true;
-            userRaid.created_at = Math.floor(moment.now() / 1000);
-            userRaid.pay = 0;
-            userRaid.return = false;
-            userRaid.timerID = "";
-            Database.updateRaid(username, userRaid);
+            Raid.rest = true;
+            Raid.created_at = Math.floor(moment.now() / 1000);
+            Raid.pay = 0;
+            Raid.return = false;
+            Raid.timerID = "";
+            Database.updateRaid(username, Raid);
             Database.addCoins(username, shards + price.raid);
             Database.addExp(username, exp, client);
 
