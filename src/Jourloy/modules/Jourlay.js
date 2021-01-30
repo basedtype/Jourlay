@@ -75,13 +75,9 @@ function followerAge(username, id) {
             const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
 
             if (banList.includes(username)) {
-                if (user.counters.followerAge > 2) {
-                    client.say(client.channel, `@${username}, я усталь. Можна отдохнуть?`);
-                } else {
-                    const int = _.randomInt(0,1)
-                    if (int === 0) client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`);
-                    else client.say(client.channel, `@${username}, вижу что ты зафоловлен(а). По времени норм, поверишь?`);
-                }
+                const int = _.randomInt(0,1)
+                if (int === 0) client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`);
+                else client.say(client.channel, `@${username}, вижу что ты зафоловлен(а). По времени норм, поверишь?`);
             } else client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
         })
     } catch (e) {}
