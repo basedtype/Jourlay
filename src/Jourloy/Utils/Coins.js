@@ -86,7 +86,7 @@ class Coins {
                 shards = _.randomInt(50, 80);
                 exp = _.randomInt(25, 30);
             }
-
+            const userRaid = Database.getRaid(username);
             let rest = _.randomInt(50, 80);
             if (username === 'jourloy') rest = 1;
             userRaid.time = rest*60;
