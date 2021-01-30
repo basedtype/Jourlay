@@ -52,6 +52,41 @@ const timers = {
 }
 
 /* FUNCTIONS */
+function followerAge(username, id) {
+    const banList = ['anna_scorpion05'];
+    try {
+        client.api({
+            url: `https://api.twitch.tv/kraken/users/${id}/follows/channels/158466757`,
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+            }
+        }, (err, res, body) => {
+            if (body.message && body.message === 'Follow not found') {
+                client.say(client.channel, `@${username}, а ты зафоловлен(а)?`);
+                return;
+            }
+            let now = new Date();
+            let then = body.created_at;
+            let ms = moment(now).diff(moment(then));
+            let d = moment.duration(ms);
+            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
+
+            if (banList.includes(username)) {
+                if (user.counters.followerAge > 2) {
+                    client.say(client.channel, `@${username}, я усталь. Можна отдохнуть?`);
+                } else {
+                    const int = _.randomInt(0,1)
+                    if (int === 0) client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`);
+                    else client.say(client.channel, `@${username}, вижу что ты зафоловлен(а). По времени норм, поверишь?`);
+                }
+            } else client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+        })
+    } catch (e) {}
+}
+
 function getUptime() {
     if (uptime == undefined) client.say(client.channel, `Стример сейчас оффлайн`);
     else {
