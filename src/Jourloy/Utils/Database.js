@@ -3,6 +3,52 @@ const { JsonDB } = require('node-json-db');
 
 /* PARAMS */
 const database = new JsonDB('Data/Users', true, true, '/');
+const user = {
+    twitchUsername: undefined,
+    discordUsername: undefined,
+    id: undefined,
+    messages: 0,
+    warnings: 0,
+    timers: {
+        ask: 0,
+        pc: 0,
+        bigBrain: 0,
+        roulette: 0,
+    },
+    counters: {
+        followerAge: 0,
+        roulette: 0,
+    },
+    raid: {
+        bool: false,
+        rest: false,
+        created_at: null,
+        time: null,
+        fail: false,
+        invMax: 10,
+        pay: 0,
+        return: false,
+        timerID: null,
+    },
+    exp: {
+        level: 1,
+        points: 0,
+    },
+    chatDefence: {
+        messages: 0,
+        timer: 0,
+    },
+    wallet: 10,
+    inv: [],
+}
+
+const a = {
+    ask: {
+        pa: {
+            'q': 0
+        }
+    }
+}
 
 /* ERRORS */
 const ERR_NOT_FIND_USER = 'ERR_NOT_FIND_USER';
@@ -10,52 +56,31 @@ const ERR_USER_ALREADY_EXIST = 'ERR_USER_ALREADY_EXIST';
 
 /* CODE */
 try { 
-    const data = database.getData('/Users');
+    const data = new JsonDB('Data/Users', true, true, '/');
+    const db = data.getData('/Users');
+
+    for (let i in db) {
+        for (let j in user) {
+            if (j === 'timers' || j === 'counters' || j === 'raid' || j === 'exp' || j === 'chatDefence') {
+                for (let o in user[j]) {
+                    if (o in db[i] === false) db[i][j][o] = user[j][o];
+                }
+            } else if (j in db[i] === false) db[i][j] = user[j];
+        }
+    }
+    data.push('/Users', db);
 } 
 catch { database.push('/Users', {}, true) }
 
 /* CLASSES */
 class Database {
-    static create(username, userstate, client) {
+    static create(username, userstate) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
-        const user = {
-            twitchUsername: username,
-            discordUsername: undefined,
-            id: userstate['id'],
-            messages: 0,
-            warnings: 0,
-            timers: {
-                ask: 0,
-                pc: 0,
-                bigBrain: 0,
-                roulette: 0,
-            },
-            counters: {
-                followerAge: 0,
-                roulette: 0,
-            },
-            raid: {
-                bool: false,
-                rest: false,
-                created_at: null,
-                time: null,
-                fail: false,
-                invMax: 10,
-            },
-            exp: {
-                level: 1,
-                points: 0,
-            },
-            chatDefence: {
-                messages: 0,
-                timer: 0,
-            },
-            wallet: 10,
-            inv: [],
-        }
+        user.username = username;
+        user.id = userstate['id'];
         db[username] = user;
-        database.push('/Users', db);
+        data.push('/Users', db);
         //client.say(client.channel, `@${username}, вам создан счет в ДжапанБанке, где вы можете хранить свои осколки душ. Проверить баланс счета можно командой !wallet. Спасибо, что используете ДжапанБанк`)
     }
 
