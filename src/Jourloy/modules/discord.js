@@ -181,7 +181,7 @@ setInterval(function () {
         client.channels.fetch(channelsID.noftification).then(channel => {
             if (channel == null) return;
             noftification = channel;
-            console.log('Bot => Discord => Ready');
+            console.log('Jourlay => Discord => Ready');
         });
     }
 }, 1000);
