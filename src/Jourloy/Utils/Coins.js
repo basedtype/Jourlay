@@ -67,9 +67,10 @@ class Coins {
         userRaid.time = time;
         Database.updateRaid(username, userRaid);
 
-        client.say(client.channel, `@${username}, ДжапанБанк предоставляет вам одноразовый пропуск для прохода в запретные земли. Если вы вернете его, то получите обратно свои осколки душ. Спасибо, что пользуетесь ДжапанБанк. Вы вернетесь в город через ${formatted}`);
+        client.say(client.channel, `@${username}, ДжапанБанк предоставляет вам одноразовый пропуск для прохода в запретные земли. Если вы вернете его, то получите обратно свои осколки душ. Вы вернетесь в город через ${formatted}. Узнать оставшееся время можно командой !status`);
+        console.log(`JapanBank => Twitch => Raid => ${username} => Start raid => ${formatted}`);
 
-        setTimeout(function() {
+        const timerIDMain = setTimeout(function() {
             let shards = null;
             let exp = null;
             if (hours < 3) {
@@ -89,23 +90,54 @@ class Coins {
             let rest = _.randomInt(50, 80);
             if (username === 'jourloy') rest = 1;
             userRaid.time = rest*60;
-            client.say(client.channel, `@${username}, вылазка окончена. ДжапанБанк рад видеть вас! Вы получаете ${shards} осколков на счет, а также ${exp} очков опыта. Отдых займет ${rest} минут`);
+            client.say(client.channel, `@${username}, вылазка окончена. ДжапанБанк рад видеть вас! Вы получаете ${shards} осколков на счет, а также ${exp} очков опыта. Проверить счет можно командой !wallet, а уровень командой !exp. Отдых займет ${rest} минут`);
+            console.log(`JapanBank => Twitch => Raid => ${username} => End raid => ${rest}`);
             userRaid.rest = true;
             userRaid.created_at = Math.floor(moment.now() / 1000);
+            userRaid.pay = 0;
+            userRaid.return = false;
+            userRaid.timerID = "";
             Database.updateRaid(username, userRaid);
             Database.addCoins(username, shards + price.raid);
             Database.addExp(username, exp, client);
 
-            setTimeout(function() {
+            const timerID_rest = setTimeout(function() {
                 const raid = Database.getRaid(username);
                 raid.bool = false;
                 raid.rest = false;
                 raid.created_at = null;
                 raid.time = null;
+                raid.timerID = "";
                 Database.updateRaid(username, raid);
+                client.say(client.channel, `${username}, вы отдохнули и готовы вновь отправиться на вылазку (!raid)`);
+                console.log(`JapanBank => Twitch => Raid => ${username} => End rest`);
             }, _.convertTime(rest*60));
 
+            const userRaid = Database.getRaid(username);
+            userRaid.timerID = "! " + timerID_rest;
+            Database.updateRaid(username, userRaid);
+
         }, _.convertTime(time));
+
+        const raid = Database.getRaid(username);
+        raid.timerID = "! " + timerIDMain;
+        Database.updateRaid(username, raid);
+    }
+
+    static returnRaid(username) {
+        const raid = Database.getRaid(username);
+        if (raid.bool === true && raid.rest === true) return 'вы уже вернулись из рейда и сейчас отдыхаете. Команда !status чтобы узнать время до конца отдыха';
+        if (raid.bool === false) return 'вы сейчас находитесь не в рейде. Команда !raid для того, чтобы отправиться на поиски осколков';
+        if (raid.return === true) {
+            if (raid.pay === 0) return 'вы уже ожидаете выхода из рейда';
+            if (raid.pay !== 0) return `вам необходимо оплатить возвращение в количестве ${raid.pay} осколков душ. Команда !pay для оплаты`;
+        }
+
+        const pay = _.randomInt(70, 200);
+        raid.pay = pay;
+        raid.return = true;
+        Database.updateRaid(username, raid);
+        return `команда возврата готова выдвигаться, оплатите возврат стоимостью ${pay} осколков душ при помощи команды !pay`;
     }
 
     /**
