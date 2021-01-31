@@ -271,7 +271,7 @@ client.on('message', (channel, userstate, message, self) => {
             break;
 
         case '!followerage':
-            followerAge(username);
+            followerAge(username, userstate['id']);
             break;
         
         case '!bigbrain':
