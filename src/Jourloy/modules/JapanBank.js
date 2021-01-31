@@ -117,55 +117,10 @@ client.on('message', (channel, userstate, message, self) => {
         stopRaid = false;
         return;
     } else if (messageSplit[0] === '!return') {
-        const mes = Coins.returnRaid(username);
-        client.say(channel, `@${username}, ${mes}`);
+        Coins.returnRaid(username, false, client);
         return;
     } else if (messageSplit[0] === '!pay' || messageSplit[0] === '!p') {
-        const raid = Database.getRaid(username);
-        const wallet = Database.getCoins(username);
-
-        if (raid.return === true && raid.pay > 0) {
-            if (wallet < raid.pay) {
-                client.say(channel, `@${username}, на вам счету не хватает осколов душ для оплаты возвращения`);
-                return;
-            } else {
-                Database.removeCoins(username, raid.pay);
-                let time = _.randomInt(1200, 3000);
-                if (username === 'jourloy') time = 33;
-                let hours = Math.floor(time/60/60);
-                let minutes = Math.floor(time/60)-(hours*60);
-                let seconds = time%60
-
-                const formatted = [
-                    hours.toString().padStart(2, '0'),
-                    minutes.toString().padStart(2, '0'),
-                    seconds.toString().padStart(2, '0')
-                ].join(':');
-
-                client.say(channel, `@${username}, отряд отправился на ваши поиски. Возвращение в город займет ${formatted}`);
-
-                const userRaid = Database.getRaid(username);
-                userRaid.created_at = Math.floor(moment.now() / 1000);
-                userRaid.time = time;
-                userRaid.pay = 0;
-                const timerID = userRaid.timerID;
-                Database.updateRaid(username, userRaid);
-                const id = timerID.split(' ')[1];
-                clearTimeout(id);
-                setTimeout(function() {
-                    const raid = Database.getRaid(username);
-                    raid.bool = false;
-                    raid.rest = false;
-                    raid.created_at = null;
-                    raid.time = null;
-                    raid.pay = 0;
-                    raid.return = false;
-                    Database.updateRaid(username, raid);
-                    client.say(client.channel, `${username}, вы успешно возвращены в город`);
-                    console.log(`JapanBank => Twitch => Raid => ${username} => End rest`);
-                }, _.convertTime(time));
-            }
-        }
+        Coins.returnRaid(username, false, client);
         return;
     }  else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
         if (username === 'jourloy') {
