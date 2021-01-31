@@ -35,6 +35,12 @@ client.connect();
 
 /* PARAMS */
 let stopRaid = true;
+let stopBet = true;
+
+const betInfo = {
+    k: 0,
+    users: 0,
+}
 
 /* FUNCTIONS */
 
@@ -120,7 +126,7 @@ client.on('message', (channel, userstate, message, self) => {
         Coins.returnRaid(username, false, client);
         return;
     } else if (messageSplit[0] === '!pay' || messageSplit[0] === '!p') {
-        Coins.returnRaid(username, false, client);
+        Coins.returnRaid(username, true, client);
         return;
     }  else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
         if (username === 'jourloy') {
@@ -232,6 +238,70 @@ client.on('message', (channel, userstate, message, self) => {
                 client.say(channel, `@${username}, вы возвращаетесь отрядом. До возвращения еще ${formatted}`);
             } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Пропуск стоит 10 осколков душ. Отправиться в рейд можно командой !raid`);
         }
+        return;
+    } else if (messageSplit[0] === '!openBet') {
+        if (username !== 'jourloy') return;
+        stopBet = false;
+        client.action(channel, `==> Банк начинает принимать ставки. При положительном результате вы получите на счет обратно свою ставку + коэффициент. Коэффициент будет оглашен после закрытия ставок. Сделать ставку можно командой !bet [количество]`);
+        return;
+    } else if (messageSplit[0] === '!bet') {
+        if (stopBet === true) return;
+        const bet = Database.getBet(username);
+        const raid = Database.getRaid(username);
+
+        if (raid.bool === true) {
+            client.say(channel, `@${username}, вы находитесь в рейде, у вас нет доступа к операциям со своим счетом`);
+            return;
+        } else {
+            let amount = null;
+            try { amount = parseInt(messageSplit[1]) }
+            catch { return }
+
+            const coins = Database.getCoins(username);
+            if (coins < amount) {
+                client.say(channel, `@${username}, у вас недостаточно средств сделать такую ставку. Проверить кошелек можно командой !wallet`);
+                return;
+            }
+            bet.join = true;
+            bet.amount = amount;
+            Database.updateBet(username, bet);
+            client.say(channel, `@${username}, ставка принята`);
+            return;
+        }
+    } else if (messageSplit[0] === '!closeBet') {
+        if (username !== 'jourloy') return;
+        const bets = Database.getBets();
+        for (i in bets) Database.removeCoins(i, bets[i].amount);
+        const k = 1.5;
+        betInfo.k = k;
+        client.action(channel, `==> Банк закрывает прием ставок. Осколки душ сняты со счетов пользователей. Коээфициент победы: ${k}`);
+        return;
+    } else if (messageSplit[0] === '!finishBet') {
+        if (username !== 'jourloy') return;
+        const result = messageSplit[1];
+        if (result === '1') {
+            let sum = 0;
+            const bets = Database.getBets();
+            for (i in bets) {
+                const userBet = Database.getBet(i);
+                userBet.join = false;
+                userBet.amount = 0;
+                Database.updateBet(i, userBet);
+                Database.addCoins(i, Math.floor(bets[i].amount * betInfo.k));
+                sum += Math.floor(bets[i].amount * betInfo.k);
+            }
+            client.action(channel, `==> Позддравляем победителей. Всего выплачено игрокам ${sum} осколков душ`)
+        } else {
+            let sum = 0;
+            const bets = Database.getBets();
+            const userBet = Database.getBet(i);
+            userBet.join = false;
+            userBet.amount = 0;
+            Database.updateBet(i, userBet);
+            for (i in bets) sum += Math.floor(bets[i].amount)
+            client.action(channel, `==> К сожалению ставки завершены с негативным результатом. Пользователи потеряли ${sum} осколков душ`)
+        }
+        stopBet = false;
         return;
     }
 });
