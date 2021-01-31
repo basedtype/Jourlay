@@ -60,7 +60,7 @@ class ChatDefence {
     static wordCheck(message, userstate, client) {
         let check = false;
         const inList = ['pr_'];
-        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали'];
+        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали', 'cvMask'];
         const splited = message.split(' ');
 
         for (let i in splited) if (inList.indexOf(splited[i]) !== -1) check = true;
@@ -77,7 +77,8 @@ class ChatDefence {
     static messageCheck(username, message, client) {
         let check = false;
         const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫', 'bigfollows', '.com', 'W̪', 'n͓'];
+                            'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫', 'bigfollows', '.com', 'W̪', 'n͓', 'путин', 
+                            'навальный', 'навэльный', 'нэвэльный', 'митинг', 'путинлох', 'свободнаяроссия', 'навальному', 'зиповская', 'карякина', 'байбакова', ];
         const split = message.split(' ');
 
         for (let i in split) {
