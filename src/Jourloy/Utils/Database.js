@@ -30,6 +30,10 @@ const user = {
         return: false,
         timerID: null,
     },
+    bet: {
+        join: false,
+        amount: 0,
+    },
     exp: {
         level: 1,
         points: 0,
@@ -146,6 +150,29 @@ class Database {
         return {username: user, wallet: maxWallet};
     }
 
+    static getBets() {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+
+        const bets = {};
+
+        for (let i in db) {
+            if (db[i].bet.join === true) {
+                bets[i] = {};
+                bets[i].amount = db[i].bet.amount;
+            }
+        }
+
+        return bets;
+    }
+
+    static getBet(username) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) return db[i].bet;
+        return ERR_NOT_FIND_USER;
+    }
+
     static addMessage(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
@@ -237,6 +264,16 @@ class Database {
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
             db[username].exp = exp;
+            data.push('/Users', db, true);
+        }
+        return ERR_NOT_FIND_USER;
+    }
+
+    static updateBet(username, bet) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) {
+            db[username].bet = bet;
             data.push('/Users', db, true);
         }
         return ERR_NOT_FIND_USER;
