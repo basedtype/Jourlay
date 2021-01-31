@@ -68,6 +68,7 @@ function followerAge(username, id) {
                 client.say(client.channel, `@${username}, а ты зафоловлен(а)?`);
                 return;
             }
+            console.log(id)
             let now = new Date();
             let then = body.created_at;
             let ms = moment(now).diff(moment(then));
@@ -271,7 +272,7 @@ client.on('message', (channel, userstate, message, self) => {
             break;
 
         case '!followerage':
-            followerAge(username, userstate['id']);
+            followerAge(username, userstate['user-id']);
             break;
         
         case '!bigbrain':
