@@ -42,14 +42,6 @@ const user = {
     inv: [],
 }
 
-const a = {
-    ask: {
-        pa: {
-            'q': 0
-        }
-    }
-}
-
 /* ERRORS */
 const ERR_NOT_FIND_USER = 'ERR_NOT_FIND_USER';
 const ERR_USER_ALREADY_EXIST = 'ERR_USER_ALREADY_EXIST';
@@ -78,7 +70,7 @@ class Database {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
         user.username = username;
-        user.id = userstate['id'];
+        user.id = userstate['user-id'];
         db[username] = user;
         data.push('/Users', db);
         //client.say(client.channel, `@${username}, вам создан счет в ДжапанБанке, где вы можете хранить свои осколки душ. Проверить баланс счета можно командой !wallet. Спасибо, что используете ДжапанБанк`)
