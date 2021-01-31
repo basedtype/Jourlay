@@ -146,7 +146,7 @@ class Coins {
 
             if (raid.return === true && raid.pay > 0) {
                 if (wallet < raid.pay) {
-                    client.say(channel, `@${username}, на вам счету не хватает осколов душ для оплаты возвращения`);
+                    client.say(client.channel, `@${username}, на вам счету не хватает осколов душ для оплаты возвращения`);
                     return;
                 } else {
                     Database.removeCoins(username, raid.pay);
@@ -162,7 +162,7 @@ class Coins {
                         seconds.toString().padStart(2, '0')
                     ].join(':');
 
-                    client.say(channel, `@${username}, отряд отправился на ваши поиски. Возвращение в город займет ${formatted}`);
+                    client.say(client.channel, `@${username}, отряд отправился на ваши поиски. Возвращение в город займет ${formatted}`);
 
                     const userRaid = Database.getRaid(username);
                     userRaid.created_at = Math.floor(moment.now() / 1000);
@@ -181,7 +181,7 @@ class Coins {
                         raid.pay = 0;
                         raid.return = false;
                         Database.updateRaid(username, raid);
-                        client.say(client.channel, `${username}, вы успешно возвращены в город`);
+                        client.say(client.channel, `@${username}, вы успешно возвращены в город`);
                         console.log(`JapanBank => Twitch => Raid => ${username} => End rest`);
                     }, _.convertTime(time));
                 }
