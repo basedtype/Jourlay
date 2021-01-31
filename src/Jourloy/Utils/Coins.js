@@ -125,20 +125,68 @@ class Coins {
         Database.updateRaid(username, raid);
     }
 
-    static returnRaid(username) {
-        const raid = Database.getRaid(username);
-        if (raid.bool === true && raid.rest === true) return 'вы уже вернулись из рейда и сейчас отдыхаете. Команда !status чтобы узнать время до конца отдыха';
-        if (raid.bool === false) return 'вы сейчас находитесь не в рейде. Команда !raid для того, чтобы отправиться на поиски осколков';
-        if (raid.return === true) {
-            if (raid.pay === 0) return 'вы уже ожидаете выхода из рейда';
-            if (raid.pay !== 0) return `вам необходимо оплатить возвращение в количестве ${raid.pay} осколков душ. Команда !pay для оплаты`;
-        }
+    static returnRaid(username, pay, client) {
+        if (pay === false) {
+            const raid = Database.getRaid(username);
+            if (raid.bool === true && raid.rest === true) client.say(client.channel, `@${username}, вы уже вернулись из рейда и сейчас отдыхаете. Команда !status чтобы узнать время до конца отдыха`);
+            if (raid.bool === false) client.say(client.channel, `@${username}, вы сейчас находитесь не в рейде. Команда !raid для того, чтобы отправиться на поиски осколков`);
+            if (raid.return === true) {
+                if (raid.pay === 0) client.say(client.channel, `@${username}, вы уже ожидаете выхода из рейда`);
+                if (raid.pay !== 0) client.say(client.channel, `@${username}, вам необходимо оплатить возвращение в количестве ${raid.pay} осколков душ. Команда !pay для оплаты`);
+            }
 
-        const pay = _.randomInt(70, 200);
-        raid.pay = pay;
-        raid.return = true;
-        Database.updateRaid(username, raid);
-        return `команда возврата готова выдвигаться, оплатите возврат стоимостью ${pay} осколков душ при помощи команды !pay`;
+            const pay = _.randomInt(70, 200);
+            raid.pay = pay;
+            raid.return = true;
+            Database.updateRaid(username, raid);
+            client.say(client.channel, `@${username}, команда возврата готова выдвигаться, оплатите возврат стоимостью ${pay} осколков душ при помощи команды !pay`);
+        } else {
+            const raid = Database.getRaid(username);
+            const wallet = Database.getCoins(username);
+
+            if (raid.return === true && raid.pay > 0) {
+                if (wallet < raid.pay) {
+                    client.say(channel, `@${username}, на вам счету не хватает осколов душ для оплаты возвращения`);
+                    return;
+                } else {
+                    Database.removeCoins(username, raid.pay);
+                    let time = _.randomInt(600, 1200);
+                    if (username === 'jourloy') time = 33;
+                    let hours = Math.floor(time/60/60);
+                    let minutes = Math.floor(time/60)-(hours*60);
+                    let seconds = time%60
+
+                    const formatted = [
+                        hours.toString().padStart(2, '0'),
+                        minutes.toString().padStart(2, '0'),
+                        seconds.toString().padStart(2, '0')
+                    ].join(':');
+
+                    client.say(channel, `@${username}, отряд отправился на ваши поиски. Возвращение в город займет ${formatted}`);
+
+                    const userRaid = Database.getRaid(username);
+                    userRaid.created_at = Math.floor(moment.now() / 1000);
+                    userRaid.time = time;
+                    userRaid.pay = 0;
+                    const timerID = userRaid.timerID;
+                    Database.updateRaid(username, userRaid);
+                    const id = timerID.split(' ')[1];
+                    clearTimeout(id);
+                    setTimeout(function() {
+                        const raid = Database.getRaid(username);
+                        raid.bool = false;
+                        raid.rest = false;
+                        raid.created_at = null;
+                        raid.time = null;
+                        raid.pay = 0;
+                        raid.return = false;
+                        Database.updateRaid(username, raid);
+                        client.say(client.channel, `${username}, вы успешно возвращены в город`);
+                        console.log(`JapanBank => Twitch => Raid => ${username} => End rest`);
+                    }, _.convertTime(time));
+                }
+            }
+        }
     }
 
     /**
