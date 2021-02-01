@@ -14,6 +14,7 @@ const user = {
         pc: 0,
         bigBrain: 0,
         roulette: 0,
+        followerAge: 0,
     },
     counters: {
         followerAge: 0,
@@ -274,6 +275,16 @@ class Database {
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
             db[username].bet = bet;
+            data.push('/Users', db, true);
+        }
+        return ERR_NOT_FIND_USER;
+    }
+
+    static updateChatDefence(username, chatDefence) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) {
+            db[username].chatDefence = chatDefence;
             data.push('/Users', db, true);
         }
         return ERR_NOT_FIND_USER;
