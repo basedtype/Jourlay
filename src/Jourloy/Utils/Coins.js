@@ -50,7 +50,7 @@ class Coins {
         userRaid.bool = true;
         userRaid.created_at = Math.floor(moment.now() / 1000);
 
-        let time = _.randomInt(7200, 32340);
+        let time = _.randomInt(7200, 14400);
 
         if (username === 'jourloy' || username === 'kartinka_katerinka') time = 65;
 
@@ -74,20 +74,17 @@ class Coins {
             let shards = null;
             let exp = null;
             if (hours < 3) {
-                shards = _.randomInt(20, 50);
+                shards = _.randomInt(20, 55);
                 exp = _.randomInt(5, 10);
             } else if (hours >= 3 && hours < 4) {
-                shards = _.randomInt(30,60);
+                shards = _.randomInt(30, 65);
                 exp = _.randomInt(10, 15);
             } else if (hours >= 4 && hours < 5) {
-                shards = _.randomInt(40, 70);
+                shards = _.randomInt(40, 80);
                 exp = _.randomInt(15, 20);
-            } else {
-                shards = _.randomInt(50, 80);
-                exp = _.randomInt(25, 30);
             }
 
-            let rest = _.randomInt(50, 80);
+            let rest = _.randomInt(30, 45);
             if (username === 'jourloy') rest = 1;
             const Raid = Database.getRaid(username);
             Raid.time = rest*60;
@@ -150,7 +147,7 @@ class Coins {
                     return;
                 } else {
                     Database.removeCoins(username, raid.pay);
-                    let time = _.randomInt(600, 1200);
+                    let time = _.randomInt(600, 900);
                     if (username === 'jourloy') time = 33;
                     let hours = Math.floor(time/60/60);
                     let minutes = Math.floor(time/60)-(hours*60);
