@@ -53,7 +53,6 @@ const timers = {
 
 /* FUNCTIONS */
 function followerAge(username, id) {
-    const banList = ['anna_scorpion05'];
     try {
         client.api({
             url: `https://api.twitch.tv/kraken/users/${id}/follows/channels/158466757`,
@@ -68,18 +67,21 @@ function followerAge(username, id) {
                 client.say(client.channel, `@${username}, а ты зафоловлен(а)?`);
                 return;
             }
-            console.log(id)
             let now = new Date();
             let then = body.created_at;
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
             const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
+            client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+            const timers = Database.getTimers(username);
+            timers.followerAge = 1;
+            Database.updateTimers(timers);
 
-            if (banList.includes(username)) {
-                const int = _.randomInt(0,1)
-                if (int === 0) client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`);
-                else client.say(client.channel, `@${username}, вижу что ты зафоловлен(а). По времени норм, поверишь?`);
-            } else client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+            setTimeout(function() {
+                const userTimers = Database.getTimers(username);
+                userTimers.followerAge = 0;
+                Database.updateTimers(username, userTimers);
+            }, _.convertTime(null, null, 4));
         })
     } catch (e) {}
 }
