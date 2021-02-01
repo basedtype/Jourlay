@@ -14,22 +14,27 @@ class ChatDefence {
         this.resetMessage(username)
         if (this.messageCountCheck(username, client) === false) return false;
         if (this.lengthCheck(username, message, client) === false) return false;
-        if (this.wordCheck(message, userstate, client) === false) return false;
+        if (this.wordCheck(username, message, userstate, client) === false) return false;
         if (this.messageCheck(username, message, client) === false) return false;
         return true;
     }
 
     static resetMessage(username) {
         const user = Database.getChatDefence(username);
-        if (user.timer === 0) setTimeout(function() { Database.resetMessage(username) }, _.convertTime(5));
+        if (user.timer === 0) {
+            user.timer = 1;
+            Database.updateChatDefence(username, user);
+            setTimeout(function() { Database.resetMessage(username) }, _.convertTime(5));
+        }
         return true;
     }
 
     static messageCountCheck(username, client) {
         const user = Database.getChatDefence(username);
-        if (user.messages >= 8) {
-            client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
-            console.log(`Jourlay => Twitch => Chat defence => Timeout (20) => ${user.username}`);
+        console.log(user.messages)
+        if (user.messages >= 6) {
+            if (username !== 'jourloy') client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
+            console.log(`Jourlay => Twitch => Chat defence => Timeout (20) => ${username}`);
             return false;
         }
         return true;
@@ -50,14 +55,14 @@ class ChatDefence {
         }
         if (split[0].length > 20) check = true;
         if (check === true) {
-            client.timeout(client.channel, username, message.length, 'Давай без длинных слов, а то в чате не красиво');
+            if (username !== 'jourloy') client.timeout(client.channel, username, message.length, 'Давай без длинных слов, а то в чате не красиво');
             console.log(`Jourlay => Twitch => Chat defence => Timeout (${message.length}) => ${username}`);
             return false;
         }
         return true;
     }
 
-    static wordCheck(message, userstate, client) {
+    static wordCheck(username, message, userstate, client) {
         let check = false;
         const inList = ['pr_'];
         const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали', 'cvMask'];
@@ -68,7 +73,8 @@ class ChatDefence {
         
         if (check === true) {
             const id = userstate['id'];
-            client.deletemessage(client.channel, id);
+            if (username !== 'jourloy') client.deletemessage(client.channel, id);
+            console.log(`Jourlay => Twitch => Chat defence => Delete message => ${username} => ${message}`);
             return false;
         }
         return true;
@@ -77,7 +83,7 @@ class ChatDefence {
     static messageCheck(username, message, client) {
         let check = false;
         const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
-                            'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'bigfollows', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫', 'bigfollows', '.com', 'W̪', 'n͓', 'путин', 
+                            'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫', 'bigfollows', '.com', 'W̪', 'n͓', 'путин', 
                             'навальный', 'навэльный', 'нэвэльный', 'митинг', 'путинлох', 'свободнаяроссия', 'навальному', 'зиповская', 'карякина', 'байбакова', ];
         const split = message.split(' ');
 
@@ -86,7 +92,7 @@ class ChatDefence {
         }
 
         if (check === true) {
-            client.timeout(client.channel, username, 100, 'Запрещенное слово, ай-ай');
+            if (username !== 'jourloy') client.timeout(client.channel, username, 100, 'Запрещенное слово, ай-ай');
             console.log(`Jourlay => Twitch => Chat defence => Timeout (100) => ${username}`);
             return false;
         }
