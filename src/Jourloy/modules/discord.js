@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const { Database } = require("../Utils/Database");
 const config = require("./conf");
 
 const client = new Discord.Client();
@@ -191,6 +192,7 @@ setInterval(function () {
 client.on('message', msg => {
     if (msg.author.bot) return;
     const channel = msg.channel;
+    const username = msg.author.username;
 
     if (channel.name === 'moderator-only') {
         if (msg.content.startsWith('!test')) discord.noftification('Satisfactory');
@@ -244,6 +246,34 @@ client.on('message', msg => {
                     ch.send(embed);
                 }
             });
+        }
+    } else if (channel.name === 'japan-bank') {
+
+    } else if (channel.name === '') {
+        const text = msg.content;
+
+        if (text === '!wallet' || text === '!w') {
+            const coins = Database.getCoins(username);
+            if (coins == null) {
+                channel.send(`@${username}, кажется вы не зарегистрированы в нашем банке. Для регистрации напиши сообщение в чат на твиче`);
+                return;
+            }
+            channel.send(`@${username}, у вас на счету ${coins} осколков душ`);
+            return;
+        } else if (text === '!exp' || text === '!e') {
+            const exp = Database.getExp(username);
+            channel.send(`@${username}, у вас ${exp.points} очков опыта и ${exp.level} уровень`);
+            return;
+        } else if (text === '!raid' || text === '!r') {
+            if (stopRaid === false || username === 'jourloy') Coins.raid(username, client);
+            else client.say(channel, `@${username}, в данный момент ворота из города закрыта, выйти не возможно`);
+            return;
+        } else if (text === '!top') {
+            
+        } else if (text === '') {
+            
+        } else if (text === '') {
+            
         }
     } else if (channel.name === 'bot') {
         const text = msg.content;
