@@ -31,7 +31,6 @@ class ChatDefence {
 
     static messageCountCheck(username, client) {
         const user = Database.getChatDefence(username);
-        console.log(user.messages)
         if (user.messages >= 6) {
             if (username !== 'jourloy') client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
             console.log(`Jourlay => Twitch => Chat defence => Timeout (20) => ${username}`);
