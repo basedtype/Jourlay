@@ -54,6 +54,33 @@ client.on('redeem', (channel, username, rewardType, tags) => {
     }
 });
 
+client.on("resub", (channel, username, months, message, userstate, methods) => {
+    const amount = 500 + (months*20);
+    client.say(channel, `@${username}, огромное спасибо за ресаб, это отличная помощь, на ваш счет в JapanBank начислено ${amount} осколков душ`);
+    Database.addCoins(username, amount);
+});
+
+client.on("subscription", (channel, username, method, message, userstate) => {
+    client.say(channel, `@${username}, огромное спасибо за подписку на канал, на ваш счет в JapanBank начислено 500 осколков душ`);
+    Database.addCoins(username, 500);
+});
+
+client.on("subgift", (channel, username, streakMonths, recipient, methods, userstate) => {
+    let senderCount = ~~userstate["msg-param-sender-count"];
+    const amount = 500 * senderCount;
+    client.say(channel, `@${username}, огромное спасибо за подарочную подписку на канал, на ваш счет в JapanBank начислено ${amount} осколков душ`);
+    Database.addCoins(username, amount);
+});
+
+client.on("timeout", (channel, username, reason, duration) => {
+    const coins = Database.getCoins(username);
+    let amount = 0;
+    if (coins - duration >= 5) amount = duration;
+    else amount = coins - 5;
+    client.say(channel, `@${username}, кажется, вас отправили в таймут. С вашего счета списано ${amount} осколков душ`);
+    Database.removeCoins(username, amount);
+})
+
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     const username = userstate['display-name'].toLowerCase();
