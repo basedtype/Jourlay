@@ -116,8 +116,24 @@ client.on('message', (channel, userstate, message, self) => {
         if (username !== 'jourloy') client.say(channel, `@${username}, акции в данный момент не доступны`);
         return;
     } else if (messageSplit[0] === '!send') {
-        if (username !== 'jourloy') client.say(channel, `@${username}, перевод в данный момент не доступен`);
-        return;
+        const receiver = messageSplit[2];
+        const amount = messageSplit[1];
+        const coins = Database.getCoins(username);
+        const to = Database.getUser(receiver);
+
+        if (to == null) {
+            client.say(channel, `@${username}, такого человека нет в нашей базе данных`);
+            return;
+        } else if (coins < amount) {
+            client.say(channel, `@${username}, у вас недостаточно осколков для совершения данного действия`);
+            return;
+        } else {
+            const sum = amount - Math.floor(amount/100*15);
+            Database.removeCoins(username, amount);
+            Database.addCoins(receiver, sum);
+            client.say(channel, `@${username}, перевод успешно совершен, переведено ${sum} осколков душ`);
+            return;
+        }
     } else if (messageSplit[0] === '!addShards') {
         if (username !== 'jourloy') return;
         const shards = parseInt(messageSplit[1]);
