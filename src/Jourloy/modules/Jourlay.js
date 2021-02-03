@@ -237,7 +237,7 @@ client.on('message', (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
     const messageSplit = message.split(' ');
 
-    if (ChatDefence.run(username, message, userstate, client) === false) return;
+    //if (ChatDefence.run(username, message, userstate, client) === false) return;
 
     switch(messageSplit[0]) {
         case '!q':
