@@ -118,9 +118,12 @@ client.on('message', (channel, userstate, message, self) => {
             } else if (messageSplit[1] === 'J') {
                 client.say(channel, `@${username} добро пожаловать. Отныне ты - самурай. Оберегай катану, как жену, и используй вакидзаси, как перо. Как будешь готов отправиться в путешествие, пиши !raid`);
                 Database.add.user(username, messageSplit[1]);
-            } else if (messageSplit[1] === '') {}
+            }
         } else {
-            client.say(channel, `@${username}, вы уже зарегистрированы в нашем банке`);
+            if (game.fraction === 'R') client.say(client.channel, `@${username}, вашей фракцией является: Боевая группа "Цезарь" `);
+            if (game.fraction === 'V') client.say(client.channel, `@${username}, вашей фракцией является: Викинги`);
+            if (game.fraction === 'J') client.say(client.channel, `@${username}, вашей фракцией является: Клан самураев "Сакура"`);
+            if (game.fraction === 'K') client.say(client.channel, `@${username}, вашей фракцией является: Мастера душ`);
         }
 
     } else if (messageSplit[0] === '!wallet' || messageSplit[0] === '!w') {
