@@ -1,3 +1,3 @@
 require('./modules/Jourlay');
-require('./modules/JapanBank');
+require('./modules/Bankir_bot');
 require('./modules/discord');
