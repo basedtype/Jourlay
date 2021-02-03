@@ -1,14 +1,18 @@
 /* IMPORTS */
 const { JsonDB } = require('node-json-db');
+const { tools, errors } = require('../Utils/Tools');
 
 /* PARAMS */
-const database = new JsonDB('Data/Users', true, true, '/');
-const user = {
-    twitchUsername: undefined,
-    discordUsername: undefined,
-    id: undefined,
-    messages: 0,
-    warnings: 0,
+const user_example = {
+    chatDefence: {
+        messages: 0,
+        timer: 0,
+        warnings: 0,
+        counters: {
+            followerAge: 0,
+            roulette: 0,
+        }
+    },
     timers: {
         ask: 0,
         pc: 0,
@@ -16,60 +20,89 @@ const user = {
         roulette: 0,
         followerAge: 0,
     },
-    counters: {
-        followerAge: 0,
-        roulette: 0,
-    },
-    raid: {
-        bool: false,
-        rest: false,
-        created_at: null,
-        time: null,
-        fail: false,
-        invMax: 10,
-        pay: 0,
-        return: false,
-        timerID: null,
-    },
-    bet: {
-        join: false,
-        amount: 0,
-    },
-    exp: {
-        level: 1,
-        points: 0,
-    },
-    chatDefence: {
-        messages: 0,
-        timer: 0,
-    },
-    wallet: 10,
-    inv: [],
-}
-
-/* ERRORS */
-const ERR_NOT_FIND_USER = 'ERR_NOT_FIND_USER';
-const ERR_USER_ALREADY_EXIST = 'ERR_USER_ALREADY_EXIST';
-
-/* CODE */
-try { 
-    const data = new JsonDB('Data/Users', true, true, '/');
-    const db = data.getData('/Users');
-
-    for (let i in db) {
-        for (let j in user) {
-            if (j === 'timers' || j === 'counters' || j === 'raid' || j === 'exp' || j === 'chatDefence') {
-                for (let o in user[j]) {
-                    if (o in db[i] === false) db[i][j][o] = user[j][o];
+    game: {
+        fraction: '',
+        hero: {
+            hp: 100,
+            xp: 0,
+            level: 1,
+            wallet: 1,
+            pay: 0,
+            inventory: [],
+            inventoryLimit: 5,
+        },
+        counters: {
+            toRaid: 0,
+            spend: 0,
+            return: 0,
+        },
+        information: {
+            inRaid: false,
+            inRest: false,
+            timerID: undefined,
+            raid: {
+                created: 0,
+                time: 0,
+                return: {
+                    inReturn: false,
+                    pay: 0,
+                },
+                reward: {
+                    shards: 0,
+                    xp: 0,
                 }
-            } else if (j in db[i] === false) db[i][j] = user[j];
+            }
         }
     }
-    data.push('/Users', db);
-} 
-catch { database.push('/Users', {}, true) }
+};
 
-/* CLASSES */
+const channel_example = {
+    channelID: '',
+    channelName: '',
+    rollGame: [],
+    game: {
+        allowRaid: true,
+        allowStocks: true,
+    },
+    chatDefence: {
+        ban: [],
+        timeout: [],
+        delete: [],
+    }
+}
+
+const items = {
+    'katana': {
+        fraction: ['samurai'],
+        levels: {
+            '1': {
+                lucky: 2,
+                price: 10,
+            },
+            '2': {
+                lucky: 4,
+                price: 21,
+            },
+            '3': {
+                lucky: 6,
+                price: 42,
+            },
+            '4': {
+                lucky: 8,
+                price: 84,
+            },
+        }
+    }
+}
+
+/* CODE */
+try { const data = new JsonDB('Data/Users', true, true, '/') } 
+catch { 
+    const data = new JsonDB('Data/Users', true, true, '/') 
+    data.push('/Users', {}, true) 
+}
+
+/* CLASSES 
 class Database {
     static create(username, userstate) {
         const data = new JsonDB('Data/Users', true, true, '/');
@@ -81,57 +114,11 @@ class Database {
         //client.say(client.channel, `@${username}, вам создан счет в ДжапанБанке, где вы можете хранить свои осколки душ. Проверить баланс счета можно командой !wallet. Спасибо, что используете ДжапанБанк`)
     }
 
-    static getUser(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) return db[i];
-        return ERR_NOT_FIND_USER;
-    }
-
-    static getTimers(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) return db[i].timers;
-        return ERR_NOT_FIND_USER;
-    }
-
-    static getCounters(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) return db[i].counters;
-        return ERR_NOT_FIND_USER;
-    }
-
-    static getRaid(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) return db[i].raid;
-        return ERR_NOT_FIND_USER;
-    }
-
     static getExp(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
         for (let i in db) if (i === username) return db[i].exp;
         return ERR_NOT_FIND_USER;
-    }
-
-    static getCoins(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) return db[i].wallet;
-        return ERR_NOT_FIND_USER;
-    }
-
-    static getChatDefence(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) return db[i].chatDefence;
-        return ERR_NOT_FIND_USER;
-    }
-
-    static getInventory(username) {
-        // TODO
     }
 
     static getTop() {
@@ -200,7 +187,7 @@ class Database {
      * @param {String} username 
      * @param {Number} exp 
      * @param {{}} client 
-     */
+     *
     static addExp(username, exp, client) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
@@ -214,20 +201,6 @@ class Database {
             data.push('/Users', db, true);
         }
         return ERR_NOT_FIND_USER;
-    }
-
-    static addCoins(username, amount) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) {
-            db[username].wallet += amount;
-            data.push('/Users', db, true);
-        }
-        return ERR_NOT_FIND_USER;
-    }
-
-    static addInventory(username, thing, amount = 1) {
-        // TODO
     }
 
     static updateTimers(username, timers) {
@@ -245,16 +218,6 @@ class Database {
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
             db[username].counters = counters;
-            data.push('/Users', db, true);
-        }
-        return ERR_NOT_FIND_USER;
-    }
-
-    static updateRaid(username, raid) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
-        for (let i in db) if (i === username) {
-            db[username].raid = raid;
             data.push('/Users', db, true);
         }
         return ERR_NOT_FIND_USER;
@@ -297,22 +260,124 @@ class Database {
         data.push('/Users', db, true);
         return ERR_NOT_FIND_USER;
     }
+} */
 
-    static removeCoins(username, amount) {
+class get {
+    static user(username) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) return db[i];
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static timers(username) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) return db[i].timers;
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static chatDefence(username) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) return db[i].chatDefence;
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static counters(username) {
+        const chatDefence = this.chatDefence(username);
+        if (chatDefence === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        else return chatDefence.counters;
+    }
+
+    static game(username) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) return db[i].game;
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static hero(username) {
+        const game = get.game(username);
+        if (game === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        else return game.hero;
+    }
+
+    static raid(username) {
+        const game = get.game(username);
+        if (game === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        else return game.information;
+    }
+
+    static wallet(username) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        else return hero.wallet;
+    }
+}
+
+class add {
+    static user(username, fraction) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        user_example.game.fraction = fraction;
+        db[username] = user_example;
+        data.push('/Users', db);
+    }
+
+    static shards(username, amount) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.wallet += amount;
+        update.hero(username, hero);
+        return true;
+    }
+
+    static xp(username, amount) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.xp += amount;
+        update.hero(username, hero);
+        return true;
+    }
+}
+
+class update {
+    static game(username, game) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
-            db[username].wallet -= amount;
+            db[username].game = game;
             data.push('/Users', db, true);
+            return true;
         }
-        return ERR_NOT_FIND_USER;
+        return errors.ERR_NOT_FIND_USER;
     }
 
-    static removeInventory(username, thing, amount) {
-        //TODO
+    static hero(username, hero) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) {
+            db[username].game.hero = hero;
+            data.push('/Users', db, true);
+            return true;
+        }
+        return errors.ERR_NOT_FIND_USER;
     }
+}
 
-    static resetMessage(username) {
+class remove {
+    static shards(username, amount) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.wallet -= amount;
+        update.hero(username, hero);
+        return true;
+    }
+}
+
+class reset {
+    static messages(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
@@ -325,4 +390,4 @@ class Database {
 }
 
 /* EXPORTS */
-module.exports.Database = Database;
+module.exports.Database = {get, add, update, remove, reset};
