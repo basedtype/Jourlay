@@ -4,7 +4,7 @@ const moment = require('moment');
 const { _ } = require('../tools');
 const { ChatDefence } = require('../Utils/ChatDefence');
 const { Database } = require('../Utils/Database');
-const { Coins } = require('../Utils/Coins');
+const { tools, errors } = require('../Utils/Tools');
 
 /* TWITCH SETTINGS */
 const options = {
@@ -237,7 +237,10 @@ client.on('message', (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
     const messageSplit = message.split(' ');
 
-    //if (ChatDefence.run(username, message, userstate, client) === false) return;
+    const user = Database.get.user_jr(username);
+    if (user === errors.ERR_NOT_FIND_USER) Database.add.user_jr(username);
+    if (ChatDefence.run(username, message, userstate, client) === false) return;
+    Database.add.messages(username)
 
     switch(messageSplit[0]) {
         case '!q':
