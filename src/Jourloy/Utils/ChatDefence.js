@@ -20,17 +20,17 @@ class ChatDefence {
     }
 
     static resetMessage(username) {
-        const user = Database.getChatDefence(username);
+        const user = Database.get.chatDefence(username);
         if (user.timer === 0) {
             user.timer = 1;
-            Database.updateChatDefence(username, user);
-            setTimeout(function() { Database.resetMessage(username) }, _.convertTime(5));
+            Database.update.chatDefence(username, user);
+            setTimeout(function() { Database.reset.messages(username) }, _.convertTime(5));
         }
         return true;
     }
 
     static messageCountCheck(username, client) {
-        const user = Database.getChatDefence(username);
+        const user = Database.get.chatDefence(username);
         if (user.messages >= 6) {
             if (username !== 'jourloy') client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
             console.log(`Jourlay => Twitch => Chat defence => Timeout (20) => ${username}`);
@@ -44,13 +44,10 @@ class ChatDefence {
         const split = message.split(' ');
         for (let i in split) {
             let count = 0;
-            let kekw = 0;
             for (let j in split) {
                 if (split[j] === split[i]) count++;
                 if (count > 5) check = true;
             }
-            if (split[i] === 'KEKW') kekw++;
-            if (kekw > 3) check = true;
         }
         if (split[0].length > 20) check = true;
         if (check === true) {
