@@ -247,7 +247,16 @@ client.on('message', msg => {
                 }
             });
         }
-    } else if (channel.name === 'japan-bank') {
+    } else if (channel.name === 'bankir-bot-mod') {
+        const text = msg.content;
+        const textSplited = text.split('|');
+        const fractions = textSplited[0];
+        const item_name = textSplited[1];
+        const level = textSplited[2];
+        const lucky = textSplited[3];
+        const price = textSplited[4];
+        const result = Database.add.item({fractions: fractions, item_name: item_name, level: level, lucky: lucky, price: price});
+        if (result === true) channel.send(`${item_name} успешно добавлен`)
 
     } else if (channel.name === '') {
         const text = msg.content;
