@@ -75,12 +75,12 @@ client.on("subgift", (channel, username, streakMonths, recipient, methods, users
 });
 
 client.on("timeout", (channel, username, reason, duration) => {
-    const coins = Database.getCoins(username);
-    let amount = 0;
-    if (coins - duration >= 5) amount = duration;
-    else amount = coins - 5;
-    client.say(channel, `@${username}, кажется, вас отправили в таймут. С вашего счета списано ${amount} осколков душ`);
-    Database.removeCoins(username, amount);
+    //const coins = Database.getCoins(username);
+    //let amount = 0;
+    //if (coins - duration >= 5) amount = duration;
+    //else amount = coins - 5;
+    //client.say(channel, `@${username}, кажется, вас отправили в таймут. С вашего счета списано ${amount} осколков душ`);
+    //Database.removeCoins(username, amount);
 })
 
 client.on('message', (channel, userstate, message, self) => {
@@ -88,12 +88,11 @@ client.on('message', (channel, userstate, message, self) => {
     const username = userstate['display-name'].toLowerCase();
     const messageSplit = message.split(' ');
 
-    /* if (Database.getUser(username) === 'ERR_NOT_FIND_USER') Database.create(username, userstate, client);
-    Database.addMessage(username); */
-
     if (messageSplit[0] === '!stop') {
+
         if (username !== 'jourloy') return;
         throw 'Exit';
+
     } else if (messageSplit[0] === '!raid') {
 
         if (username !== 'jourloy') return;
@@ -102,13 +101,14 @@ client.on('message', (channel, userstate, message, self) => {
         else if (result === errors.ERR_USER_NOT_IN_FRACTION) client.say(channel, `@JOURLOY, у пользователя [${username}] ошибка с данными (fraction error)`);
         else if (result === errors.ERR_ALREADY_IN_RAID) client.say(channel, `@${username}, вы уже в рейде. Проверить время до возвращения можно командой !status`);
         else if (result === errors.ERR_NOT_ENOUGH_SHARDS) client.say(channel, `@${username}, у вас не достаточно осколов для похода в рейд`);
+        return;
 
     } else if (messageSplit[0] === '!fraction') {
 
         if (username !== 'jourloy') return;
         const game = Database.get.game(username);
         if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
-            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'R')) client.say(channel, `@${username}, после !fraction необходимо указать букву фракции. Вининги - V, Япония - J, Рим - R`);
+            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'R' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, после !fraction необходимо указать букву фракции. Вининги - V, Япония - J, Рим - R`);
             else if (messageSplit[1] === 'V') {
                 client.say(channel, `@${username}, хорош боец, нам как раз такие нужны! У нас все просто, видишь добро - забираешь, я думаю ты быстро освоишься. Захочешь отправиться за добычей - пиши !raid`);
                 Database.add.user(username, messageSplit[1]);
@@ -118,37 +118,80 @@ client.on('message', (channel, userstate, message, self) => {
             } else if (messageSplit[1] === 'J') {
                 client.say(channel, `@${username} добро пожаловать. Отныне ты - самурай. Оберегай катану, как жену, и используй вакидзаси, как перо. Как будешь готов отправиться в путешествие, пиши !raid`);
                 Database.add.user(username, messageSplit[1]);
+            } else if (messageSplit[1] === 'K' && username === 'jourloy') {
+                client.action(channel, `==> @${username}, теперь ты не просто человек. Теперь ты имеешь преимущество над другими. Ты представляешь особый класс. Отныне ты - мастер душ. Как будешь готов к новым приключениям, пиши !raid`);
+                Database.add.user(username, messageSplit[1]);
             }
         } else {
             if (game.fraction === 'R') client.say(client.channel, `@${username}, вашей фракцией является: Боевая группа "Цезарь" `);
-            if (game.fraction === 'V') client.say(client.channel, `@${username}, вашей фракцией является: Викинги`);
-            if (game.fraction === 'J') client.say(client.channel, `@${username}, вашей фракцией является: Клан самураев "Сакура"`);
-            if (game.fraction === 'K') client.say(client.channel, `@${username}, вашей фракцией является: Мастера душ`);
+            else if (game.fraction === 'V') client.say(client.channel, `@${username}, вашей фракцией является: Викинги`);
+            else if (game.fraction === 'J') client.say(client.channel, `@${username}, вашей фракцией является: Клан самураев "Сакура"`);
+            else if (game.fraction === 'K') client.say(client.channel, `@${username}, вашей фракцией является: Мастера душ`);
         }
+        return;
 
     } else if (messageSplit[0] === '!wallet' || messageSplit[0] === '!w') {
-        if (username === 'jourloy') {
-            const to = messageSplit[1];
-            client.say(channel, `@${username}, у ${to} на счету ${Database.getCoins(to)} осколков душ`);
-        } else {
-            const raid = Database.get.raid(username);
-            if (raid.information.inRaid === true) client.say(channel, `@${username}, в данный момент не возможно обратиться к банку из-за того, что вы находитесь в рейде`)
-            else if (raid.information.inRaid === false) client.say(channel, `@${username}, у вас на счету ${Database.get.wallet} осколков душ`);
+
+        if (username !== 'jourloy') return;
+        const hero = Database.get.hero(username);
+        const game = Database.get.game(username);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+        else {
+            if (game.fraction === 'R') client.say(channel, `@${username}, на вашем счету ${hero.wallet} купюр`);
+            else if (game.fraction === 'V') client.say(channel, `@${username}, на вашем счету ${hero.wallet} золотых монет`);
+            else if (game.fraction === 'J') client.say(channel, `@${username}, на вашем счету ${hero.wallet} слитков Великой стали`);
+            else if (game.fraction === 'K') client.say(channel, `@${username}, на вашем счету ${hero.wallet} осколков душ`);
         }
         return;
-    } else if (messageSplit[0] === '!buy' || messageSplit[0] === '!b') {
-        if (username !== 'jourloy') client.say(channel, `@${username}, магазин в данный момент не доступен`);
+
+    } else if (messageSplit[0] === '!xp') {
+
+        if (username !== 'jourloy') return;
+        const hero = Database.get.hero(username);
+        const game = Database.get.game(username);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+        else client.say(channel, `@${username}, у вас ${hero.level} уровень и ${hero.xp} очков опыта`);
         return;
+
+    } else if (messageSplit[0] === '!hp') {
+
+        if (username !== 'jourloy') return;
+        const hero = Database.get.hero(username);
+        const game = Database.get.game(username);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+        else client.say(channel, `@${username}, у вас ${hero.hp} очков здоровья`);
+        return;
+
+    } else if (messageSplit[0] === '!buy' || messageSplit[0] === '!b') {
+
+        if (username !== 'jourloy') return;
+        const hero = Database.get.hero(username);
+        const game = Database.get.game(username);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') {
+            client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+            return;
+        }
+        if (hero.inventoryLimit === hero.inventory.length) {
+            client.say(channel, `@${username}, ваш склад уже максимально полон`);
+            return;
+        }
+        if (hero.inventory.includes(`${messageSplit[1]} - ${messageSplit[2]}`) === true) {
+            client.say(channel, `@${username}, этот предмет уже куплен вами`);
+            return;
+        }
+        const items = Database.get.items(game.fraction);
+        if (items[messageSplit[1]] == null || items[messageSplit[1]][messageSplit[2]] == null) client.say(channel, `@${username}, такого предмета в продаже нет`);
+        else {
+            if (hero.wallet >= items[messageSplit[1]][messageSplit[2]].price) {
+                Database.remove.wallet(username, items[messageSplit[1]][messageSplit[2]].price);
+                Database.add.inventory(username, `${messageSplit[1]} - ${messageSplit[2]}`);
+                client.say(channel, `@${username}, вы успешно купили ${messageSplit[1]}, которое имеет ${messageSplit[2]} уровень`);
+            } else client.say(channel, `@${username}, на вашем счету не достаточно средств`);
+        }
+        return;
+
     } else if (messageSplit[0] === '!inventory' || messageSplit[0] === '!i') {
         if (username !== 'jourloy') client.say(channel, `@${username}, склад в данный момент не доступен`);
-        return;
-    } else if (messageSplit[0] === '!raid' || messageSplit[0] === '!r') {
-        if (stopRaid === false || username === 'jourloy') Coins.raid(username, client);
-        else client.say(channel, `@${username}, в данный момент ворота из города закрыта, выйти не возможно`);
-        return;
-    } else if (messageSplit[0] === '!exp' || messageSplit[0] === '!e') {
-        const exp = Database.getExp(username);
-        client.say(channel, `@${username}, у вас ${exp.points} очков опыта и ${exp.level} уровень`);
         return;
     } else if (messageSplit[0] === '!stock') {
         if (username !== 'jourloy') client.say(channel, `@${username}, акции в данный момент не доступны`);
