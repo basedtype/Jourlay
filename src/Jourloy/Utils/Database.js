@@ -3,23 +3,7 @@ const { JsonDB } = require('node-json-db');
 const { tools, errors } = require('../Utils/Tools');
 
 /* PARAMS */
-const user_example = {
-    chatDefence: {
-        messages: 0,
-        timer: 0,
-        warnings: 0,
-        counters: {
-            followerAge: 0,
-            roulette: 0,
-        }
-    },
-    timers: {
-        ask: 0,
-        pc: 0,
-        bigBrain: 0,
-        roulette: 0,
-        followerAge: 0,
-    },
+const bank_example = {
     game: {
         fraction: '',
         hero: {
@@ -56,6 +40,25 @@ const user_example = {
     }
 };
 
+const user_example = {
+    chatDefence: {
+        messages: 0,
+        timer: 0,
+        warnings: 0,
+        counters: {
+            followerAge: 0,
+            roulette: 0,
+        }
+    },
+    timers: {
+        ask: 0,
+        pc: 0,
+        bigBrain: 0,
+        roulette: 0,
+        followerAge: 0,
+    },
+}
+
 const channel_example = {
     channelID: '',
     channelName: '',
@@ -71,35 +74,23 @@ const channel_example = {
     }
 }
 
-const items = {
-    'katana': {
-        fraction: ['samurai'],
-        levels: {
-            '1': {
-                lucky: 2,
-                price: 10,
-            },
-            '2': {
-                lucky: 4,
-                price: 21,
-            },
-            '3': {
-                lucky: 6,
-                price: 42,
-            },
-            '4': {
-                lucky: 8,
-                price: 84,
-            },
-        }
-    }
-}
-
 /* CODE */
-try { const data = new JsonDB('Data/Users', true, true, '/') } 
-catch { 
-    const data = new JsonDB('Data/Users', true, true, '/') 
-    data.push('/Users', {}, true) 
+try { 
+    new JsonDB('Data/Users', true, true, '/').getData('/Users');
+    new JsonDB('Data/Channels', true, true, '/').getData('/Channels');
+    new JsonDB('Data/Items', true, true, '/').getData('/Items');
+    new JsonDB('Data/Bank', true, true, '/').getData('/Bank');
+} 
+catch {
+    const users = new JsonDB('Data/Users', true, true, '/');
+    const channels = new JsonDB('Data/Channels', true, true, '/');
+    const items = new JsonDB('Data/Items', true, true, '/');
+    const bank = new JsonDB('Data/Bank', true, true, '/');
+
+    users.push('/Users', {}, true);
+    channels.push('/Channels', {}, true);
+    items.push('/Items', {V: {}, J: {}, R: {}, K: {}}, true);
+    bank.push('/Bank', {V: {}, J: {}, R: {}, K: {}}, true);
 }
 
 /* CLASSES 
@@ -264,6 +255,13 @@ class Database {
 
 class get {
     static user(username) {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        for (let i in db) if (i === username) return db[i];
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static user_jr(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
         for (let i in db) if (i === username) return db[i];
@@ -291,8 +289,8 @@ class get {
     }
 
     static game(username) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
         for (let i in db) if (i === username) return db[i].game;
         return errors.ERR_NOT_FIND_USER;
     }
@@ -314,13 +312,32 @@ class get {
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         else return hero.wallet;
     }
+
+    static inventory(username) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        else return hero.inventory;
+    }
+
+    static items(fraction) {
+        const data = new JsonDB('Data/Items', true, true, '/');
+        const db = data.getData('/Items');
+        return db[fraction];
+    }
 }
 
 class add {
     static user(username, fraction) {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        bank_example.game.fraction = fraction;
+        db[username] = bank_example;
+        data.push('/Bank', db);
+    }
+
+    static user_jr(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
-        user_example.game.fraction = fraction;
         db[username] = user_example;
         data.push('/Users', db);
     }
@@ -340,25 +357,70 @@ class add {
         update.hero(username, hero);
         return true;
     }
+
+    static inventory(username, item) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.inventory.push(item);
+        update.hero(username, hero);
+        return true;
+    }
+
+    static messages(username) {
+        const chatDefence = get.chatDefence(username);
+        if (chatDefence === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        chatDefence.messages++;
+        update.chatDefence(username, chatDefence);
+        return true;
+    }
+
+    static item(options) {
+        const fractions = options.fractions;
+        const item_name = options.item_name;
+        const level = options.level;
+        const lucky = options.lucky;
+        const price = options.price;
+
+        const data = new JsonDB('Data/Items', true, true, '/');
+        const db = data.getData('/Items');
+        if (db[fractions][item_name] == null) db[fractions][item_name] = {};
+        if (db[fractions][item_name][level] == null) db[fractions][item_name][level] = {};
+        db[fractions][item_name][level].lucky = parseInt(lucky);
+        db[fractions][item_name][level].price = parseInt(price);
+        data.push('/Items', db);
+
+        return true;
+    }
 }
 
 class update {
     static game(username, game) {
-        const data = new JsonDB('Data/Users', true, true, '/');
-        const db = data.getData('/Users');
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
         for (let i in db) if (i === username) {
             db[username].game = game;
-            data.push('/Users', db, true);
+            data.push('/Bank', db, true);
             return true;
         }
         return errors.ERR_NOT_FIND_USER;
     }
 
     static hero(username, hero) {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        for (let i in db) if (i === username) {
+            db[username].game.hero = hero;
+            data.push('/Bank', db, true);
+            return true;
+        }
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static chatDefence(username, chatDefence) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
-            db[username].game.hero = hero;
+            db[username].chatDefence = chatDefence;
             data.push('/Users', db, true);
             return true;
         }
@@ -367,7 +429,18 @@ class update {
 }
 
 class remove {
+    /**
+     * @deprecated use wallet
+     */
     static shards(username, amount) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.wallet -= amount;
+        update.hero(username, hero);
+        return true;
+    }
+
+    static wallet(username, amount) {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         hero.wallet -= amount;
@@ -385,7 +458,7 @@ class reset {
             db[username].chatDefence.timer = 0;
             data.push('/Users', db, true);
         }
-        return ERR_NOT_FIND_USER;
+        return errors.ERR_NOT_FIND_USER;
     }
 }
 
