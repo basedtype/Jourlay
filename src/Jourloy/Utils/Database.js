@@ -89,8 +89,8 @@ catch {
 
     users.push('/Users', {}, true);
     channels.push('/Channels', {}, true);
-    items.push('/Items', {V: {}, J: {}, R: {}, K: {}}, true);
-    bank.push('/Bank', {V: {}, J: {}, R: {}, K: {}}, true);
+    items.push('/Items', {V: {}, J: {}, С: {}, K: {}}, true);
+    bank.push('/Bank', {}, true);
 }
 
 /* CLASSES 
@@ -354,6 +354,10 @@ class add {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         hero.xp += amount;
+        if (hero.xp > (hero.level * 100 + (hero.level * 15))) {
+            hero.xp -= hero.level * 100 + (hero.level * 15);
+            hero.level++;
+        }
         update.hero(username, hero);
         return true;
     }
@@ -421,6 +425,17 @@ class update {
         const db = data.getData('/Users');
         for (let i in db) if (i === username) {
             db[username].chatDefence = chatDefence;
+            data.push('/Users', db, true);
+            return true;
+        }
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static timers(username, timers) {
+        const data = new JsonDB('Data/Users', true, true, '/');
+        const db = data.getData('/Users');
+        for (let i in db) if (i === username) {
+            db[username].timers = timers;
             data.push('/Users', db, true);
             return true;
         }
