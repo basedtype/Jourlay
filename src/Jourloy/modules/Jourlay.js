@@ -73,14 +73,14 @@ function followerAge(username, id) {
             let d = moment.duration(ms);
             const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
             client.say(client.channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
-            const timers = Database.getTimers(username);
+            const timers = Database.get.timers(username);
             timers.followerAge = 1;
-            Database.updateTimers(timers);
+            Database.update.timers(timers);
 
             setTimeout(function() {
-                const userTimers = Database.getTimers(username);
+                const userTimers = Database.get.timers(username);
                 userTimers.followerAge = 0;
-                Database.updateTimers(username, userTimers);
+                Database.update.timers(username, userTimers);
             }, _.convertTime(null, null, 4));
         })
     } catch (e) {}
@@ -100,9 +100,9 @@ function getUptime() {
 
 function question(username, message) {
     const channel = client.channel;
-    const timers = Database.getTimers(username);
+    const timers = Database.get.timers(username);
 
-    const allowList = ['jourloy'];
+    const allowList = [''];
     const banList = ['anna_scorpion05'];
 
     if (allowList.includes(username) === true || banList.includes(username) === true) return;
@@ -111,10 +111,10 @@ function question(username, message) {
         if (timers.ask === 0 && message.includes('?') && message.length > 6) {
             client.say(channel, `@${username}, ${_.randomElementFromArray(array)}`);
             timers.ask = 1;
-            Database.updateTimers(username, timers);
+            Database.update.timers(username, timers);
             setTimeout(function() {
                 timers.ask = 0;
-                Database.updateTimers(username, timers);
+                Database.update.timers(username, timers);
             }, _.convertTime(seconds=20));
         }
     }
@@ -134,7 +134,7 @@ function bigBrain(username) {
 
 function roulette(username) {
     const channel = client.channel;
-    const timers = Database.getTimers(username);
+    const timers = Database.get.timers(username);
     const counters = Database.getCounters(username);
 
     const answer = ['удача пока на твоей стороне', 'удача пока на твоей стороне, но это пока', 'пистолет выстрелил, но я случайно дернул рукой и мы разбили люстру', 'БАХ! А нет, не бах, пистолет не могу найти'];
@@ -155,10 +155,10 @@ function roulette(username) {
         else client.say(channel, `@${username}, ${botAnswer}`)
 
         timers.roulette = 1;
-        Database.updateTimers(username, timers);
+        Database.update.timers(username, timers);
         setTimeout(function() {
             timers.roulette = 0
-            Database.updateTimers(username, timers);
+            Database.update.timers(username, timers);
         }, _.convertTime(30));
 
         counters.roulette++;
@@ -298,10 +298,6 @@ client.on('message', (channel, userstate, message, self) => {
         
         case '!ban':
             if (username !== 'jourloy') return;
-            break;
-
-        case '!цель':
-            client.say(channel, 'нашей целью в Satisfactory является строительство небесной платформы, на которой будут идти все процессы производства (а именно производство тяжелых модульных каркасов). На земле только добыча руды. Цель необходимо завершить до 28 февраля включительно, иначе будет отправлено 3 подарочные сабки');
             break;
     }
 });
