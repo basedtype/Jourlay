@@ -108,11 +108,11 @@ client.on('message', (channel, userstate, message, self) => {
         if (username !== 'jourloy') return;
         const game = Database.get.game(username);
         if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
-            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'R' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, после !fraction необходимо указать букву фракции. Вининги - V, Япония - J, Рим - R`);
+            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, после !fraction необходимо указать букву фракции`);
             else if (messageSplit[1] === 'V') {
                 client.say(channel, `@${username}, хорош боец, нам как раз такие нужны! У нас все просто, видишь добро - забираешь, я думаю ты быстро освоишься. Захочешь отправиться за добычей - пиши !raid`);
                 Database.add.user(username, messageSplit[1]);
-            } else if (messageSplit[1] === 'R') {
+            } else if (messageSplit[1] === 'C') {
                 client.say(channel, `@${username}, смирно! Теперь это твой новый дом. У нас много боевых задач, как будешь готов - пиши !raid`);
                 Database.add.user(username, messageSplit[1]);
             } else if (messageSplit[1] === 'J') {
@@ -123,7 +123,7 @@ client.on('message', (channel, userstate, message, self) => {
                 Database.add.user(username, messageSplit[1]);
             }
         } else {
-            if (game.fraction === 'R') client.say(client.channel, `@${username}, вашей фракцией является: Боевая группа "Цезарь" `);
+            if (game.fraction === 'C') client.say(client.channel, `@${username}, вашей фракцией является: Боевая группа "Цезарь" `);
             else if (game.fraction === 'V') client.say(client.channel, `@${username}, вашей фракцией является: Викинги`);
             else if (game.fraction === 'J') client.say(client.channel, `@${username}, вашей фракцией является: Клан самураев "Сакура"`);
             else if (game.fraction === 'K') client.say(client.channel, `@${username}, вашей фракцией является: Мастера душ`);
@@ -137,7 +137,7 @@ client.on('message', (channel, userstate, message, self) => {
         const game = Database.get.game(username);
         if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
         else {
-            if (game.fraction === 'R') client.say(channel, `@${username}, на вашем счету ${hero.wallet} купюр`);
+            if (game.fraction === 'C') client.say(channel, `@${username}, на вашем счету ${hero.wallet} купюр`);
             else if (game.fraction === 'V') client.say(channel, `@${username}, на вашем счету ${hero.wallet} золотых монет`);
             else if (game.fraction === 'J') client.say(channel, `@${username}, на вашем счету ${hero.wallet} слитков Великой стали`);
             else if (game.fraction === 'K') client.say(channel, `@${username}, на вашем счету ${hero.wallet} осколков душ`);
