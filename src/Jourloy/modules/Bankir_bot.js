@@ -95,7 +95,6 @@ client.on('message', (channel, userstate, message, self) => {
 
     } else if (messageSplit[0] === '!raid') {
 
-        if (username !== 'jourloy') return;
         const result = Game.toRaid(username, client);
         if (result === errors.ERR_NOT_FIND_USER) client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
         else if (result === errors.ERR_USER_NOT_IN_FRACTION) client.say(channel, `@JOURLOY, у пользователя [${username}] ошибка с данными (fraction error)`);
@@ -105,7 +104,6 @@ client.on('message', (channel, userstate, message, self) => {
 
     } else if (messageSplit[0] === '!fraction') {
 
-        if (username !== 'jourloy') return;
         const game = Database.get.game(username);
         if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
             if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, после !fraction необходимо указать букву фракции`);
