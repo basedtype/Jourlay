@@ -32,7 +32,7 @@ class ChatDefence {
     static messageCountCheck(username, client) {
         const user = Database.get.chatDefence(username);
         if (user.messages >= 6) {
-            if (username !== 'jourloy') client.timeout(client.channel, user.username, 20, 'Много сообщений, тебе не кажется?');
+            if (username !== 'jourloy') client.timeout(client.channel, username, 20, 'Много сообщений, тебе не кажется?');
             console.log(`Jourlay => Twitch => Chat defence => Timeout (20) => ${username}`);
             return false;
         }
@@ -61,7 +61,8 @@ class ChatDefence {
     static wordCheck(username, message, userstate, client) {
         let check = false;
         const inList = ['pr_'];
-        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали', 'cvMask'];
+        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали', 'cvMask',
+                    'fuck', 'cunt', 'fucking', 'shitted', 'piss', 'bugger', 'bloody hell', 'bastard', 'wanker', 'toser', 'bollocks', 'retard', 'dick', 'asshole', 'bitch', 'choad', 'twat'];
         const splited = message.split(' ');
 
         for (let i in splited) if (inList.indexOf(splited[i]) !== -1) check = true;
@@ -80,7 +81,8 @@ class ChatDefence {
         let check = false;
         const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details', 
                             'я бы всех Ни гресов в сарай загнал и сжег нахуй', 'Ez Jebaited followers ', 'хач', 'тестJRJR', '░', '▄', '▀', '▐', '◐', '▇', '⣿', '⢡', '⡤', '⣫', 'bigfollows', '.com', 'W̪', 'n͓', 'путин', 
-                            'навальный', 'навэльный', 'нэвэльный', 'митинг', 'путинлох', 'свободнаяроссия', 'навальному', 'зиповская', 'карякина', 'байбакова', ];
+                            'навальный', 'навэльный', 'нэвэльный', 'митинг', 'путинлох', 'свободнаяроссия', 'навальному', 'зиповская', 'карякина', 'байбакова', 
+                            'niggers', 'nigga', 'niga', 'niger', 'gay', 'putin', 'navalny', 'freerussia', 'zipovskaya', 'baibakova', 'karykina'];
         const split = message.split(' ');
 
         for (let i in split) {
