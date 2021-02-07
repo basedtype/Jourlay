@@ -30,7 +30,8 @@ client.botName = options.identity.username;
 client.lang = 'ru';
 function onConnectedHandler() {
     client.color("OrangeRed");
-    console.log('JapanBank => Twitch => Ready');
+    console.log('Bankir_bot => Twitch => Ready');
+    Game.repair(client);
 }
 client.on('connected', onConnectedHandler);
 client.connect();
@@ -252,11 +253,11 @@ client.on('message', (channel, userstate, message, self) => {
         return;
     }  else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
         if (username === 'jourloy') {
-            const raid = Database.getRaid(messageSplit[1]);
-            if (raid.bool === true && raid.rest === false && (raid.return === false || (raid.return === true && raid.pay > 0))) {
+            const raid = Database.get.raid(messageSplit[1]);
+            if (raid.inRaid === true) {
                 const now = Math.floor(moment.now() / 1000);
-                const created_at = raid.created_at;
-                const time = raid.time;
+                const created_at = raid.raid.created;
+                const time = raid.raid.time;
 
                 let about = Math.floor((created_at + time) - now);
                 let hours = Math.floor(about/60/60);
@@ -270,47 +271,13 @@ client.on('message', (channel, userstate, message, self) => {
                 ].join(':');
 
                 client.say(channel, `@${username}, ${messageSplit[1]} находится в рейде. До возвращения еще ${formatted}`);
-            } else if (raid.bool === true && raid.rest === true && (raid.return === false || (raid.return === true && raid.pay > 0))) {
-                const now = Math.floor(moment.now() / 1000);
-                const created_at = raid.created_at;
-                const time = raid.time;
-
-                let about = Math.floor((created_at + time) - now);
-                let hours = Math.floor(about/60/60);
-                let minutes = Math.floor(about/60)-(hours*60);
-                let seconds = about%60
-
-                const formatted = [
-                    hours.toString().padStart(2, '0'),
-                    minutes.toString().padStart(2, '0'),
-                    seconds.toString().padStart(2, '0')
-                ].join(':');
-
-                client.say(channel, `@${username}, ${messageSplit[1]} восстанавливает силы. До полного восстановления ${formatted}`);
-            } else if (raid.bool === true && raid.return === true && raid.pay === 0) {
-                const now = Math.floor(moment.now() / 1000);
-                const created_at = raid.created_at;
-                const time = raid.time;
-
-                let about = Math.floor((created_at + time) - now);
-                let hours = Math.floor(about/60/60);
-                let minutes = Math.floor(about/60)-(hours*60);
-                let seconds = about%60
-
-                const formatted = [
-                    hours.toString().padStart(2, '0'),
-                    minutes.toString().padStart(2, '0'),
-                    seconds.toString().padStart(2, '0')
-                ].join(':');
-
-                client.say(channel, `@${username}, ${messageSplit[1]} возвращается отрядом. До возвращения еще ${formatted}`);
-            } else client.say(channel, `@${username}, ${messageSplit[1]} готов отправиться в запретные земли`);
+            } else client.say(channel, `@${username}, ${messageSplit[1]} готов(а) отправиться в запретные земли`);
         } else {
-            const raid = Database.getRaid(username);
-            if (raid.bool === true && raid.rest === false && (raid.return === false || (raid.return === true && raid.pay > 0))) {
+            const raid = Database.get.raid(username);
+            if (raid.inRaid === true) {
                 const now = Math.floor(moment.now() / 1000);
-                const created_at = raid.created_at;
-                const time = raid.time;
+                const created_at = raid.raid.created;
+                const time = raid.raid.time;
 
                 let about = Math.floor((created_at + time) - now);
                 let hours = Math.floor(about/60/60);
@@ -324,40 +291,6 @@ client.on('message', (channel, userstate, message, self) => {
                 ].join(':');
 
                 client.say(channel, `@${username}, вы находитесь в рейде. До возвращения еще ${formatted}`);
-            } else if (raid.bool === true && raid.rest === true && (raid.return === false || (raid.return === true && raid.pay > 0))) {
-                const now = Math.floor(moment.now() / 1000);
-                const created_at = raid.created_at;
-                const time = raid.time;
-
-                let about = Math.floor((created_at + time) - now);
-                let hours = Math.floor(about/60/60);
-                let minutes = Math.floor(about/60)-(hours*60);
-                let seconds = about%60
-
-                const formatted = [
-                    hours.toString().padStart(2, '0'),
-                    minutes.toString().padStart(2, '0'),
-                    seconds.toString().padStart(2, '0')
-                ].join(':');
-
-                client.say(channel, `@${username}, вы восстанавливаете силы. До полного восстановления ${formatted}`);
-            } else if (raid.bool === true && raid.return === true && raid.pay === 0) {
-                const now = Math.floor(moment.now() / 1000);
-                const created_at = raid.created_at;
-                const time = raid.time;
-
-                let about = Math.floor((created_at + time) - now);
-                let hours = Math.floor(about/60/60);
-                let minutes = Math.floor(about/60)-(hours*60);
-                let seconds = about%60
-
-                const formatted = [
-                    hours.toString().padStart(2, '0'),
-                    minutes.toString().padStart(2, '0'),
-                    seconds.toString().padStart(2, '0')
-                ].join(':');
-
-                client.say(channel, `@${username}, вы возвращаетесь отрядом. До возвращения еще ${formatted}`);
             } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Пропуск стоит 10 осколков душ. Отправиться в рейд можно командой !raid`);
         }
         return;
@@ -369,7 +302,7 @@ client.on('message', (channel, userstate, message, self) => {
     } else if (messageSplit[0] === '!bet') {
         if (stopBet === true) return;
         const bet = Database.getBet(username);
-        const raid = Database.getRaid(username);
+        const raid = Database.get.raid(username);
 
         if (raid.bool === true) {
             client.say(channel, `@${username}, вы находитесь в рейде, у вас нет доступа к операциям со своим счетом`);
@@ -427,3 +360,6 @@ client.on('message', (channel, userstate, message, self) => {
         return;
     }
 });
+
+/* EXPORTS */
+module.exports.client = client;
