@@ -254,6 +254,12 @@ class Database {
 } */
 
 class get {
+    static db() {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        return db;
+    }
+
     static user(username) {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
