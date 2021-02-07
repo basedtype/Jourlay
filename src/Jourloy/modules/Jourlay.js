@@ -243,9 +243,9 @@ client.on('message', (channel, userstate, message, self) => {
     Database.add.messages(username)
 
     switch(messageSplit[0]) {
-        case '!q':
+        /* case '!q':
             question(username, message);
-            break;
+            break; */
 
         case '!пк':
         case '!pc':
@@ -284,9 +284,9 @@ client.on('message', (channel, userstate, message, self) => {
             bigBrain(username);
             break;
 
-        case '!roulette':
+        /* case '!roulette':
             roulette(username);
-            break;
+            break; */
         
         case '!ping':
             if (username === 'jourloy') client.action(channel, '==> pong');
