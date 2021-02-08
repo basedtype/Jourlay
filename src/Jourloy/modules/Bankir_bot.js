@@ -48,6 +48,14 @@ const betInfo = {
 /* FUNCTIONS */
 
 /* INTERVALS */
+setInterval(() => {
+    const send = Game.send();
+
+    for (let i in send) {
+        client.say(client.channel, send[i].message);
+        delete send[i];
+    }
+}, 5000);
 
 /* REACTIONS */
 client.on('redeem', (channel, username, rewardType, tags) => {
@@ -131,7 +139,6 @@ client.on('message', (channel, userstate, message, self) => {
 
     } else if (messageSplit[0] === '!wallet' || messageSplit[0] === '!w') {
 
-        if (username !== 'jourloy') return;
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
         if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
@@ -145,7 +152,6 @@ client.on('message', (channel, userstate, message, self) => {
 
     } else if (messageSplit[0] === '!xp') {
 
-        if (username !== 'jourloy') return;
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
         if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
@@ -252,6 +258,7 @@ client.on('message', (channel, userstate, message, self) => {
         Coins.returnRaid(username, true, client);
         return;
     }  else if (messageSplit[0] === '!status' || messageSplit[0] === '!s') {
+
         if (username === 'jourloy') {
             const raid = Database.get.raid(messageSplit[1]);
             if (raid.inRaid === true) {
@@ -269,7 +276,6 @@ client.on('message', (channel, userstate, message, self) => {
                     minutes.toString().padStart(2, '0'),
                     seconds.toString().padStart(2, '0')
                 ].join(':');
-
                 client.say(channel, `@${username}, ${messageSplit[1]} находится в рейде. До возвращения еще ${formatted}`);
             } else client.say(channel, `@${username}, ${messageSplit[1]} готов(а) отправиться в запретные земли`);
         } else {
@@ -294,6 +300,7 @@ client.on('message', (channel, userstate, message, self) => {
             } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Пропуск стоит 10 осколков душ. Отправиться в рейд можно командой !raid`);
         }
         return;
+        
     } else if (messageSplit[0] === '!openBet') {
         if (username !== 'jourloy') return;
         stopBet = false;
