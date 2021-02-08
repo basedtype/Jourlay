@@ -32,7 +32,7 @@ class Tools {
 
     /**
      * Convert time to ms
-     * @param {String} time DD:HH:MM:SS 
+     * @param {String} time {seconds, minutes, hours, days}
      */
     static convertTime(time) {
         const seconds = time.seconds || 0;
