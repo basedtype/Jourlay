@@ -330,6 +330,12 @@ class get {
         const db = data.getData('/Items');
         return db[fraction];
     }
+
+    static fraction(username) {
+        const data = this.game(username);
+        if (data === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        else return data.fraction;
+    }
 }
 
 class add {
