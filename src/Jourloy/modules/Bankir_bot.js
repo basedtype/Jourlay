@@ -1,40 +1,10 @@
 /* IMPORTS */
-const tmi = require('tmi.js');
 const moment = require('moment');
 const { _ } = require('../tools');
 const { Database } = require('../Utils/Database');
 const { Coins } = require('../Utils/Coins');
 const { Game } = require('../Game/Game');
 const { tools, errors } = require('../Utils/Tools');
-
-/* TWITCH SETTINGS */
-const options = {
-    options: {
-        debug: false
-    },
-    connection: {
-        cluster: 'aws',
-        reconnect: true
-    },
-    identity: {
-        username: 'jourlay',
-        password: 'oauth:wqw74p6gjtb7cs478vmb8snbeyfskk'
-    },
-    channels:['#jourloy'],
-};
-
-const client = new tmi.client(options);
-
-client.channel = options.channels[0];
-client.botName = options.identity.username;
-client.lang = 'ru';
-function onConnectedHandler() {
-    client.color("OrangeRed");
-    console.log('Bankir_bot => Twitch => Ready');
-    Game.repair(client);
-}
-client.on('connected', onConnectedHandler);
-client.connect();
 
 /* PARAMS */
 let stopRaid = true;
@@ -58,14 +28,14 @@ setInterval(() => {
 }, 5000);
 
 /* REACTIONS */
-client.on('redeem', (channel, username, rewardType, tags) => {
+/* client.on('redeem', (channel, username, rewardType, tags) => {
     if (rewardType === '6aa74658-1b0a-49ed-8bc2-2ff0de3f6cef') {
         client.say(channel, `@${username}, отлично, я перевел 10 осколоков душ на ваш счет. Проверить кошелек можно командой !wallet`);
         Database.addCoins(username, 10);
     }
-});
+}); */
 
-client.on("resub", (channel, username, months, message, userstate, methods) => {
+/* client.on("resub", (channel, username, months, message, userstate, methods) => {
     const amount = 500 + (months*20);
     client.say(channel, `@${username}, огромное спасибо за ресаб, это отличная помощь, на ваш счет в JapanBank начислено ${amount} осколков душ`);
     Database.addCoins(username, amount);
@@ -81,7 +51,7 @@ client.on("subgift", (channel, username, streakMonths, recipient, methods, users
     const amount = 500 * senderCount;
     client.say(channel, `@${username}, огромное спасибо за подарочную подписку на канал, на ваш счет в JapanBank начислено ${amount} осколков душ`);
     Database.addCoins(username, amount);
-});
+}); */
 
 client.on("timeout", (channel, username, reason, duration) => {
     //const coins = Database.getCoins(username);
