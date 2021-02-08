@@ -243,9 +243,9 @@ client.on('message', (channel, userstate, message, self) => {
     Database.add.messages(username)
 
     switch(messageSplit[0]) {
-        /* case '!q':
+        case '!q':
             question(username, message);
-            break; */
+            break;
 
         case '!пк':
         case '!pc':
