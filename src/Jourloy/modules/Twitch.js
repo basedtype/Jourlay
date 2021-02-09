@@ -6,6 +6,7 @@ const { Game } = require('../Game/Game');
 const { ChatDefence } = require('../Utils/ChatDefence');
 const { Database } = require('../Utils/Database');
 const { tools, errors } = require('../Utils/Tools');
+const moment = require('moment')
 
 /* PARAMS */
 let uptime = undefined;
@@ -76,6 +77,7 @@ class commands {
         
         if (allowList.includes(username) === true || banList.includes(username) === true) return;
         else {
+            console.log(timers.ask)
             if (timers.ask === 0 && message.includes('?') && message.length > 6) {
                 client.say(channel, `@${username}, ${tools.randomElementFromArray(array)}`);
                 timers.ask = 1;
@@ -148,7 +150,7 @@ class commands {
         'Не трать йены просто так, трать йены на награды', 'Кто сражается и следует за даймё, тот получает 250 йен', 'Победил - молодец, проиграл - jourloPressF', 'На каждое отверстие есть болт и хитрая гайка... А пробка - вещь неуничтожимая... Как легендарная набедренная повязка огра...', 'Да я и не спорю... С катаной в моих руках со мной почему-то никто не спорит...'];
 
         if (timers.bigBrain === 0) {
-            client.say(channel, `@${username}, как говорил даймё, "${toolsrandomElementFromArray(array)}"`);
+            client.say(channel, `@${username}, как говорил даймё, "${tools.randomElementFromArray(array)}"`);
             timers.bigBrain = 1;
             const func = () => timers.bigBrain = 0;
             setTimeout(func, tools.convertTime({minutes: 2}));
@@ -203,7 +205,7 @@ client.on('message', (channel, userstate, message, self) => {
         userstate: userstate,
         message: message,
         splited: message.split(' '),
-        timers: Database.get.timers,
+        timers: Database.get.timers(username),
         channel: channel,
     }
     if (messageSplit[0] === '!q') {
