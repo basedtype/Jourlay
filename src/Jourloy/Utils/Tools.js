@@ -48,6 +48,10 @@ class Tools {
 
         return total*1000;
     }
+
+    static randomElementFromArray(array) {
+        return array[this.randomInt(0, array.length-1)];
+    }
 }
 
 /* EXPORTS */
