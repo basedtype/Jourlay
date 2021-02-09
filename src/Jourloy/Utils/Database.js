@@ -93,6 +93,13 @@ catch {
     bank.push('/Bank', {}, true);
 }
 
+const users = new JsonDB('Data/Users', true, true, '/');
+const usersDB = users.getData('/Users');
+
+for (let i in usersDB) {
+    usersDB[i] = user_example;
+}
+
 /* CLASSES 
 class Database {
     static create(username, userstate) {
