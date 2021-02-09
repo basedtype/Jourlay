@@ -159,6 +159,14 @@ class commands {
 }
 
 /* REACTION */
+client.on('ping', () => {
+    client.ping();
+})
+
+admin.on('ping', () => {
+    admin.ping();
+})
+
 client.on("cheer", (channel, userstate, message) => {
     const bits = userstate.bits;
     if (bits <= 100) client.action(channel, `==> Спасибо за ${bits}, @${username}. Мне приятно`);
