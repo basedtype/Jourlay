@@ -61,7 +61,7 @@ const user_example = {
 
 const channel_example = {
     channelID: '',
-    channelName: '',
+    language: 'ENG',
     rollGame: [],
     game: {
         allowRaid: true,
@@ -261,19 +261,41 @@ class Database {
 } */
 
 class get {
+    /**
+     * @deprecated
+     */
     static db() {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
         return db;
     }
 
+    static bankDB() {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        return db;
+    }
+
+    /**
+     * @deprecated
+     */
     static user(username) {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
         for (let i in db) if (i === username) return db[i];
         return errors.ERR_NOT_FIND_USER;
     }
+    
+    static bankUser(username) {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        for (let i in db) if (i === username) return db[i];
+        return errors.ERR_NOT_FIND_USER;
+    }
 
+    /**
+     * @deprecated
+     */
     static user_jr(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
@@ -288,6 +310,9 @@ class get {
         return errors.ERR_NOT_FIND_USER;
     }
 
+    /**
+     * @deprecated
+     */
     static chatDefence(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
@@ -301,6 +326,9 @@ class get {
         else return chatDefence.counters;
     }
 
+    /**
+     * @deprecated
+     */
     static game(username) {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
@@ -308,44 +336,113 @@ class get {
         return errors.ERR_NOT_FIND_USER;
     }
 
+    /**
+     * @deprecated
+     */
     static hero(username) {
         const game = get.game(username);
         if (game === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         else return game.hero;
     }
 
+    /**
+     * @deprecated
+     */
     static raid(username) {
         const game = get.game(username);
         if (game === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         else return game.information;
     }
 
+    /**
+     * @deprecated
+     */
     static wallet(username) {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         else return hero.wallet;
     }
 
+    /**
+     * @deprecated
+     */
     static inventory(username) {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         else return hero.inventory;
     }
 
+    /**
+     * @deprecated
+     */
     static items(fraction) {
         const data = new JsonDB('Data/Items', true, true, '/');
         const db = data.getData('/Items');
         return db[fraction];
     }
 
+    /**
+     * @deprecated
+     */
     static fraction(username) {
         const data = this.game(username);
         if (data === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         else return data.fraction;
     }
+
+    /**
+     * @deprecated
+     */
+    static top(fraction) {
+        if (fraction === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        const data = this.db();
+        if (fractionDB === null) return errors.ERR_NOT_FIND_FRACTION;
+        const top = {
+            wallet: 0,
+            username: '',
+        }
+        for (let i in data) {
+            const user = data[i];
+            if (user.game.fraction === fraction) {
+                if (user.game.hero.wallet > top.wallet) {
+                    top.wallet = user.game.hero.wallet;
+                    top.username = i;
+                }
+            }
+        }
+
+        return top;
+    }
+
+    static channelDB() {
+        const data = new JsonDB('Data/Channels', true, true, '/');
+        const db = data.getData('/Channels');
+        return db;
+    }
+
+    static channel(name) {
+        const data = this.channelDB();
+        for (let i in data) if (name === i) return data[i];
+        return errors.ERR_NOT_FIND_CHANNEL;
+    }
+
+    static channelGame(name) {
+        const data = this.channel(name);
+        if (data === errors.ERR_NOT_FIND_CHANNEL) return errors.ERR_NOT_FIND_CHANNEL;
+        return data.game;
+    }
+
+    static channelChatDefence(name) {
+        const data = this.channel(name);
+        if (data === errors.ERR_NOT_FIND_CHANNEL) return errors.ERR_NOT_FIND_CHANNEL;
+        return data.chatDefence;
+    }
 }
 
 class add {
+    /**
+     * @deprecated
+     */
     static user(username, fraction) {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
@@ -354,6 +451,9 @@ class add {
         data.push('/Bank', db);
     }
 
+    /**
+     * @deprecated
+     */
     static user_jr(username) {
         const data = new JsonDB('Data/Users', true, true, '/');
         const db = data.getData('/Users');
@@ -361,6 +461,9 @@ class add {
         data.push('/Users', db);
     }
 
+    /**
+     * @deprecated
+     */
     static shards(username, amount) {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
@@ -411,7 +514,14 @@ class add {
         db[fractions][item_name][level].lucky = parseInt(lucky);
         db[fractions][item_name][level].price = parseInt(price);
         data.push('/Items', db);
+        return true;
+    }
 
+    static channel(name) {
+        const data = new JsonDB('Data/Channels', true, true, '/');
+        const db = data.getData('/Channels');
+        db[name] = channel_example;
+        data.push('/Channels', db);
         return true;
     }
 }
@@ -459,6 +569,35 @@ class update {
             return true;
         }
         return errors.ERR_NOT_FIND_USER;
+    }
+
+    static channel(name, channel) {
+        const data = new JsonDB('Data/Channels', true, true, '/');
+        const db = data.getData('/Channels');
+        for (let i in db) if (i === name) {
+            db[name] = channel;
+            data.push('/Channels', db, true);
+            return true;
+        }
+        return errors.ERR_NOT_FIND_CHANNEL;
+    }
+
+    static channelGame(name, game) {
+        const data = get.channel(name);
+        data.game = game;
+        this.channel(name, data);
+    }
+
+    static channelChatDefence(name, chatDefence) {
+        const data = get.channel(name);
+        data.chatDefence = chatDefence;
+        this.channel(name, data);
+    }
+
+    static channelLang(name, lang) {
+        const data = get.channel(name);
+        data.language = lang;
+        this.channel(name, data);
     }
 }
 
