@@ -159,14 +159,6 @@ class commands {
 }
 
 /* REACTION */
-client.on('ping', () => {
-    client.ping();
-})
-
-admin.on('ping', () => {
-    admin.ping();
-})
-
 client.on("cheer", (channel, userstate, message) => {
     const bits = userstate.bits;
     if (bits <= 100) client.action(channel, `==> Спасибо за ${bits}, @${username}. Мне приятно`);
@@ -207,6 +199,9 @@ client.on('message', (channel, userstate, message, self) => {
     if (ChatDefence.run(username, message, userstate, client) === false) return;
     Database.add.messages(username)
 
+    const channelDB = Database.get.channel(channel);
+    if (channelDB === errors.ERR_NOT_FIND_CHANNEL) Database.add.channel(channel);
+
     const information = {
         username: username,
         id: userstate['user-id'],
@@ -231,11 +226,19 @@ client.on('message', (channel, userstate, message, self) => {
     } else if (messageSplit[0] === '!bigbrain') {
         commands.bigBrain(information);
     } else if (messageSplit[0] === '!ping') {
-        if (username === 'jourloy') client.action(channel, '==> pong');
+        if (username === 'jourloy') client.action(channel, 'pong');
     } else if (messageSplit[0] === '!vip') {
         if (username === 'katinka_katerinka') admin.vip(channel, username);
     } else if (messageSplit[0] === '!mod') {
         if (username === 'katinka_katerinka') admin.mod(channel, username);
+    } else if (messageSplit[0] === '!lang') {
+
+        if (username !== 'jourloy') return;
+        if (messageSplit[1] != null) {
+            Database.update.channelLang(channel, messageSplit[1]);
+            client.action(channel, `language switch to ${messageSplit[1]}`)
+        }
+
     } else if (messageSplit[0] === '!raid') {
 
         const result = Game.toRaid(username, client);
@@ -285,6 +288,7 @@ client.on('message', (channel, userstate, message, self) => {
             else if (game.fraction === 'K') client.say(channel, `@${username}, на вашем счету ${hero.wallet} осколков душ`);
 
         }
+
     } else if (messageSplit[0] === '!xp') {
 
         const hero = Database.get.hero(username);
@@ -321,6 +325,12 @@ client.on('message', (channel, userstate, message, self) => {
 
             client.say(channel, `@${username}, вы находитесь в рейде. До возвращения еще ${formatted}`);
         } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Отправиться в рейд можно командой !raid`);
+
+    } else if (messageSplit[0] === '!top') {
+
+        const fraction = Database.get.fraction(username);
+        const top = Database.get.top(fraction);
+        client.say(channel, `@${username}, в твоей фракции самый большой счет имеет ${top.username} на котором лежит ${top.wallet} валюты`);
 
     }
 });
