@@ -4,6 +4,9 @@ const { tools, errors } = require('../Utils/Tools');
 
 /* PARAMS */
 const bank_example = {
+    twitchUsername: '',
+    discordUsername: '',
+    connectID: null,
     game: {
         fraction: '',
         hero: {
@@ -437,16 +440,24 @@ class get {
         if (data === errors.ERR_NOT_FIND_CHANNEL) return errors.ERR_NOT_FIND_CHANNEL;
         return data.chatDefence;
     }
+
+    static connectID(username) {
+        const data = this.bankUser(username);
+        if (data === errors.ERR_NOT_FIND_CHANNEL) return errors.ERR_NOT_FIND_CHANNEL;
+        return data.connectID;
+    }
 }
 
 class add {
     /**
      * @deprecated
      */
-    static user(username, fraction) {
+    static user(username, fraction, discord) {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
         bank_example.game.fraction = fraction;
+        if (discord == null || discord === false) bank_example.twitchUsername = username;
+        else bank_example.discordUsername = username;
         db[username] = bank_example;
         data.push('/Bank', db);
     }
@@ -598,6 +609,32 @@ class update {
         const data = get.channel(name);
         data.language = lang;
         this.channel(name, data);
+    }
+
+    static connectID(username, id) {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        for (let i in db) if (i === username) {
+            db[username].connectID = id;
+            data.push('/Bank', db, true);
+            return true;
+        }
+        return errors.ERR_NOT_FIND_USER;
+    }
+
+    static twitchUsername(username, twitchUsername) {
+
+    }
+
+    static discordUsername(username, discordUsername) {
+        const data = new JsonDB('Data/Bank', true, true, '/');
+        const db = data.getData('/Bank');
+        for (let i in db) if (i === username) {
+            db[username].discordUsername = discordUsername;
+            data.push('/Bank', db, true);
+            return true;
+        }
+        return errors.ERR_NOT_FIND_USER;
     }
 }
 
