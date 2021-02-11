@@ -62,7 +62,6 @@ setInterval(function () {
 }, tools.convertTime({seconds: 1}));
 
 /* CLASSES */
-
 class commands {
     static question(information) {
         const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
@@ -155,6 +154,17 @@ class commands {
             const func = () => timers.bigBrain = 0;
             setTimeout(func, tools.convertTime({minutes: 2}));
         }
+    }
+}
+
+class twitch {
+    static whisper(username, message) {
+        client.whisper(username, message);
+    }
+
+    static connect(twitchUsername, discordUsername) {
+        const connectID = Database.get.connectID(twitchUsername);
+        this.whisper(twitchUsername, `Hi, if you want connect your discord with twitch, then send in chat this: [ !connect ${connectID} to ${discordUsername} ] else just don't answer :)`);
     }
 }
 
@@ -282,10 +292,10 @@ client.on('message', (channel, userstate, message, self) => {
         }
         if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
         else {
-            if (game.fraction === 'C') client.say(channel, `@${username}, на вашем счету ${hero.wallet} купюр`);
-            else if (game.fraction === 'V') client.say(channel, `@${username}, на вашем счету ${hero.wallet} золотых монет`);
-            else if (game.fraction === 'J') client.say(channel, `@${username}, на вашем счету ${hero.wallet} слитков Великой стали`);
-            else if (game.fraction === 'K') client.say(channel, `@${username}, на вашем счету ${hero.wallet} осколков душ`);
+            if (game.fraction === 'C') client.say(channel, `@${username}, on your bill ${hero.wallet} купюр`);
+            else if (game.fraction === 'V') client.say(channel, `@${username}, on your bill ${hero.wallet} gold coins`);
+            else if (game.fraction === 'J') client.say(channel, `@${username}, on your bill ${hero.wallet} Great steel ignots`);
+            else if (game.fraction === 'K') client.say(channel, `@${username}, on your bill ${hero.wallet} soul shards`);
 
         }
 
@@ -294,7 +304,7 @@ client.on('message', (channel, userstate, message, self) => {
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
         if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
-        else client.say(channel, `@${username}, у вас ${hero.level} уровень и ${hero.xp} очков опыта`);
+        else client.say(channel, `@${username}, you are have ${hero.level} level and ${hero.xp} experience points`);
 
     } else if (messageSplit[0] === '!hp') {
 
@@ -302,7 +312,7 @@ client.on('message', (channel, userstate, message, self) => {
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
         if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
-        else client.say(channel, `@${username}, у вас ${hero.hp} очков здоровья`);
+        else client.say(channel, `@${username}, you are have ${hero.hp} heal points`);
 
     } else if (messageSplit[0] === '!status') {
 
@@ -323,8 +333,8 @@ client.on('message', (channel, userstate, message, self) => {
                 seconds.toString().padStart(2, '0')
             ].join(':');
 
-            client.say(channel, `@${username}, вы находитесь в рейде. До возвращения еще ${formatted}`);
-        } else client.say(channel, `@${username}, вы готовы отправиться в запретные земли. Отправиться в рейд можно командой !raid`);
+            client.say(channel, `@${username}, you are in raid. You will come back in ${formatted}`);
+        } else client.say(channel, `@${username}, you are ready to go in raid. Use this command: !raid`);
 
     } else if (messageSplit[0] === '!top') {
 
@@ -332,7 +342,17 @@ client.on('message', (channel, userstate, message, self) => {
         const top = Database.get.top(fraction);
         client.say(channel, `@${username}, в твоей фракции самый большой счет имеет ${top.username} на котором лежит ${top.wallet} валюты`);
 
+    } else if (messageSplit[0] === '!connect') {
+
+        const connectID = Database.get.connectID(username);
+        if (messageSplit[1] == connectID) {
+            client.say(channel, `@${username}, your discord connected to twitch`);
+            Database.update.connectID(username, null);
+            Database.update.discordUsername(username, messageSplit[3]);
+        }
+
     }
 });
 
 /* EXPORTS */
+module.exports.twitch = twitch;
