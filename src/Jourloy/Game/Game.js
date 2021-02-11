@@ -59,7 +59,7 @@ class Game {
                     if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
                     if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
                     if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
-                    if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
+                    if (startRaid.fraction === 'K') send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
                 } else {
                     const formatted = [
                         hours.toString().padStart(2, '0'),
@@ -72,7 +72,7 @@ class Game {
                         if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
                         if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
                         if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
-                        if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
+                        if (startRaid.fraction === 'K') send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
     
                         const endRaid = Database.get.game(i);
                         endRaid.information.inRaid = false;
@@ -167,10 +167,10 @@ class Game {
         if (startRaid.fraction === 'K') client.say(client.channel, `@${username}, need steal couple documents, soul master. You will come back in ${formatted}`);
 
         const raid_start = setTimeout(function() {
-            if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
-            if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
-            if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
-            if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
+            if (startRaid.fraction === 'C') client.say(client.channel, `@${username}, task is done, "Caesar" fighter! Your reward is ${shards} bills and ${xp} experience points`);
+            if (startRaid.fraction === 'V') client.say(client.channel, `@${username}, look who came, hahaha. Sit down and drink with us, viking! Take ${shards} gold coins and ${xp} experience points`);
+            if (startRaid.fraction === 'J') client.say(client.channel, `@${username}, glad to see you, samurai. Go drink a tea, and now I give you ${shards} Great steel ingots and ${xp} experience points`);
+            if (startRaid.fraction === 'K') client.say(client.channel, `@${username}, thank you, soul master, I give ${shards} soul shards and ${xp} experience points`);
 
             const endRaid = Database.get.game(username);
             endRaid.information.inRaid = false;
