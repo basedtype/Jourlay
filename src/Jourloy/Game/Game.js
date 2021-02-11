@@ -56,10 +56,10 @@ class Game {
                     const startRaid = Database.get.game(i);
                     send[i] = {};
                     send[i].message = '';
-                    if (startRaid.fraction === 'C') send[i].message = `@${i}, боевая задача успешно выполнена, боец группы "Цезарь"! В награду выдаем тебе ${reward.shards} купюр и ${reward.xp} очков опыта`;
-                    if (startRaid.fraction === 'V') send[i].message = `@${i}, посмотрите кто пришел, хахаха. Присаживайся и выпей с нами, викинг! Держи ${reward.shards} золотых монет и ${reward.xp} очков опыта`;
-                    if (startRaid.fraction === 'J') send[i].message = `@${i}, рады видеть тебя, самурай. Пройдем выпьем чаю, а пока в награду мы выдаем тебе ${reward.shards} слитков Великой стали и ${reward.xp} очков опыта`;
-                    if (startRaid.fraction === 'K')send[i].message = `@${i}, спасибо большое, мастер душ, вот тебе ${reward.shards} осколков душ и ${reward.xp} очков опыта`;
+                    if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
+                    if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
+                    if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
+                    if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
                 } else {
                     const formatted = [
                         hours.toString().padStart(2, '0'),
@@ -69,10 +69,10 @@ class Game {
                     
                     const startRaid = Database.get.game(i);
                     const raid_start = setTimeout(function() {
-                        if (startRaid.fraction === 'C') client.say(client.channel, `@${i}, боевая задача успешно выполнена, боец группы "Цезарь"! В награду выдаем тебе ${reward.shards} купюр и ${reward.xp} очков опыта`);
-                        if (startRaid.fraction === 'V') client.say(client.channel, `@${i}, посмотрите кто пришел, хахаха. Присаживайся и выпей с нами, викинг! Держи ${reward.shards} золотых монет и ${reward.xp} очков опыта`);
-                        if (startRaid.fraction === 'J') client.say(client.channel, `@${i}, рады видеть тебя, самурай. Пройдем выпьем чаю, а пока в награду мы выдаем тебе ${reward.shards} слитков Великой стали и ${reward.xp} очков опыта`);
-                        if (startRaid.fraction === 'K') client.say(client.channel, `@${i}, спасибо большое, мастер душ, вот тебе ${reward.shards} осколков душ и ${reward.xp} очков опыта`);
+                        if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
+                        if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
+                        if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
+                        if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
     
                         const endRaid = Database.get.game(i);
                         endRaid.information.inRaid = false;
@@ -161,16 +161,16 @@ class Game {
 
         const startRaid = Database.get.game(username);
 
-        if (startRaid.fraction === 'C') client.say(client.channel, `@${username}, смирно, боец группы "Цезарь"! У тебя боевая задача, вперед на выполнение. Вернешься через ${formatted}`);
-        if (startRaid.fraction === 'V') client.say(client.channel, `@${username}, встретимся в вальгалле, викинг. Не бойся ни кого и помни: нет добычи - нет награды. Ты вернешься через ${formatted}`);
-        if (startRaid.fraction === 'J') client.say(client.channel, `@${username}, удачи в бою, самурай. Пусть катана сделает свое дело. Ты вернешься через ${formatted}`);
-        if (startRaid.fraction === 'K') client.say(client.channel, `@${username}, необходимо выкрасть пару важных документов, мастер душ. Ты вернешься через ${formatted}`);
+        if (startRaid.fraction === 'C') client.say(client.channel, `@${username}, attention, "Caesar" fighter! I have a task for you. You will come back in ${formatted}`);
+        if (startRaid.fraction === 'V') client.say(client.channel, `@${username}, will meet in Valhalla, viking. Don't fear anyone and remember: don't have loot - don't have reward. You will come back in ${formatted}`);
+        if (startRaid.fraction === 'J') client.say(client.channel, `@${username}, good luck in fight, samurai. Let katana do that, for what it. You will come back in ${formatted}`);
+        if (startRaid.fraction === 'K') client.say(client.channel, `@${username}, need steal couple documents, soul master. You will come back in ${formatted}`);
 
         const raid_start = setTimeout(function() {
-            if (startRaid.fraction === 'C') client.say(client.channel, `@${username}, боевая задача успешно выполнена, боец группы "Цезарь"! В награду выдаем тебе ${shards} купюр и ${xp} очков опыта`);
-            if (startRaid.fraction === 'V') client.say(client.channel, `@${username}, посмотрите кто пришел, хахаха. Присаживайся и выпей с нами, викинг! Держи ${shards} золотых монет и ${xp} очков опыта`);
-            if (startRaid.fraction === 'J') client.say(client.channel, `@${username}, рады видеть тебя, самурай. Пройдем выпьем чаю, а пока в награду мы выдаем тебе ${shards} слитков Великой стали и ${xp} очков опыта`);
-            if (startRaid.fraction === 'K') client.say(client.channel, `@${username}, спасибо большое, мастер душ, вот тебе ${shards} осколков душ и ${xp} очков опыта`);
+            if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
+            if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
+            if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
+            if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
 
             const endRaid = Database.get.game(username);
             endRaid.information.inRaid = false;
