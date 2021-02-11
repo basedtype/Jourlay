@@ -242,34 +242,34 @@ client.on('message', (channel, userstate, message, self) => {
     } else if (messageSplit[0] === '!raid') {
 
         const result = Game.toRaid(username, client);
-        if (result === errors.ERR_NOT_FIND_USER) client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
-        else if (result === errors.ERR_USER_NOT_IN_FRACTION) client.say(channel, `@JOURLOY, у пользователя [${username}] ошибка с данными (fraction error)`);
-        else if (result === errors.ERR_ALREADY_IN_RAID) client.say(channel, `@${username}, вы уже в рейде. Проверить время до возвращения можно командой !status`);
-        else if (result === errors.ERR_NOT_ENOUGH_SHARDS) client.say(channel, `@${username}, у вас не достаточно осколов для похода в рейд`);
+        if (result === errors.ERR_NOT_FIND_USER) client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
+        else if (result === errors.ERR_USER_NOT_IN_FRACTION) client.say(channel, `@JOURLOY, user [${username}] have data error (fraction error)`);
+        else if (result === errors.ERR_ALREADY_IN_RAID) client.say(channel, `@${username}, you are in a raid. You can check time by this command: !status`);
+        else if (result === errors.ERR_NOT_ENOUGH_SHARDS) client.say(channel, `@${username}, you are not have enough money for raid`);
 
     } else if (messageSplit[0] === '!fraction') {
 
         const game = Database.get.game(username);
         if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
-            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, после !fraction необходимо указать букву фракции`);
+            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, after !fraction you should write you fraction symbol`);
             else if (messageSplit[1] === 'V') {
-                client.say(channel, `@${username}, хорош боец, нам как раз такие нужны! У нас все просто, видишь добро - забираешь, я думаю ты быстро освоишься. Захочешь отправиться за добычей - пиши !raid`);
+                client.say(channel, `@${username}, good warrior, we are need this! Here is all easy, if you see a expensive things, then take it. When you will be ready for raid write !raid`);
                 Database.add.user(username, messageSplit[1]);
             } else if (messageSplit[1] === 'C') {
-                client.say(channel, `@${username}, смирно! Теперь это твой новый дом. У нас много боевых задач, как будешь готов - пиши !raid`);
+                client.say(channel, `@${username}, Attention! Now this place is your new home. I have many tasks for you, when you will be ready for raid write !raid`);
                 Database.add.user(username, messageSplit[1]);
             } else if (messageSplit[1] === 'J') {
-                client.say(channel, `@${username} добро пожаловать. Отныне ты - самурай. Оберегай катану, как жену, и используй вакидзаси, как перо. Как будешь готов отправиться в путешествие, пиши !raid`);
+                client.say(channel, `@${username} welcome. Now you are samurai. Protect katana as a wife and use wakizashi as a feather. When you will be ready for raid write !raid`);
                 Database.add.user(username, messageSplit[1]);
             } else if (messageSplit[1] === 'K' && username === 'jourloy') {
-                Jourloy.action(channel, `==> @${username}, теперь ты не просто человек. Теперь ты имеешь преимущество над другими. Ты представляешь особый класс. Отныне ты - мастер душ. Как будешь готов к новым приключениям, пиши !raid`);
+                client.action(channel, `==> @${username}, now you not a simple man. Now you better other. You are in highest class. You are soul master. When you will be ready for raid write !raid`);
                 Database.add.user(username, messageSplit[1]);
             }
         } else {
-            if (game.fraction === 'C') client.say(client.channel, `@${username}, вашей фракцией является: Боевая группа "Цезарь" `);
-            else if (game.fraction === 'V') client.say(client.channel, `@${username}, вашей фракцией является: Викинги`);
-            else if (game.fraction === 'J') client.say(client.channel, `@${username}, вашей фракцией является: Клан самураев "Сакура"`);
-            else if (game.fraction === 'K') client.say(client.channel, `@${username}, вашей фракцией является: Мастера душ`);
+            if (game.fraction === 'C') client.say(client.channel, `@${username}, your fraction is the fight squad "Caesar" `);
+            else if (game.fraction === 'V') client.say(client.channel, `@${username}, your fraction is the Vikings`);
+            else if (game.fraction === 'J') client.say(client.channel, `@${username}, your fraction is the samurai clan "Sakura"`);
+            else if (game.fraction === 'K') client.say(client.channel, `@${username}, your fraction is the Soul Master`);
         }
 
     } else if (messageSplit[0] === '!wallet') {
