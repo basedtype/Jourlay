@@ -56,7 +56,7 @@ setInterval(function () {
             let then = body.stream.created_at;
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
-            uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" ч. mm мин. ss сек.");
+            uptime = Math.floor(d.asHours()) + moment.utc(ms).format(" h. mm min. ss sec.");
         }
     })
 }, tools.convertTime({seconds: 1}));
@@ -93,9 +93,9 @@ class commands {
     static uptime(information) {
         const channel = information.channel;
 
-        if (uptime == undefined) client.say(channel, `Стример сейчас оффлайн`);
+        if (uptime == undefined) client.say(channel, `Streamer is offline now`);
         else {
-            let message = `Стример ведет трансляцию уже ${uptime} | Игры на стриме: `
+            let message = `Stream uptime: ${uptime} | Games on stream: `
             for (let i in gameHistory) {
                 if (i == 1) message += gameHistory[i];
                 else message += ` -> ${gameHistory[i]}`;
@@ -278,9 +278,9 @@ client.on('message', (channel, userstate, message, self) => {
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
         if (raid.inRaid === true) {
-            client.say(channel, `@${username}, вы сейчас в рейде. Данное действие невозможно`)
+            client.say(channel, `@${username}, you are in raid`)
         }
-        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
         else {
             if (game.fraction === 'C') client.say(channel, `@${username}, на вашем счету ${hero.wallet} купюр`);
             else if (game.fraction === 'V') client.say(channel, `@${username}, на вашем счету ${hero.wallet} золотых монет`);
@@ -293,7 +293,7 @@ client.on('message', (channel, userstate, message, self) => {
 
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
-        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
         else client.say(channel, `@${username}, у вас ${hero.level} уровень и ${hero.xp} очков опыта`);
 
     } else if (messageSplit[0] === '!hp') {
@@ -301,7 +301,7 @@ client.on('message', (channel, userstate, message, self) => {
         if (username !== 'jourloy') return;
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
-        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, кажется вы не зарегистрированы в нашей базе данных. Для начала необходимо указать свою фракцию командой !fraction`);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
         else client.say(channel, `@${username}, у вас ${hero.hp} очков здоровья`);
 
     } else if (messageSplit[0] === '!status') {
