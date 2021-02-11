@@ -1,12 +1,11 @@
+const { client } = require("./Bots/Jourlay");
+
 const Discord = require("discord.js");
 const { Database } = require("../Utils/Database");
-const config = require("./conf");
-
-const client = new Discord.Client();
-client.login(config.ds_token);
+const { DiscordGame } = require('../Game/Game');
+const { tools, errors } = require('../Utils/Tools');
 
 /* PARAMS */
-
 const channelsID = {
     noftification: '793404252809986068',
     moderatorOnly: '748407718414385183',
@@ -19,10 +18,7 @@ const channelsID = {
 }
 let noftification = null;
 
-/* FUNCTIONS */
-
 /* INTERVALS */
-
 setInterval(function () {
     const deleteFunc = (channelNew) => {
         if (channelNew.members.array().length === 0) {
@@ -182,17 +178,127 @@ setInterval(function () {
         client.channels.fetch(channelsID.noftification).then(channel => {
             if (channel == null) return;
             noftification = channel;
-            console.log('Jourlay => Discord => Ready');
+            console.log('Discord => Jourlay => Ready');
         });
     }
 }, 1000);
 
-/* REACTIONS */
+/* FUNCTIONS */
+function channelRaids(information) {
+    const channel = information.channel;
+    const username = information.username;
+    const message = information.message;
+    const split = message.split(' ');
 
+    if (split[0] === '!raid') {
+
+        console.log(username);
+        const game = DiscordGame.toRaid(username, channel);
+        if (game === errors.ERR_NOT_FIND_USER) channel.send(`@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
+        else if (game === errors.ERR_USER_NOT_IN_FRACTION) channel.send(`@JOURLOY, user [${username}] have data error (fraction error)`);
+        else if (game === errors.ERR_ALREADY_IN_RAID) channel.send(`@${username}, you are in a raid. You can check time by this command: !status`);
+        else if (game === errors.ERR_NOT_ENOUGH_SHARDS) channel.send(`@${username}, you are not have enough money for raid`);
+
+    } else if (split[0] === '!status') {
+
+        const raid = Database.get.raid(username);
+        if (raid.inRaid === true) {
+            const now = Math.floor(moment.now() / 1000);
+            const created_at = raid.raid.created;
+            const time = raid.raid.time;
+
+            let about = Math.floor((created_at + time) - now);
+            let hours = Math.floor(about/60/60);
+            let minutes = Math.floor(about/60)-(hours*60);
+            let seconds = about%60
+
+            const formatted = [
+                hours.toString().padStart(2, '0'),
+                minutes.toString().padStart(2, '0'),
+                seconds.toString().padStart(2, '0')
+            ].join(':');
+
+            channel.send(`@${username}, you are in raid. You will come back in ${formatted}`);
+        } else channel.send(`@${username}, you are ready to go in raid. Use this command: !raid`);
+
+    } else if (split[0] === '!wallet') {
+
+        const raid = Database.get.raid(username);
+        const hero = Database.get.hero(username);
+        const game = Database.get.game(username);
+        if (raid.inRaid === true) {
+            channel.send(`@${username}, you are in raid`)
+        }
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') channel.send(`@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
+        else {
+            if (game.fraction === 'C') channel.send(`@${username}, on your bill ${hero.wallet} купюр`);
+            else if (game.fraction === 'V') channel.send(`@${username}, on your bill ${hero.wallet} gold coins`);
+            else if (game.fraction === 'J') channel.send(`@${username}, on your bill ${hero.wallet} Great steel ignots`);
+            else if (game.fraction === 'K') channel.send(`@${username}, on your bill ${hero.wallet} soul shards`);
+
+        }
+
+    } else if (split[0] === '!xp') {
+
+        const hero = Database.get.hero(username);
+        const game = Database.get.game(username);
+        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') channel.send(`@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
+        else channel.send(`@${username}, you are have ${hero.level} level and ${hero.xp} experience points`);
+
+    } else if (split[0] === '!fraction') {
+
+        const game = Database.get.game(username);
+        if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
+            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) channel.send(`@${username}, after !fraction you should write you fraction symbol`);
+            else if (messageSplit[1] === 'V') {
+                channel.send(`@${username}, good warrior, we are need this! Here is all easy, if you see a expensive things, then take it. When you will be ready for raid write !raid`);
+                Database.add.user(username, messageSplit[1]);
+            } else if (messageSplit[1] === 'C') {
+                channel.send(`@${username}, Attention! Now this place is your new home. I have many tasks for you, when you will be ready for raid write !raid`);
+                Database.add.user(username, messageSplit[1]);
+            } else if (messageSplit[1] === 'J') {
+                channel.send(`@${username} welcome. Now you are samurai. Protect katana as a wife and use wakizashi as a feather. When you will be ready for raid write !raid`);
+                Database.add.user(username, messageSplit[1]);
+            } else if (messageSplit[1] === 'K' && username === 'jourloy') {
+                channel.send(`@${username}, now you not a simple man. Now you better other. You are in highest class. You are soul master. When you will be ready for raid write !raid`);
+                Database.add.user(username, messageSplit[1]);
+            }
+        } else {
+            if (game.fraction === 'C') channel.send(`@${username}, your fraction is the fight squad "Caesar" `);
+            else if (game.fraction === 'V') channel.send(`@${username}, your fraction is the Vikings`);
+            else if (game.fraction === 'J') channel.send(`@${username}, your fraction is the samurai clan "Sakura"`);
+            else if (game.fraction === 'K') channel.send(`@${username}, your fraction is the Soul Master`);
+        }
+        
+    } else if (split[0] === '!connect') {
+
+        const twitchUsername = split[1];
+        const user = Database.get.bankUser(twitchUsername);
+        if (user === errors.ERR_NOT_FIND_USER) channel.send(`@${username}, this user not find in my database`);
+        else {
+            const id = tools.randomInt(10000, 99999);
+            Database.update.connectID(twitchUsername, id);
+            const { twitch } = require('./Twitch');
+            twitch.connect(twitchUsername, username);
+        }
+    }
+}
+
+/* REACTIONS */
 client.on('message', msg => {
     if (msg.author.bot) return;
     const channel = msg.channel;
-    const username = msg.author.username;
+    const username = msg.author.username.toLowerCase();
+
+    const information = {
+        channel: channel,
+        username: username,
+        message: msg.content,
+    }
+
+    if (channel.name === 'raids') {
+        channelRaids(information);
+    }
 
     if (channel.name === 'moderator-only') {
         if (msg.content.startsWith('!test')) discord.noftification('Satisfactory');
@@ -275,7 +381,7 @@ client.on('message', msg => {
             return;
         } else if (text === '!raid' || text === '!r') {
             if (stopRaid === false || username === 'jourloy') Coins.raid(username, client);
-            else client.say(channel, `@${username}, в данный момент ворота из города закрыта, выйти не возможно`);
+            else channel.send(`@${username}, в данный момент ворота из города закрыта, выйти не возможно`);
             return;
         } else if (text === '!top') {
             
