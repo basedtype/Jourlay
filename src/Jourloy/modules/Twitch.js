@@ -226,7 +226,7 @@ client.on('message', (channel, userstate, message, self) => {
     } else if (messageSplit[0] === '!пк' || messageSplit[0] === '!pc') {
         client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM | Микрофон Razer Siren X`);
     } else if (messageSplit[0] === '!yt') {
-        client.action(channel, '==> Здесь вы можете посмотреть нарезки со стримов: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
+        client.action(channel, '==> Ютуб канал: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
     } else if (messageSplit[0] === '!ds') {
         client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: discord.gg/zCATPVRp6p');
     } else if (messageSplit[0] === '!uptime') {
@@ -288,15 +288,15 @@ client.on('message', (channel, userstate, message, self) => {
         const hero = Database.get.hero(username);
         const game = Database.get.game(username);
         if (raid.inRaid === true) {
-            client.say(channel, `@${username}, you are in raid`)
-        }
-        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
-        else {
-            if (game.fraction === 'C') client.say(channel, `@${username}, on your bill ${hero.wallet} купюр`);
-            else if (game.fraction === 'V') client.say(channel, `@${username}, on your bill ${hero.wallet} gold coins`);
-            else if (game.fraction === 'J') client.say(channel, `@${username}, on your bill ${hero.wallet} Great steel ignots`);
-            else if (game.fraction === 'K') client.say(channel, `@${username}, on your bill ${hero.wallet} soul shards`);
-
+            client.say(channel, `@${username}, you are in raid`);
+        } else {
+            if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
+            else {
+                if (game.fraction === 'C') client.say(channel, `@${username}, on your bill ${hero.wallet} купюр`);
+                else if (game.fraction === 'V') client.say(channel, `@${username}, on your bill ${hero.wallet} gold coins`);
+                else if (game.fraction === 'J') client.say(channel, `@${username}, on your bill ${hero.wallet} Great steel ignots`);
+                else if (game.fraction === 'K') client.say(channel, `@${username}, on your bill ${hero.wallet} soul shards`);
+            }
         }
 
     } else if (messageSplit[0] === '!xp') {
@@ -351,6 +351,10 @@ client.on('message', (channel, userstate, message, self) => {
             Database.update.discordUsername(username, messageSplit[3]);
         }
 
+    }
+    
+    if (message === 'Солнце мое, взгляни на меня') {
+        client.say(channel, 'Моя ладонь превратилась в кулак catJAM');
     }
 });
 
