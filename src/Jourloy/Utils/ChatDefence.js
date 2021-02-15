@@ -61,7 +61,7 @@ class ChatDefence {
     static wordCheck(username, message, userstate, client) {
         let check = false;
         const inList = ['pr_'];
-        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали', 'cvMask',
+        const list = ['ava', 'аватария', 'ава', 'pogchamp', 'блять', 'хуй', 'пизда', 'уебан', 'чмо', 'чсв', 'уебок', 'еблан', 'мразь', 'член', 'ебать', 'ебу', 'выебу', 'cock', 'cunt', 'ебаль', 'хуев', 'хуёв', 'ебет', 'ебёт', 'заебал', 'заебали', 'cvmask',
                     'fuck', 'cunt', 'fucking', 'shitted', 'piss', 'bugger', 'bloody hell', 'bastard', 'wanker', 'toser', 'bollocks', 'retard', 'dick', 'asshole', 'bitch', 'choad', 'twat'];
         const splited = message.split(' ');
 
