@@ -6,6 +6,7 @@ const { Game } = require('../Game/Game');
 const { ChatDefence } = require('../Utils/ChatDefence');
 const { Database } = require('../Utils/Database');
 const { tools, errors } = require('../Utils/Tools');
+const { discord } = require('./Discord');
 const moment = require('moment')
 
 /* PARAMS */
