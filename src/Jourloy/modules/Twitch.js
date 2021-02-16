@@ -15,6 +15,9 @@ let viewers = 0;
 let maxViewers = 0;
 let game = undefined;
 let gameHistory = [];
+let channelTimers = {
+    repeat: 0,
+}
 
 /* FUNCTIONS */
 
@@ -222,6 +225,7 @@ client.on('message', (channel, userstate, message, self) => {
         timers: Database.get.timers(username),
         channel: channel,
     }
+
     if (messageSplit[0] === '!q') {
         commands.question(information);
     } else if (messageSplit[0] === '!пк' || messageSplit[0] === '!pc') {
@@ -242,6 +246,65 @@ client.on('message', (channel, userstate, message, self) => {
         if (username === 'katinka_katerinka') admin.vip(channel, username);
     } else if (messageSplit[0] === '!mod') {
         if (username === 'katinka_katerinka') admin.mod(channel, username);
+    } else if (messageSplit[0] === '!userage') {
+
+        client.api({
+            url: `https://api.twitch.tv/kraken/users/${information.id}`,
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+            }
+        }, (err, res, body) => {
+            const created_at = body.created_at;
+
+            let now = new Date();
+            let then = created_at;
+            let ms = moment(now).diff(moment(then));
+            let d = moment.duration(ms);
+            const follow = Math.floor(d.asYears()) + moment.utc(ms).format(":DDD:hh:mm");
+            const followSplited = follow.split(':');
+            let result = '';
+            for (let i in followSplited) {
+                if (i == 0) result += `${followSplited[i]} years `;
+                if (i == 1) result += `${followSplited[i]} days `;
+                if (i == 2) result += `${followSplited[i]} hours `;
+                if (i == 3) result += `${followSplited[i]} minutes `;
+            }
+            result += 'ago'
+            client.say(channel, `@${username}, you created account ${result}`)
+        });
+
+    } else if (messageSplit[0] === '!offtime') {
+
+        client.api({
+            url: `https://api.twitch.tv/kraken/users/158466757`,
+            method: "GET",
+            headers: {
+                'Accept': 'application/vnd.twitchtv.v5+json',
+                "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
+                'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
+            }
+        }, (err, res, body) => {
+            if (uptime != undefined) return;
+            const created_at = body.updated_at;
+
+            let now = new Date();
+            let then = created_at;
+            let ms = moment(now).diff(moment(then));
+            let d = moment.duration(ms);
+            const follow = Math.floor(d.asDays()) + moment.utc(ms).format(":hh:mm");
+            const followSplited = follow.split(':');
+            let result = '';
+            for (let i in followSplited) {
+                if (i == 0) result += `${followSplited[i]} days `;
+                if (i == 1) result += `${followSplited[i]} hours `;
+                if (i == 2) result += `${followSplited[i]} minutes`;
+            }
+            client.say(channel, `@${username}, Jourloy is offline ${result}`);
+        });
+
     } else if (messageSplit[0] === '!lang') {
 
         if (username !== 'jourloy') return;
@@ -356,6 +419,17 @@ client.on('message', (channel, userstate, message, self) => {
     
     if (message === 'Солнце мое, взгляни на меня') {
         client.say(channel, 'Моя ладонь превратилась в кулак catJAM');
+    } else {
+        
+        if (channelTimers.repeat === 0) {
+            const repeat = ['KEKW', '...', '..', 'MODS', 'KEKWait', 'PogChamp', 'LUL'];
+            for (let i in information.splited) if (repeat.includes(information.splited[i]) === true) {
+                client.say(channel, information.splited[i]);
+                return;
+            }
+            channelTimers.repeat = 1;
+            setTimeout(function() {channelTimers.repeat = 0}, tools.convertTime({seconds: 30}));
+        }
     }
 });
 
