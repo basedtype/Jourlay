@@ -263,14 +263,28 @@ client.on('message', (channel, userstate, message, self) => {
             let then = created_at;
             let ms = moment(now).diff(moment(then));
             let d = moment.duration(ms);
-            const follow = Math.floor(d.asYears()) + moment.utc(ms).format(":DDD:hh:mm");
-            const followSplited = follow.split(':');
+            let time = null;
+            const days = Math.floor(d.asDays())
+            if (days > 365) time = Math.floor(d.asYears()) + moment.utc(ms).format(":DDD:hh:mm");
+            else time = Math.floor(d.asDays()) + moment.utc(ms).format(":hh:mm");
+            const followSplited = time.split(':');
             let result = '';
             for (let i in followSplited) {
-                if (i == 0) result += `${followSplited[i]} years `;
-                if (i == 1) result += `${followSplited[i]} days `;
-                if (i == 2) result += `${followSplited[i]} hours `;
-                if (i == 3) result += `${followSplited[i]} minutes `;
+                if (i == 0) {
+                    if (followSplited.length === 4) result += `${followSplited[i]} years `;
+                    else result += `${followSplited[i]} days `;
+                }
+                if (i == 1) {
+                    if (followSplited.length === 4) result += `${followSplited[i]} days `;
+                    else result += `${followSplited[i]} hours `;
+                }
+                if (i == 2) {
+                    if (followSplited.length === 4) result += `${followSplited[i]} hours `;
+                    else result += `${followSplited[i]} minutes `;
+                }
+                if (i == 3) {
+                    if (followSplited.length === 4) result += `${followSplited[i]} minutes `;
+                }
             }
             result += 'ago'
             client.say(channel, `@${username}, you created account ${result}`)
@@ -422,13 +436,20 @@ client.on('message', (channel, userstate, message, self) => {
     } else {
         
         if (channelTimers.repeat === 0) {
-            const repeat = ['KEKW', '...', '..', 'MODS', 'KEKWait', 'PogChamp', 'LUL'];
+            const repeat = ['KEKW', 'KEKWait', 'PogChamp', 'LUL', 'Kappa'];
             for (let i in information.splited) if (repeat.includes(information.splited[i]) === true) {
                 client.say(channel, information.splited[i]);
                 return;
             }
             channelTimers.repeat = 1;
-            setTimeout(function() {channelTimers.repeat = 0}, tools.convertTime({seconds: 30}));
+            setTimeout(function() {channelTimers.repeat = 0}, tools.convertTime({seconds: 60}));
+        }
+
+        if (message === '@JOURLOY_bot, ты бот?' || message === '@JOURLOY_bot ты бот?' || message === 'JOURLOY_bot, ты бот?' || message === 'JOURLOY_bot ты бот?') {
+            client.say(channel, `@${username}, ты бот?`)
+        }
+        if (message === 'SMOrc SMOrc SMOrc SMOrc SMOrc') {
+            client.say(channel, `SMOrc SMOrc SMOrc SMOrc SMOrc`);
         }
     }
 });
