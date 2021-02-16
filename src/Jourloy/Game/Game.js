@@ -41,7 +41,7 @@ class TwitchGame {
                 let hours = Math.floor(about/60/60);
                 let minutes = Math.floor(about/60)-(hours*60);
                 let seconds = about%60
-                if (about < 1) {
+                if (about < 10) {
                     const endRaid = Database.get.game(i);
                     endRaid.information.inRaid = false;
                     endRaid.information.raid.created = 0;
@@ -60,40 +60,6 @@ class TwitchGame {
                     if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
                     if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
                     if (startRaid.fraction === 'K') send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
-                } else {
-                    const formatted = [
-                        hours.toString().padStart(2, '0'),
-                        minutes.toString().padStart(2, '0'),
-                        seconds.toString().padStart(2, '0')
-                    ].join(':');
-                    
-                    const startRaid = Database.get.game(i);
-                    const raid_start = setTimeout(function() {
-                        if (startRaid.fraction === 'C') send[i].message = `@${i}, task is done, "Caesar" fighter! Your reward is ${reward.shards} bills and ${reward.xp} experience points`;
-                        if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
-                        if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
-                        if (startRaid.fraction === 'K') send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
-    
-                        const endRaid = Database.get.game(i);
-                        endRaid.information.inRaid = false;
-                        endRaid.information.raid.created = 0;
-                        endRaid.information.raid.time = 0;
-                        endRaid.information.raid.reward.shards = 0;
-                        endRaid.information.raid.reward.xp = 0;
-                        endRaid.information.timerID = null;
-                        Database.update.game(i, endRaid);
-    
-                        Database.add.shards(i, reward.shards);
-                        Database.add.xp(i, reward.xp);
-    
-                    }, tools.convertTime({seconds: about}));
-    
-                    startRaid.information.inRaid = true;
-                    startRaid.information.raid.reward.shards = reward.shards;
-                    startRaid.information.raid.reward.xp = reward.xp;
-                    startRaid.information.timerID = raid_start + " !";
-                    Database.update.game(i, startRaid);
-                    console.log(`Game => ${i} => Retunr to raid`)
                 }
             }
         }
