@@ -278,7 +278,7 @@ function channelRaids(information) {
         else {
             const id = tools.randomInt(10000, 99999);
             Database.update.connectID(twitchUsername, id);
-            const { twitch } = require('./Twitch');
+            const { twitch } = require('./twitch');
             twitch.connect(twitchUsername, username);
         }
     }
