@@ -1,2 +1,2 @@
-require('./modules/Twitch');
-require('./modules/Discord');
+require('./modules/twitch');
+require('./modules/discord');
