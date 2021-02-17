@@ -429,7 +429,28 @@ client.on('message', (channel, userstate, message, self) => {
             Database.update.discordUsername(username, messageSplit[3]);
         }
 
-    }
+    } else if (messageSplit[0] === '!addWallet' && username === 'jourloy') {
+
+        const data = Database.get.wallet(messageSplit[1]);
+        const amount = parseInt(messageSplit[2])
+        Database.add.wallet(messageSplit[1], amount);
+        client.say(channel, `${data} --> ${data+amount}`);
+
+    } else if (messageSplit[0] === '!addXp' && username === 'jourloy') {
+        
+        const data = Database.get.hero(messageSplit[1]).xp;
+        const amount = parseInt(messageSplit[2])
+        Database.add.xp(messageSplit[1], amount);
+        client.say(channel, `${data} --> ${data+amount}`);
+
+    } else if (messageSplit[0] === '!addLevel' && username === 'jourloy') {
+        
+        const data = Database.get.hero(messageSplit[1]).level;
+        const amount = parseInt(messageSplit[2])
+        Database.add.level(messageSplit[1], amount);
+        client.say(channel, `${data} --> ${data+amount}`);
+
+    } 
     
     if (message === 'Солнце мое, взгляни на меня') {
         client.say(channel, 'Моя ладонь превратилась в кулак catJAM');
