@@ -329,9 +329,6 @@ class get {
         else return chatDefence.counters;
     }
 
-    /**
-     * @deprecated
-     */
     static game(username) {
         const data = new JsonDB('Data/Bank', true, true, '/');
         const db = data.getData('/Bank');
@@ -339,9 +336,6 @@ class get {
         return errors.ERR_NOT_FIND_USER;
     }
 
-    /**
-     * @deprecated
-     */
     static hero(username) {
         const game = get.game(username);
         if (game === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
@@ -357,9 +351,6 @@ class get {
         else return game.information;
     }
 
-    /**
-     * @deprecated
-     */
     static wallet(username) {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
@@ -399,7 +390,7 @@ class get {
     static top(fraction) {
         if (fraction === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
         const data = this.db();
-        if (fractionDB === null) return errors.ERR_NOT_FIND_FRACTION;
+        if (data === null) return errors.ERR_NOT_FIND_FRACTION;
         const top = {
             wallet: 0,
             username: '',
@@ -483,6 +474,14 @@ class add {
         return true;
     }
 
+    static wallet(username, amount) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.wallet += amount;
+        update.hero(username, hero);
+        return true;
+    }
+
     static xp(username, amount) {
         const hero = get.hero(username);
         if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
@@ -491,6 +490,14 @@ class add {
             hero.xp -= hero.level * 100 + (hero.level * 15);
             hero.level++;
         }
+        update.hero(username, hero);
+        return true;
+    }
+
+    static level(username, amount) {
+        const hero = get.hero(username);
+        if (hero === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        hero.level += amount;
         update.hero(username, hero);
         return true;
     }
