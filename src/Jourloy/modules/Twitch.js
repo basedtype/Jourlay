@@ -183,7 +183,7 @@ client.on("cheer", (channel, userstate, message) => {
 });
 
 client.on("timeout", (channel, username, reason, duration) => {
-    if (duration >= 600) client.say(channel, `OMEGALUL => @${username}`);
+    if (duration > 600) client.say(channel, `OMEGALUL => @${username}`);
 });
 
 client.on("raided", (channel, username, viewers) => {
@@ -202,6 +202,14 @@ client.on('action', (channel, userstate, message, self) => {
 client.on('clearchat', (channel) => {
     client.say(channel, `I'm first Kappa`);
 })
+
+client.on('redeem', (channel, username, rewardType, tags) => {
+    if (rewardType === '57950914-5e2c-4f90-8474-69f1f0e70a49') {
+        if (username === 'jourloy' || username === 'kartinka_katerinka') return;
+        admin.timeout(channel, username, 600, 'Reward');
+        console.log(`Twitch => Jourloy => Reward => Timeout (600) => ${username}`);
+    }
+});
 
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
@@ -226,27 +234,18 @@ client.on('message', (channel, userstate, message, self) => {
         channel: channel,
     }
 
-    if (messageSplit[0] === '!q') {
-        commands.question(information);
-    } else if (messageSplit[0] === '!пк' || messageSplit[0] === '!pc') {
-        client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM | Микрофон Razer Siren X`);
-    } else if (messageSplit[0] === '!yt') {
-        client.action(channel, '==> YouTube channel: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
-    } else if (messageSplit[0] === '!ds') {
-        client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: discord.gg/zCATPVRp6p');
-    } else if (messageSplit[0] === '!uptime') {
-        commands.uptime(information);
-    } else if (messageSplit[0] === '!followerage') {
-        commands.followerAge(information);
-    } else if (messageSplit[0] === '!bigbrain') {
-        commands.bigBrain(information);
-    } else if (messageSplit[0] === '!ping') {
-        if (username === 'jourloy') client.action(channel, 'pong');
-    } else if (messageSplit[0] === '!vip') {
-        if (username === 'katinka_katerinka') admin.vip(channel, username);
-    } else if (messageSplit[0] === '!mod') {
-        if (username === 'katinka_katerinka') admin.mod(channel, username);
-    } else if (messageSplit[0] === '!userage') {
+    if (messageSplit[0] === '!q') commands.question(information);
+    else if (messageSplit[0] === '!пк' || messageSplit[0] === '!pc') client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM | Микрофон Razer Siren X`);
+    else if (messageSplit[0] === '!yt') client.action(channel, '==> YouTube channel: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
+    else if (messageSplit[0] === '!ds') client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: discord.gg/zCATPVRp6p');
+    else if (messageSplit[0] === '!uptime') commands.uptime(information);
+    else if (messageSplit[0] === '!followerage') commands.followerAge(information);
+    else if (messageSplit[0] === '!bigbrain') commands.bigBrain(information);
+    else if (messageSplit[0] === '!ping' && username === 'jourloy') client.action(channel, 'pong');
+    else if (messageSplit[0] === '!vip' && username === 'katinka_katerinka') admin.vip(channel, username);
+    else if (messageSplit[0] === '!mod' && username === 'katinka_katerinka') admin.mod(channel, username);
+    else if (messageSplit[0] === '!stop' && username === 'jourloy') throw 'Stop';
+    else if (messageSplit[0] === '!userage') {
 
         client.api({
             url: `https://api.twitch.tv/kraken/users/${information.id}`,
