@@ -21,7 +21,7 @@ const client = new tmi.client(options);
 
 client.channel = options.channels[0];
 function onConnectedHandler() {
-    console.log('Twitch => Jourloy_bot => Ready');
+    console.log('Twitch => Jourloy => Ready');
 }
 client.on('connected', onConnectedHandler);
 client.connect();
