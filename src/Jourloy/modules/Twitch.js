@@ -68,7 +68,7 @@ setInterval(function () {
 /* CLASSES */
 class commands {
     static question(information) {
-        const array = ['да!','нет!','возможно','определенно нет','определенно да','50 на 50','шансы есть','странный вопрос','я не хочу отвечать','может сменим тему?','не знаю'];
+        const array = ['yes','no','maybe', '50%', 'I don\'t want answer','strage question','Maybe you will ask other question?','I don\'t know', 'I know, but I don\'t want answer'];
 
         const allowList = [''];
         const banList = ['anna_scorpion05'];
@@ -132,7 +132,7 @@ class commands {
                 let ms = moment(now).diff(moment(then));
                 let d = moment.duration(ms);
                 const follow = Math.floor(d.asDays()) + moment.utc(ms).format(" дней, hh часов, mm минут и ss секунд");
-                client.say(channel, `@${username}, ты зафоловлен(а) на канал уже ${follow}`)
+                client.say(channel, `@${username}, you are my follower is ${follow}`)
                 timers.followerAge = 1;
                 Database.update.timers(timers);
     
@@ -200,7 +200,7 @@ client.on('action', (channel, userstate, message, self) => {
 });
 
 client.on('clearchat', (channel) => {
-    client.say(channel, `Я первый Kappa`);
+    client.say(channel, `I'm first Kappa`);
 })
 
 client.on('message', (channel, userstate, message, self) => {
@@ -231,7 +231,7 @@ client.on('message', (channel, userstate, message, self) => {
     } else if (messageSplit[0] === '!пк' || messageSplit[0] === '!pc') {
         client.action(channel, `==> Ryzen 5 5500x | MSI RX 580 Armor | 16 GB RAM | Микрофон Razer Siren X`);
     } else if (messageSplit[0] === '!yt') {
-        client.action(channel, '==> Ютуб канал: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
+        client.action(channel, '==> YouTube channel: youtube.com/channel/UCpHyajrQHc29BHUYV1DwXvA');
     } else if (messageSplit[0] === '!ds') {
         client.action(channel, '==> На этом дискорд сервере можно получить анонсы о новом стриме или видео, а также поболотать в текстовом канале: discord.gg/zCATPVRp6p');
     } else if (messageSplit[0] === '!uptime') {
