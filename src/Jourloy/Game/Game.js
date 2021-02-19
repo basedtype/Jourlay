@@ -60,7 +60,7 @@ class TwitchGame {
                     if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
                     if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
                     if (startRaid.fraction === 'K') send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
-                    console.log(`Twitch => Jourloy_bot => Game => End raid => ${username} => shards: ${reward.shards} | xp: ${reward.xp}`);
+                    console.log(`Twitch => Jourloy_bot => Game => End raid => ${i} => shards: ${reward.shards} | xp: ${reward.xp}`);
                 } else {
                     const startRaid = Database.get.game(i);
                     const raid_start = setTimeout(function() {
@@ -70,7 +70,7 @@ class TwitchGame {
                         if (startRaid.fraction === 'V') send[i].message = `@${i}, look who came, hahaha. Sit down and drink with us, viking! Take ${reward.shards} gold coins and ${reward.xp} experience points`;
                         if (startRaid.fraction === 'J') send[i].message = `@${i}, glad to see you, samurai. Go drink a tea, and now I give you ${reward.shards} Great steel ingots and ${reward.xp} experience points`;
                         if (startRaid.fraction === 'K')send[i].message = `@${i}, thank you, soul master, I give ${reward.shards} soul shards and ${reward.xp} experience points`;
-                        console.log(`Twitch => Jourloy_bot => Game => End raid => ${username} => shards: ${reward.shards} | xp: ${reward.xp}`);
+                        console.log(`Twitch => Jourloy_bot => Game => End raid => ${i} => shards: ${reward.shards} | xp: ${reward.xp}`);
     
                         const endRaid = Database.get.game(i);
                         endRaid.information.inRaid = false;
