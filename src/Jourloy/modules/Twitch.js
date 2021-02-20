@@ -449,7 +449,17 @@ client.on('message', (channel, userstate, message, self) => {
         Database.add.level(messageSplit[1], amount);
         client.say(channel, `${data} --> ${data+amount}`);
 
-    } 
+    } else if (messageSplit[0] === '!attack' && username === 'jourloy') {
+
+    } else if (messageSplit[0] === '!buy' && username === 'jourloy') {
+
+    } else if (messageSplit[0] === '!sell' && username === 'jourloy') {
+        
+    } else if (messageSplit[0] === '!inventory' && username === 'jourloy') {
+        
+    } else if (messageSplit[0] === '!use' && username === 'jourloy') {
+        
+    }
     
     if (message === 'Солнце мое, взгляни на меня') {
         client.say(channel, 'Моя ладонь превратилась в кулак catJAM');
