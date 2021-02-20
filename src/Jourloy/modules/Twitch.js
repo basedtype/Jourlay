@@ -80,7 +80,6 @@ class commands {
         
         if (allowList.includes(username) === true || banList.includes(username) === true) return;
         else {
-            console.log(timers.ask)
             if (timers.ask === 0 && message.includes('?') && message.length > 6) {
                 client.say(channel, `@${username}, ${tools.randomElementFromArray(array)}`);
                 timers.ask = 1;
