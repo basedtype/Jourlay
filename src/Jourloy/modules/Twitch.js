@@ -450,6 +450,12 @@ client.on('message', (channel, userstate, message, self) => {
 
     } else if (messageSplit[0] === '!attack' && username === 'jourloy') {
 
+        const result = Game.toAttack(username, messageSplit[1], client);
+        if (result === errors.ERR_NOT_FIND_USER) client.say(channel, `@${username}, I can'n find you in my database. You need choose fraction by this command: !fraction`);
+        else if (result === errors.ERR_USER_NOT_IN_FRACTION) client.say(channel, `@JOURLOY, user [${username}] have data error (fraction error)`);
+        else if (result === errors.ERR_ALREADY_IN_RAID) client.say(channel, `@${username}, you are in a raid. You can check time by this command: !status`);
+        else if (result === errors.ERR_NOT_ENOUGH_SHARDS) client.say(channel, `@${username}, you are not have enough money for attack`);
+
     } else if (messageSplit[0] === '!buy' && username === 'jourloy') {
 
     } else if (messageSplit[0] === '!sell' && username === 'jourloy') {
