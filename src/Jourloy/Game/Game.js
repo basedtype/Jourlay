@@ -9,6 +9,9 @@ const { Database } = require('../Utils/Database');
 const raid_information = {
     price: 1,
 }
+const attack_information = {
+    price: 50,
+}
 const send = {};
 
 /* FUNCTIONS */
@@ -182,6 +185,116 @@ class TwitchGame {
             Database.update.game(username, endRaid);
 
             Database.add.shards(username, shards);
+            Database.add.xp(username, xp);
+
+        }, tools.convertTime({seconds: time}))
+
+        startRaid.information.inRaid = true;
+        startRaid.information.raid.created = Math.floor(moment.now() / 1000);
+        startRaid.information.raid.time = time;
+        startRaid.information.raid.reward.shards = shards;
+        startRaid.information.raid.reward.xp = xp;
+        startRaid.information.timerID = raid_start + " !";
+        Database.update.game(username, startRaid);
+    }
+    
+    static toAttack(username, fraction, client) {
+        const user = Database.get.game(username);
+        const hero = Database.get.hero(username);
+        const fractionUsers = Database.get.fractionUsers(fraction);
+        if (user === errors.ERR_NOT_FIND_USER) return errors.ERR_NOT_FIND_USER;
+        if (user.fraction === '') return errors.ERR_USER_NOT_IN_FRACTION;
+        if (user.information.inRaid === true) return errors.ERR_ALREADY_IN_RAID;
+        if (user.information.inRest === true) return errors.ERR_USER_IN_REST;
+        if (user.hero.wallet < attack_information.price) return errors.ERR_NOT_ENOUGH_SHARDS;
+        if (fractionUsers === errors.ERR_NOT_FIND_FRACTION) return errors.ERR_NOT_FIND_FRACTION;
+        const target = tools.randomElementFromArray(fractionUsers);
+        Database.remove.wallet(username, attack_information.price);
+
+        let time = null;
+        if (hero.level <= 1) time = tools.randomInt(3, 4) * tools.randomInt(3600, 5000);
+        else if (hero.level === 2) time = tools.randomInt(3, 4) * tools.randomInt(3600, 5000);
+        else if (hero.level === 3) time = tools.randomInt(4, 5) * tools.randomInt(3600, 5000);
+        else if (hero.level === 4) time = tools.randomInt(5, 6) * tools.randomInt(3600, 5000);
+        else if (hero.level >= 5) time = tools.randomInt(6, 7) * tools.randomInt(3600, 5000);
+        if (username === 'jourloy') time = 35;
+
+        let hours = Math.floor(time/60/60);
+        let minutes = Math.floor(time/60)-(hours*60);
+        let seconds = time%60
+
+        const formatted = [
+            hours.toString().padStart(2, '0'),
+            minutes.toString().padStart(2, '0'),
+            seconds.toString().padStart(2, '0')
+        ].join(':');
+
+        const targetWallet = Database.get.wallet(target.twitchUsername);
+
+        let shards = tools.randomInt(1, targetWallet-1);
+        let xp = null;
+        let hp = null;
+
+        if (hours <= 1) {
+            xp = tools.randomInt(1, 10);
+            hp = 0;
+        } else if (hours === 2) {
+            xp = tools.randomInt(5, 15);
+            hp = 0;
+        } else if (hours === 3) {
+            xp = tools.randomInt(10, 19);
+            hp = 0;
+        } else if (hours === 4) {
+            xp = tools.randomInt(15, 23);
+            hp = 0;
+        } else if (hours === 5) {
+            xp = tools.randomInt(18, 25);
+            hp = 0;
+        } else if (hours >= 6) {
+            xp = tools.randomInt(20, 28);
+            hp = 0;
+        }
+
+        const startRaid = Database.get.game(username);
+
+        if (startRaid.fraction === 'K') {
+            client.say(client.channel, `@${username}, let's show them who is master of world. We will come back in ${formatted}`);
+        }
+
+        if (startRaid.fraction === 'V') {
+            if (fraction === 'C') client.say(client.channel, `@${username}, are you ready? Now, viking, we are go in attack on group of elite solders. DON'T FEAR ANYTHING! We will come back in ${formatted}`);
+            if (fraction === 'J') client.say(client.channel, `@${username}, are you ready? Now, viking, we are go in attack on clan of samurais. DON'T FEAR ANYTHING! We will come back in ${formatted}`);
+        }
+
+        if (startRaid.fraction === 'J') {
+            if (fraction === 'C') client.say(client.channel, `@${username}, time is coming. Enemy is near, we must attack, while they are sleep. We will come back in ${formatted}`);
+            if (fraction === 'V') client.say(client.channel, `@${username}, time is coming. Our enemy - brave fighters that don't fear anything. We will come back in ${formatted}`);
+        }
+
+        if (startRaid.fraction === 'C') {
+            client.say(client.channel, `@${username}, attention! Our forces are ready. Let's go in 1 minutes. Prepare your gun. We will come back in ${formatted}`);
+        }
+
+        console.log(`Twitch => Jourloy_bot => Game => Start raid => ${username} => ${formatted}`);
+
+        const raid_start = setTimeout(function() {
+            if (startRaid.fraction === 'C') client.say(client.channel, `@${username}, Your reward is ${shards} bills and ${xp} experience points`);
+            if (startRaid.fraction === 'V') client.say(client.channel, `@${username}, Take ${shards} gold coins and ${xp} experience points`);
+            if (startRaid.fraction === 'J') client.say(client.channel, `@${username}, I give you ${shards} Great steel ingots and ${xp} experience points`);
+            if (startRaid.fraction === 'K') client.say(client.channel, `@${username}, I give ${shards} soul shards and ${xp} experience points`);
+            console.log(`Twitch => Jourloy_bot => Game => End raid => ${username} => shards: ${shards} | xp: ${xp}`);
+
+            const endRaid = Database.get.game(username);
+            endRaid.information.inRaid = false;
+            endRaid.information.raid.created = 0;
+            endRaid.information.raid.time = 0;
+            endRaid.information.raid.reward.shards = 0;
+            endRaid.information.raid.reward.xp = 0;
+            endRaid.information.timerID = null;
+            Database.update.game(username, endRaid);
+
+            Database.add.wallet(username, shards);
+            Database.remove.wallet(target.twitchUsername, shards);
             Database.add.xp(username, xp);
 
         }, tools.convertTime({seconds: time}))
