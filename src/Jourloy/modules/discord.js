@@ -249,19 +249,19 @@ function channelRaids(information) {
 
         const game = Database.get.game(username);
         if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
-            if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) channel.send(`@${username}, after !fraction you should write you fraction symbol`);
-            else if (messageSplit[1] === 'V') {
+            if (split[1] == null || (split[1] !== 'V' && split[1] !== 'J' && split[1] !== 'C' && (split[1] !== 'K' && username !== 'jourloy'))) channel.send(`@${username}, after !fraction you should write you fraction symbol`);
+            else if (split[1] === 'V') {
                 channel.send(`@${username}, good warrior, we are need this! Here is all easy, if you see a expensive things, then take it. When you will be ready for raid write !raid`);
-                Database.add.user(username, messageSplit[1]);
-            } else if (messageSplit[1] === 'C') {
+                Database.add.user(username, split[1]);
+            } else if (split[1] === 'C') {
                 channel.send(`@${username}, Attention! Now this place is your new home. I have many tasks for you, when you will be ready for raid write !raid`);
-                Database.add.user(username, messageSplit[1]);
-            } else if (messageSplit[1] === 'J') {
+                Database.add.user(username, split[1]);
+            } else if (split[1] === 'J') {
                 channel.send(`@${username} welcome. Now you are samurai. Protect katana as a wife and use wakizashi as a feather. When you will be ready for raid write !raid`);
-                Database.add.user(username, messageSplit[1]);
-            } else if (messageSplit[1] === 'K' && username === 'jourloy') {
+                Database.add.user(username, split[1]);
+            } else if (split[1] === 'K' && username === 'jourloy') {
                 channel.send(`@${username}, now you not a simple man. Now you better other. You are in highest class. You are soul master. When you will be ready for raid write !raid`);
-                Database.add.user(username, messageSplit[1]);
+                Database.add.user(username, split[1]);
             }
         } else {
             if (game.fraction === 'C') channel.send(`@${username}, your fraction is the fight squad "Caesar" `);
