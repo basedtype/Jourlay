@@ -30,6 +30,10 @@ const bank_example = {
             raid: {
                 created: 0,
                 time: 0,
+                target: {
+                    username: null,
+                    wallet: 0,
+                },
                 return: {
                     inReturn: false,
                     pay: 0,
@@ -436,6 +440,14 @@ class get {
         const data = this.bankUser(username);
         if (data === errors.ERR_NOT_FIND_CHANNEL) return errors.ERR_NOT_FIND_CHANNEL;
         return data.connectID;
+    }
+
+    static fractionUsers(fraction) {
+        if (fraction !== 'K' && fraction !== 'V' && fraction !== 'J' && fraction !== 'C') return errors.ERR_NOT_FIND_FRACTION;
+        const db = this.bankDB();
+        const users = [];
+        for (let i in db) if (db[i].game.fraction === fraction) users.push(db[i]);
+        return users;
     }
 }
 
