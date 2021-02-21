@@ -68,7 +68,6 @@ const user_example = {
 
 const channel_example = {
     channelID: '',
-    language: 'ENG',
     rollGame: [],
     game: {
         allowRaid: true,
@@ -100,12 +99,17 @@ catch {
     bank.push('/Bank', {}, true);
 }
 
-const users = new JsonDB('Data/Users', true, true, '/');
-const usersDB = users.getData('/Users');
+function repairDB(object) {
+    for (let i in object) {
+    }
+}
 
+let data = new JsonDB('Data/Users', true, true, '/');
+const usersDB = data.getData('/Users');
 for (let i in usersDB) {
     usersDB[i] = user_example;
 }
+data.push('/Users', usersDB);
 
 /* CLASSES 
 class Database {
