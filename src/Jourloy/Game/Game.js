@@ -10,7 +10,7 @@ const raid_information = {
     price: 1,
 }
 const attack_information = {
-    price: 50,
+    price: 30,
 }
 const send = {};
 
@@ -114,11 +114,11 @@ class TwitchGame {
         let lucky = 100;
 
         let time = null;
-        if (hero.level <= 1) time = tools.randomInt(1, 2) * tools.randomInt(3600, 5000);
-        else if (hero.level === 2) time = tools.randomInt(2, 3) * tools.randomInt(3600, 5000);
-        else if (hero.level === 3) time = tools.randomInt(3, 4) * tools.randomInt(3600, 5000);
-        else if (hero.level === 4) time = tools.randomInt(4, 5) * tools.randomInt(3600, 5000);
-        else if (hero.level >= 5) time = tools.randomInt(5, 6) * tools.randomInt(3600, 5000);
+        if (hero.level <= 2) time = tools.randomInt(1, 2) * tools.randomInt(3600, 5000);
+        else if (hero.level <= 4) time = tools.randomInt(2, 3) * tools.randomInt(3600, 5000);
+        else if (hero.level <= 6) time = tools.randomInt(3, 4) * tools.randomInt(3600, 5000);
+        else if (hero.level <= 8) time = tools.randomInt(4, 5) * tools.randomInt(3600, 5000);
+        else if (hero.level > 8) time = tools.randomInt(5, 6) * tools.randomInt(3600, 5000);
         if (username === 'jourloy') time = 30;
 
         let hours = Math.floor(time/60/60);
@@ -232,7 +232,7 @@ class TwitchGame {
         const targetWallet = Database.get.wallet(target.twitchUsername);
         let shards = null;
 
-        if (targetWallet > 30) shards = tools.randomInt(1, 30);
+        if (targetWallet > 15) shards = tools.randomInt(1, 15);
         else shards = tools.randomInt(1, targetWallet-1);
 
         let xp = null;
