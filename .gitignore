@@ -2,11 +2,6 @@
 package-lock.json
 node_modules
 .DS_Store
-TwitchBot.code-workspace
-*.txt
-*.code-workspace
-*config.js
-src/test.js
 tmi.js
-Data/#*.json
 *.json
+*test.js
