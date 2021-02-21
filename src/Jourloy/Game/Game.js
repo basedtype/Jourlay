@@ -230,8 +230,11 @@ class TwitchGame {
         ].join(':');
 
         const targetWallet = Database.get.wallet(target.twitchUsername);
+        let shards = null;
 
-        let shards = tools.randomInt(1, targetWallet-1);
+        if (targetWallet > 30) shards = tools.randomInt(1, 30);
+        else shards = tools.randomInt(1, targetWallet-1);
+
         let xp = null;
         let hp = null;
 
