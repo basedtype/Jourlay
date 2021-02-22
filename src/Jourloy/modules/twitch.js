@@ -66,7 +66,7 @@ setInterval(function () {
 }, tools.convertTime({seconds: 1}));
 
 /* FUNCTIONS */
-function test() {
+function testF() {
     let result = true;
     try { require('./test') }
     catch { result = false }
@@ -375,7 +375,7 @@ class chat {
         const command = information.command;
         const split = information.split;
         const channel = information.channel;
-        const test = test();
+        const test = testF();
         let result = false;
 
         if (command === 'q') {
