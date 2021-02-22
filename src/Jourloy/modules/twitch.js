@@ -237,9 +237,9 @@ function offtime(information) {
 }
 
 function raid(information) {
-    if (usersBan.includes(username) === true) return;
     const username = information.username;
     const channel = information.channel;
+    if (usersBan.includes(username) === true) return;
     const result = Game.toRaid(username, client);
     if (result === errors.ERR_NOT_FIND_USER) client.say(channel, `@${username}, I can't find you in my database. You need choose fraction by this command: !fraction`);
     else if (result === errors.ERR_USER_NOT_IN_FRACTION) client.say(channel, `@JOURLOY, user [${username}] have data error (fraction error)`);
@@ -248,9 +248,9 @@ function raid(information) {
 }
 
 function fraction(information) {
-    if (usersBan.includes(username) === true) return;
     const username = information.username;
     const channel = information.channel;
+    if (usersBan.includes(username) === true) return;
     const game = Database.get.game(username);
     if (game === errors.ERR_NOT_FIND_USER || game.fraction === '') {
         if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) client.say(channel, `@${username}, after !fraction you should write you fraction symbol`);
@@ -276,9 +276,9 @@ function fraction(information) {
 }
 
 function wallet(information) {
-    if (usersBan.includes(username) === true) return;
     const username = information.username;
     const channel = information.channel;
+    if (usersBan.includes(username) === true) return;
     const raid = Database.get.raid(username);
     const hero = Database.get.hero(username);
     const game = Database.get.game(username);
@@ -295,9 +295,9 @@ function wallet(information) {
 }
 
 function xp(information) {
-    if (usersBan.includes(username) === true) return;
     const username = information.username;
     const channel = information.channel;
+    if (usersBan.includes(username) === true) return;
     const hero = Database.get.hero(username);
     const game = Database.get.game(username);
     if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can't find you in my database. You need choose fraction by this command: !fraction`);
@@ -305,17 +305,19 @@ function xp(information) {
 }
 
 function hp(information) {
-    if (usersBan.includes(username) === true) return;
+    const username = information.username;
+    const channel = information.channel;
     const hero = Database.get.hero(username);
     const game = Database.get.game(username);
+    if (usersBan.includes(username) === true) return;
     if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can't find you in my database. You need choose fraction by this command: !fraction`);
     else client.say(channel, `@${username}, you are have ${hero.hp} heal points`);
 }
 
 function status(information) {
-    if (usersBan.includes(username) === true) return;
     const username = information.username;
     const channel = information.channel;
+    if (usersBan.includes(username) === true) return;
     const raid = Database.get.raid(username);
     if (raid.inRaid === true) {
         const now = Math.floor(moment.now() / 1000);
@@ -338,9 +340,9 @@ function status(information) {
 }
 
 function top(information) {
-    if (usersBan.includes(username) === true) return;
     const username = information.username;
     const channel = information.channel;
+    if (usersBan.includes(username) === true) return;
     const fraction = Database.get.fraction(username);
     const top = Database.get.top(fraction);
     client.say(channel, `@${username}, в твоей фракции самый большой счет имеет ${top.username} на котором лежит ${top.wallet} валюты`);
