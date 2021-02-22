@@ -5,3 +5,4 @@ node_modules
 tmi.js
 *.json
 *test.js
+config.js
