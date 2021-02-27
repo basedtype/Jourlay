@@ -5,13 +5,6 @@ class Game {
     static toRaid(username, client, userCollection) {
         userCollection.findOne({username: username}).then((user) => {
             let hero = user.hero;
-            if (hero == null) {
-                hero = {
-                    level: 1,
-                    xp: 0,
-                    hp: 100,
-                }
-            }
             let upd = {
                 game: {
                     wallet: user.game.wallet,
