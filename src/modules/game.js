@@ -17,7 +17,7 @@ class Game {
                     wallet: user.game.wallet,
                 }
             }
-            upd.game.wallet -= 10;
+            upd.game.wallet -= 1;
             userCollection.updateOne({username:username}, {$set: upd});
 
             let time = null;
@@ -28,9 +28,18 @@ class Game {
             else if (hero.level > 8) time = Tools.randomInt(5, 6) * Tools.randomInt(3600, 5000);
             if (username === 'jourloy') time = 32;
 
+            const timePercent = time / 100;
+            if (user.game.fraction === 'V') {
+                time -= timePercent * 15;
+            } else if (user.game.fraction === 'J') {
+                time += timePercent * 15;
+            } else if (user.game.fraction === 'C') {
+                time -= timePercent * 15; 
+            }
+
             let hours = Math.floor(time/60/60);
             let minutes = Math.floor(time/60)-(hours*60);
-            let seconds = time%60
+            let seconds = time%60;
 
             const formatted = [
                 hours.toString().padStart(2, '0'),
@@ -42,29 +51,41 @@ class Game {
             let xp = null;
             let hp = null;
             if (hours <= 1) {
-                wallet = Tools.randomInt(1, 2);
+                wallet = Tools.randomInt(0, 3);
                 xp = Tools.randomInt(1, 10);
                 hp = 0;
             } else if (hours === 2) {
-                wallet = Tools.randomInt(3, 5);
+                wallet = Tools.randomInt(1, 6);
                 xp = Tools.randomInt(5, 15);
                 hp = 0;
             } else if (hours === 3) {
-                wallet = Tools.randomInt(5, 9);
+                wallet = Tools.randomInt(3, 8);
                 xp = Tools.randomInt(10, 19);
                 hp = 0;
             } else if (hours === 4) {
-                wallet = Tools.randomInt(8, 12);
+                wallet = Tools.randomInt(5, 9);
                 xp = Tools.randomInt(15, 23);
                 hp = 0;
             } else if (hours === 5) {
-                wallet = Tools.randomInt(10, 15);
+                wallet = Tools.randomInt(7, 11);
                 xp = Tools.randomInt(18, 25);
                 hp = 0;
             } else if (hours >= 6) {
-                wallet = Tools.randomInt(13, 19);
+                wallet = Tools.randomInt(9, 13);
                 xp = Tools.randomInt(20, 28);
                 hp = 0;
+            }
+
+            const walletPercent = wallet / 100;
+            const xpPercent = xp / 100;
+
+            if (user.game.fraction === 'V') {
+                wallet += walletPercent * 2;
+            } else if (user.game.fraction === 'J') {
+                xp += xpPercent * 3;
+                walllet -= walletPercent * 2;
+            } else if (user.game.fraction === 'C') {
+                xp -= xpPercent * 3;
             }
 
             if (user.game.fraction === 'C') client.say(client.channel, `@${username}, attention, "Caesar" fighter! I have a task for you. You will come back in ${formatted}`);
