@@ -95,7 +95,7 @@ function testF() {
 }
 
 function question(information) {
-    const array = ['yes','no','maybe', '50%', 'I don\'t want answer','strage question','Maybe you will ask other question?','I don\'t know', 'I know, but I don\'t want answer', 'no, please, nooo'];
+    const array = ['yes','no','maybe', '50%', 'I don\'t want answer','strange question','Maybe you will ask other question?','I don\'t know', 'I know, but I don\'t want answer', 'no, please, nooo'];
     const username = information.username;
     const channel = information.channel;
     if (usersBan.includes(username) === true) return;
@@ -297,7 +297,7 @@ function raid(information) {
         } else if (user.game.inRaid === true) {
             client.say(channel, `@${username}, you already in raid, check your status by this command: !status`);
             return;
-        } else if (user.game.wallet < 10) {
+        } else if (user.game.wallet < 1) {
             client.say(channel, `@${username}, you have not enough money for raid`);
             return;
         } else {
@@ -316,68 +316,77 @@ function fraction(information) {
         client.say(channel, `@${username}, after !fraction you should write you fraction symbol`);
         return;
     }
+
     let gm = {
         game: {},
     }
-    userCollection.updateOne({username: username}, {$set: gm}).then(() => {
-        userCollection.findOne({username: username}).then((user) => {
+    userCollection.findOne({username: username}).then((user) => {
+        if (user == null || user == []) return;
+        if (user.game == null) {
+            userCollection.updateOne({username: username}, {$set: gm}).then((user) => {
+                if (information.split[1] === 'V') {
+                    client.say(channel, `@${username}, good warrior, we are need this! Here is all easy, if you see a expensive things, then take it. When you will be ready for raid write !raid`);
+                    let upd = {
+                        game: {
+                            wallet: 5,
+                            fraction: 'V',
+                        }
+                    }
+                    userCollection.updateOne({username: username}, {$set: upd});
+                } else if (information.split[1] === 'C') {
+                    client.say(channel, `@${username}, Attention! Now this place is your new home. I have many tasks for you, when you will be ready for raid write !raid`);
+                    let upd = {
+                        game: {
+                            wallet: 5,
+                            fraction: 'C',
+                        }
+                    }
+                    userCollection.updateOne({username: username}, {$set: upd});
+                } else if (information.split[1] === 'J') {
+                    client.say(channel, `@${username}, welcome. Now you are samurai. Protect katana as a wife and use wakizashi as a feather. When you will be ready for raid write !raid`);
+                    let upd = {
+                        game: {
+                            wallet: 5,
+                            fraction: 'J',
+                        }
+                    }
+                    userCollection.updateOne({username: username}, {$set: upd});
+                } else if (information.split[1] === 'K' && username === 'jourloy') {
+                    client.say(channel, `@${username}, now you not a simple man. Now you better other. You are in highest class. You are soul master. When you will be ready for raid write !raid`);
+                    let upd = {
+                        game: {
+                            wallet: 50,
+                            fraction: 'K',
+                        }
+                    }
+                    userCollection.updateOne({username: username}, {$set: upd});
+                }
+            });
+        } else {
             if (user.game.fraction != null) {
                 client.say(channel, `@${username}, your fraction is ${user.game.fraction}`);
                 return;
-            } else if (information.split[1] === 'V') {
-                client.say(channel, `@${username}, good warrior, we are need this! Here is all easy, if you see a expensive things, then take it. When you will be ready for raid write !raid`);
-                let upd = {
-                    game: {
-                        fraction: 'V',
-                    }
-                }
-                userCollection.updateOne({username: username}, {$set: upd});
-            } else if (information.split[1] === 'C') {
-                client.say(channel, `@${username}, Attention! Now this place is your new home. I have many tasks for you, when you will be ready for raid write !raid`);
-                let upd = {
-                    game: {
-                        fraction: 'C',
-                    }
-                }
-                userCollection.updateOne({username: username}, {$set: upd});
-            } else if (information.split[1] === 'J') {
-                client.say(channel, `@${username}, welcome. Now you are samurai. Protect katana as a wife and use wakizashi as a feather. When you will be ready for raid write !raid`);
-                let upd = {
-                    game: {
-                        fraction: 'J',
-                    }
-                }
-                userCollection.updateOne({username: username}, {$set: upd});
-            } else if (information.split[1] === 'K' && username === 'jourloy') {
-                client.say(channel, `@${username}, now you not a simple man. Now you better other. You are in highest class. You are soul master. When you will be ready for raid write !raid`);
-                let upd = {
-                    game: {
-                        fraction: 'K',
-                    }
-                }
-                userCollection.updateOne({username: username}, {$set: upd});
             }
-        })
-    })
+        }
+    });
 }
 
 function wallet(information) {
     const username = information.username;
     const channel = information.channel;
     if (usersBan.includes(username) === true) return;
-    const raid = Database.get.raid(username);
-    const hero = Database.get.hero(username);
-    const game = Database.get.game(username);
-    if (raid.inRaid === true) client.say(channel, `@${username}, you are in raid`);
-    else {
-        if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can't find you in my database. You need choose fraction by this command: !fraction`);
+
+    userCollection.findOne({username: username}).then(user => {
+        if (user == null && user === []) return;
+        else if (user.game == null) client.say(channel, `@${username}, I can't find you in my database, you !fraction for register`);
+        else if (user.game.wallet == null) console.log(`Database => Error => ${username} => Wallet`);
         else {
-            if (game.fraction === 'C') client.say(channel, `@${username}, on your bill ${hero.wallet} купюр`);
-            else if (game.fraction === 'V') client.say(channel, `@${username}, on your bill ${hero.wallet} gold coins`);
-            else if (game.fraction === 'J') client.say(channel, `@${username}, on your bill ${hero.wallet} Great steel ignots`);
-            else if (game.fraction === 'K') client.say(channel, `@${username}, on your bill ${hero.wallet} soul shards`);
+            if (user.game.fraction === 'V') client.say(channel, `@${username}, on your bill ${user.game.wallet} gold coins`);
+            if (user.game.fraction === 'J') client.say(channel, `@${username}, on your bill ${user.game.wallet} Great steel ingots`);
+            if (user.game.fraction === 'C') client.say(channel, `@${username}, on your bill ${user.game.wallet} money`);
+            if (user.game.fraction === 'K') client.say(channel, `@${username}, on your bill ${user.game.wallet} soul shards`);
         }
-    }
+    });
 }
 
 function xp(information) {
@@ -493,6 +502,15 @@ class chat {
         } else if (command === 'offtime') {
             result = true;
             offtime(information);
+        } else if (command === 'vikings') {
+            result = true;
+            client.say(channel, `VIKINGS: +2% reward, -15% speed`);
+        } else if (command === 'caesar') {
+            result = true;
+            client.say(channel, `CAESAR: +5% speed, -3% xp, 2% discount`);
+        } else if (command === 'samurai') {
+            result = true;
+            client.say(channel, `SAMURAI: +3% xp, -15% speed, -2% reward`);
         }
 
         if (test === false || username === 'jourloy') {
