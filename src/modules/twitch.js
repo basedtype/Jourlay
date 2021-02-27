@@ -21,23 +21,13 @@ let channelTimers = {
 let database = null;
 let userCollection = null;
 let twitchCollection = null;
-let discordCollection = null;
-let gameCollection = null;
 
 const uri = "mongodb://localhost:27017/";
 const clientDB = new MongoClient(uri);
 clientDB.connect().then( err => {
-    console.log(`Database => Connetion successfuly. Setting:\n`);
     database = clientDB.db('TwitchBot');
-    console.log(`Database => Database found`);
     userCollection = database.collection('users');
-    console.log(`Database => User collection found`);
     twitchCollection = database.collection('twitch');
-    console.log(`Database => Twitch collection found`);
-    discordCollection = database.collection('discord');
-    console.log(`Database => Discord collection found`);
-    gameCollection = database.collection('game');
-    console.log(`Database => Game collection found\n`);
 })
 
 const usersBan = [];
@@ -330,6 +320,11 @@ function fraction(information) {
                         game: {
                             wallet: 5,
                             fraction: 'V',
+                            hero: {
+                                level: 1,
+                                xp: 0,
+                                hp: 100,
+                            }
                         }
                     }
                     userCollection.updateOne({username: username}, {$set: upd});
@@ -339,6 +334,11 @@ function fraction(information) {
                         game: {
                             wallet: 5,
                             fraction: 'C',
+                            hero: {
+                                level: 1,
+                                xp: 0,
+                                hp: 100,
+                            }
                         }
                     }
                     userCollection.updateOne({username: username}, {$set: upd});
@@ -348,6 +348,11 @@ function fraction(information) {
                         game: {
                             wallet: 5,
                             fraction: 'J',
+                            hero: {
+                                level: 1,
+                                xp: 0,
+                                hp: 100,
+                            }
                         }
                     }
                     userCollection.updateOne({username: username}, {$set: upd});
@@ -357,6 +362,11 @@ function fraction(information) {
                         game: {
                             wallet: 50,
                             fraction: 'K',
+                            hero: {
+                                level: 5,
+                                xp: 0,
+                                hp: 100,
+                            }
                         }
                     }
                     userCollection.updateOne({username: username}, {$set: upd});
@@ -389,24 +399,18 @@ function wallet(information) {
     });
 }
 
-function xp(information) {
+function hero(information) {
     const username = information.username;
     const channel = information.channel;
     if (usersBan.includes(username) === true) return;
-    const hero = Database.get.hero(username);
-    const game = Database.get.game(username);
-    if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can't find you in my database. You need choose fraction by this command: !fraction`);
-    else client.say(channel, `@${username}, you are have ${hero.level} level and ${hero.xp} experience points`);
-}
-
-function hp(information) {
-    const username = information.username;
-    const channel = information.channel;
-    if (usersBan.includes(username) === true) return;
-    const hero = Database.get.hero(username);
-    const game = Database.get.game(username);
-    if (hero === errors.ERR_NOT_FIND_USER || game.fraction === '') client.say(channel, `@${username}, I can't find you in my database. You need choose fraction by this command: !fraction`);
-    else client.say(channel, `@${username}, you are have ${hero.hp} heal points`);
+    userCollection.findOne({username:username}).then(user => {
+        if (user == null && user === []) return;
+        else if (user.game == null) client.say(channel, `@${username}, I can't find you in my database, you !fraction for register`);
+        else if (user.game.hero == null) console.log(`Database => Error => ${username} => Hero`);
+        else {
+            client.say(channel, `@${username}, you have a ${user.game.hero.level} level (${user.game.hero.xp}/${user.game.hero.level * 100 + (user.game.hero.level * 15)}) and ${user.game.hero.hp} heal points`);
+        }
+    });
 }
 
 function status(information) {
@@ -523,12 +527,9 @@ class chat {
             } else if (command === 'wallet') {
                 result = true;
                 wallet(information);
-            } else if (command === 'xp') {
+            } else if (command === 'hero') {
                 result = true;
-                xp(information);
-            } else if (command === 'hp') {
-                result = true;
-                hp(information);
+                hero(information);
             } else if (command === 'status') {
                 result = true;
                 status(information);
@@ -602,7 +603,6 @@ client.on('message', (channel, userstate, message, self) => {
 
     const username = userstate['display-name'].toLowerCase();
     if (username !== 'jourloy') return;
-    const split = message.split(' ');
 
     userCollection.findOne({username: username}).then((user) => {
         if (user == null || user === []) userCollection.insertOne({username: username});
