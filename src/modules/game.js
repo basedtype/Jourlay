@@ -1,4 +1,4 @@
-const { Tools } = require('../Utils/Tools');
+const { Tools } = require('../Utils/tools');
 const moment = require('moment');
 
 class Game {
