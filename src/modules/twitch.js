@@ -600,13 +600,34 @@ client.on('redeem', (channel, username, rewardType, tags) => {
 
 client.on('message', (channel, userstate, message, self) => {
     if (userCollection == null) return;
-
     const username = userstate['display-name'].toLowerCase();
-    if (username !== 'jourloy') return;
+    const ru_alphabet = 'йцукенгшщзхъфывапролджэёячсмитьбюё';
 
     userCollection.findOne({username: username}).then((user) => {
         if (user == null || user === []) userCollection.insertOne({username: username});
     });
+
+    for (let i in message) {
+        if (ru_alphabet.includes(message[i]) === true) {
+            if (username === 'jourloy') {
+                console.log('Twitch => Jourloy => Delete message');
+            } else {
+                userCollection.findOne({username: username}).then(user => {
+                    if (user == null || user === []) return;
+                    
+                    if (user.noftificated == null) {
+                        client.say(channel, `@${username}, с 1 марта этот чат станет исключительно для английского языка. На русском языке можно будет общаться только на дискорд сервере, !ds для получения ссылки`);
+                        const upd = {
+                            noftificated: true,
+                        }
+                        userCollection.updateOne({username:username}, {$set:upd});
+                    }
+                });
+            }
+        }
+    }
+
+    if (username !== 'jourloy') return;
 
     const messageSplit = message.split(' ');
     const msSplit = messageSplit[0].split('!');
