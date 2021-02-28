@@ -45,6 +45,18 @@ client.on('message', msg => {
     const msSplit = messageSplit[0].split('!');
     const command = msSplit[1];
 
+    const ru_alphabet = 'йцукенгшщзхъфывапролджэёячсмитьбюё';
+
+    for (let i in message) {
+        if (ru_alphabet.includes(message[i])) {
+            const category = msg.channel.parent.name;
+            if (category !== 'Russia') {
+                msg.delete();
+                return;
+            }
+        }
+    }
+
     if (channel.name === 'bot') {
         if (command === 'add') {
             const id = messageSplit[1];
@@ -69,11 +81,47 @@ client.on('message', msg => {
                     }
                 })
             })
-        } else if (command === 'info') {
+        } else if (command === 'msg') {
             msg.delete();
-            client.user.fetch(msg.author.id).then(res => {
-                console.log(res);
-            });
-        } else msg.delete();
+            console.log(msg);
+        } else if (command === 'category') {
+            msg.delete();
+            console.log(msg.channel.parent);
+        } else if (command === 'embed') {
+            msg.delete();
+            const split = message.split(' | ');
+            console.log(split);
+            const id = split[1];
+            const title = split[2];
+            const body = split[3];
+            const color = split[4] || 0xff0000;
+
+            const embed = new Discord.MessageEmbed()
+            .setTitle(title)
+            .setColor(color)
+            .setDescription(body);
+
+            client.channels.fetch(id).then(chan => {
+                if (chan == null) channel.send('This channel is undefind. Your id is correct?').then(message => {
+                    message.delete({timeout: Tools.convertTime({seconds: 10})});
+                });
+                else chan.send(embed);
+            })
+        } else if (command === 'message') {
+            msg.delete();
+            const split = message.split(' | ');
+            const id = split[1];
+            const body = split[2];
+
+            client.channels.fetch(id).then(chan => {
+                if (chan == null) channel.send('This channel is undefind. Your id is correct?').then(message => {
+                    message.delete({timeout: Tools.convertTime({seconds: 10})});
+                });
+                else chan.send(`${body}`);
+            })
+        }
+        else msg.delete();
+    } else if (channel.name === '🤖│jourlay') {
+        msg.delete();
     }
 })
