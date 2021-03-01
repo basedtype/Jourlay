@@ -1,24 +1,23 @@
 const { Tools } = require('../Utils/tools');
 const moment = require('moment');
+const Discord = require("discord.js");
 
 class Game {
-    static toRaid(username, client, userCollection) {
+    static toRaid(username, msg, channel, userCollection, russian) {
         userCollection.findOne({username: username}).then((user) => {
             let hero = user.hero;
             let upd = {
-                game: {
-                    wallet: user.game.wallet,
-                }
+                game: user.game
             }
             upd.game.wallet -= 1;
             userCollection.updateOne({username:username}, {$set: upd});
 
             let time = null;
-            if (hero.level <= 2) time = Tools.randomInt(1, 2) * Tools.randomInt(3600, 5000);
-            else if (hero.level <= 4) time = Tools.randomInt(2, 3) * Tools.randomInt(3600, 5000);
-            else if (hero.level <= 6) time = Tools.randomInt(3, 4) * Tools.randomInt(3600, 5000);
-            else if (hero.level <= 8) time = Tools.randomInt(4, 5) * Tools.randomInt(3600, 5000);
-            else if (hero.level > 8) time = Tools.randomInt(5, 6) * Tools.randomInt(3600, 5000);
+            if (user.game.hero.level <= 2) time = Tools.randomInt(1, 2) * Tools.randomInt(3600, 5000);
+            else if (user.game.hero.level <= 4) time = Tools.randomInt(2, 3) * Tools.randomInt(3600, 5000);
+            else if (user.game.hero.level <= 6) time = Tools.randomInt(3, 4) * Tools.randomInt(3600, 5000);
+            else if (user.game.hero.level <= 8) time = Tools.randomInt(4, 5) * Tools.randomInt(3600, 5000);
+            else if (user.game.hero.level > 8) time = Tools.randomInt(5, 6) * Tools.randomInt(3600, 5000);
             if (username === 'jourloy') time = 32;
 
             const timePercent = time / 100;
@@ -69,57 +68,165 @@ class Game {
                 hp = 0;
             }
 
-            const walletPercent = wallet / 100;
-            const xpPercent = xp / 100;
-
-            if (user.game.fraction === 'V') {
-                wallet += walletPercent * 2;
-            } else if (user.game.fraction === 'J') {
-                xp += xpPercent * 3;
-                walllet -= walletPercent * 2;
-            } else if (user.game.fraction === 'C') {
-                xp -= xpPercent * 3;
+            if (russian) {
+                if (user.game.fraction === 'C') {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Поход в рейд`)
+                    .setColor(0x00ff00)
+                    .setDescription(`Смирно, боец цезарь! У меня есть задача для тебя`)
+                    .addFields(
+                        { name: 'Возвращение', value: `${formatted}`},
+                    )
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                } else if (user.game.fraction === 'V') {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Поход в рейд`)
+                    .setColor(0x00ff00)
+                    .setDescription(`Встретимся в Вальгалле, викинг! Не бойся ничего и помни: нет добычи - нет награды`)
+                    .addFields(
+                        { name: 'Возвращение', value: `${formatted}`},
+                    )
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                } else if (user.game.fraction === 'J') {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Поход в рейд`)
+                    .setColor(0x00ff00)
+                    .setDescription(`Удачи в бою, самурай! Дай волю катане`)
+                    .addFields(
+                        { name: 'Возвращение', value: `${formatted}`},
+                    )
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                }
+            } else {
+                if (user.game.fraction === 'C') {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Go in raid`)
+                    .setColor(0x00ff00)
+                    .setDescription(`Attention, "Caesar" fighter! I have a task for you`)
+                    .addFields(
+                        { name: 'Come back in', value: `${formatted}`},
+                    )
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                } else if (user.game.fraction === 'V') {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Go in raid`)
+                    .setColor(0x00ff00)
+                    .setDescription(`Will meet in Valhalla, viking. Don't fear anyone and remember: don't have loot - don't have reward`)
+                    .addFields(
+                        { name: 'Come back in', value: `${formatted}`},
+                    )
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                } else if (user.game.fraction === 'J') {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Go in raid`)
+                    .setColor(0x00ff00)
+                    .setDescription(`Good luck in fight, samurai. Let katana do that, for what it`)
+                    .addFields(
+                        { name: 'Come back in', value: `${formatted}`},
+                    )
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                }
             }
-
-            if (user.game.fraction === 'C') client.say(client.channel, `@${username}, attention, "Caesar" fighter! I have a task for you. You will come back in ${formatted}`);
-            if (user.game.fraction === 'V') client.say(client.channel, `@${username}, will meet in Valhalla, viking. Don't fear anyone and remember: don't have loot - don't have reward. You will come back in ${formatted}`);
-            if (user.game.fraction === 'J') client.say(client.channel, `@${username}, good luck in fight, samurai. Let katana do that, for what it. You will come back in ${formatted}`);
-            if (user.game.fraction === 'K') client.say(client.channel, `@${username}, need steal couple documents, soul master. You will come back in ${formatted}`);
             console.log(`Twitch => Jourloy_bot => Game => Start raid => ${username} => ${formatted}`);
 
             setTimeout(function() {
-                if (user.game.fraction === 'C') client.say(client.channel, `@${username}, task is done, "Caesar" fighter! Your reward is ${wallet} bills and ${xp} experience points`);
-                if (user.game.fraction === 'V') client.say(client.channel, `@${username}, look who came, hahaha. Sit down and drink with us, viking! Take ${wallet} gold coins and ${xp} experience points`);
-                if (user.game.fraction === 'J') client.say(client.channel, `@${username}, glad to see you, samurai. Go drink a tea, and now I give you ${wallet} Great steel ingots and ${xp} experience points`);
-                if (user.game.fraction === 'K') client.say(client.channel, `@${username}, thank you, soul master, I give ${wallet} soul shards and ${xp} experience points`);
+                if (russian) {
+                    if (user.game.fraction === 'C') {
+                        const embed = new Discord.MessageEmbed()
+                        .setTitle(`Возвращение`)
+                        .setColor(0x00ff00)
+                        .setDescription(`Смирно, боец цезарь! Задача выполнена`)
+                        .addFields(
+                            { name: 'Опыт', value: `${xp}`, inline: true},
+                            { name: 'ЕДМ', value: `${wallet}`, inline: true},
+                        )
+                        channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    } else if (user.game.fraction === 'V') {
+                        const embed = new Discord.MessageEmbed()
+                        .setTitle(`Возвращение`)
+                        .setColor(0x00ff00)
+                        .setDescription(`Посмотрите кто пришел, хахаха. Садись и выпей с нами, викинг!`)
+                        .addFields(
+                            { name: 'Опыт', value: `${xp}`, inline: true},
+                            { name: 'ЕДМ', value: `${wallet}`, inline: true},
+                        )
+                        channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    } else if (user.game.fraction === 'J') {
+                        const embed = new Discord.MessageEmbed()
+                        .setTitle(`Возвращение`)
+                        .setColor(0x00ff00)
+                        .setDescription(`Я рад видеть тебя, самурай. Пошли выпьем чаю`)
+                        .addFields(
+                            { name: 'Опыт', value: `${xp}`, inline: true},
+                            { name: 'ЕДМ', value: `${wallet}`, inline: true},
+                        )
+                        channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    }
+                } else {
+                    if (user.game.fraction === 'C') {
+                        const embed = new Discord.MessageEmbed()
+                        .setTitle(`Come back`)
+                        .setColor(0x00ff00)
+                        .setDescription(`Attention, "Caesar" fighter! Task is done`)
+                        .addFields(
+                            { name: 'XP', value: `${xp}`, inline: true},
+                            { name: 'WM', value: `${wallet}`, inline: true},
+                        )
+                        channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    } else if (user.game.fraction === 'V') {
+                        const embed = new Discord.MessageEmbed()
+                        .setTitle(`Come back`)
+                        .setColor(0x00ff00)
+                        .setDescription(`Look who came, hahaha. Sit down and drink with us, viking!`)
+                        .addFields(
+                            { name: 'XP', value: `${xp}`, inline: true},
+                            { name: 'WM', value: `${wallet}`, inline: true},
+                        )
+                        channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    } else if (user.game.fraction === 'J') {
+                        const embed = new Discord.MessageEmbed()
+                        .setTitle(`Come back`)
+                        .setColor(0x00ff00)
+                        .setDescription(`Glad to see you, samurai. Go drink a tea`)
+                        .addFields(
+                            { name: 'XP', value: `${xp}`, inline: true},
+                            { name: 'WM', value: `${wallet}`, inline: true},
+                        )
+                        channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    }
+                }
                 console.log(`Twitch => Jourloy_bot => Game => End raid => ${username} => wallet: +${wallet} | xp: ${xp}`);
                 userCollection.findOne({username: username}).then((user) => {
                     upd = {
-                        game: {
-                            inRaid: false,
-                            wallet: user.wallet+wallet,
-                            raid: {
-                                created: null,
-                                time: null,
-                                wallet: 0,
-                                xp: 0,
-                            }
-                        }
+                        game: user.game
+                    }
+                    upd.game.inRaid = false;
+                    upd.game.wallet = user.game.wallet+wallet;
+                    upd.game.raid = {
+                        created: null,
+                        time: null,
+                        wallet: 0,
+                        xp: 0,
+                    }
+                    upd.game.hero.xp = user.game.hero.xp + xp;
+                    if (upd.game.hero.xp > user.game.hero.level * 100 + (user.game.hero.level * 15)) {
+                        upd.game.hero.level++;
+                        upd.game.hero.xp -= user.game.hero.level * 100 + (user.game.hero.level * 15);
                     }
                     userCollection.updateOne({username: username}, {$set: upd});
                 })
             }, Tools.convertTime({seconds: time}));
 
             upd = {
-                game: {
-                    inRaid: true,
-                    raid: {
-                        created: Math.floor(moment.now() / 1000),
-                        time: time,
-                        wallet: wallet,
-                        xp: xp,
-                    }
-                }
+                game: user.game
+            }
+            upd.game.inRaid = true;
+            upd.game.wallet - user.wallet+wallet;
+            upd.game.raid = {
+                created: Math.floor(moment.now() / 1000),
+                time: time,
+                wallet: wallet,
+                xp: xp,
             }
             userCollection.updateOne({username: username}, {$set: upd});
         })
