@@ -8,6 +8,7 @@ const { Game } = require('./game');
 let database = null;
 let userCollection = null;
 let discordCollection = null;
+let repaired = false;
 
 const uri = "mongodb://localhost:27017/";
 const clientDB = new MongoClient(uri);
@@ -201,6 +202,10 @@ setInterval(function() {
             }
         }
     })
+    if (userCollection != null && CH['🛡│рейды'] != null && repaired === false) {
+        Game.repair(CH['🛡│рейды'], userCollection);
+        repaired = true;
+    }
 }, Tools.convertTime({seconds: 1}))
 
 client.on('guildMemberAdd', member => {
@@ -239,6 +244,7 @@ client.on('message', msg => {
 
     userCollection.findOne({username: username}).then((user) => {
         if (user == null || user === []) userCollection.insertOne({username: username});
+        else if (user.id == null) userCollection.findOneAndUpdate({username:username}, {$set: {id: msg.author.id}});
     });
 
     const ru_alphabet = 'йцукенгшщзхъфывапролджэёячсмитьбюё';
@@ -524,6 +530,103 @@ Just join on channel and bot automatically move you in new voice channel with li
                     return;
                 }
             });
+        }
+        else msg.delete();
+    } else if (channel.name === '🔫│loadouts') {
+        if (command === 'weapons') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('All guns')
+            .addFields(
+                { name: 'Modern Warfare', value: `ASSAULT RIFLES:\n- !m4a1\n\nSMGS:\n- !mp5\n\nMARKSMAN RIFLES:\n- !spr\n- !kar\n\nHANDGUNS:\n!x16`, inline: true},
+                { name: 'Cold War', value: `ASSAULT RIFLES:\n- !ffar`, inline: true},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+        } else if (command === 'm4a1') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('M4A1 (MW)')
+            .addFields(
+                { name: 'Muzzle', value: `Monolithic Suppressor (7)`},
+                { name: 'Barrel', value: `Stock M16 Grenadier (2)`},
+                { name: 'Laser', value: `-`},
+                { name: 'Optic', value: `G.I. Mini Reflex (13)`},
+                { name: 'Underbarrel', value: `Commando Foregrip (1)`},
+                { name: 'Ammunition', value: `9mm Para 32-rounds Mags (3)`},
+                { name: 'Rear Grip', value: `-`},
+                { name: 'Perk', value: `-`},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+        } else if (command === 'mp5') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('MP5 (MW)')
+            .addFields(
+                { name: 'Muzzle', value: `Monolithic Suppressor (4)`},
+                { name: 'Barrel', value: `-`},
+                { name: 'Laser', value: `Tac Laser (3)`},
+                { name: 'Optic', value: `-`},
+                { name: 'Stock', value: `FTAC Collapsible (4)`},
+                { name: 'Underbarrel', value: `Merc Foregrip (2)`},
+                { name: 'Ammunition', value: `45 Round Mags (1)`},
+                { name: 'Rear Grip', value: `-`},
+                { name: 'Perk', value: `-`},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+        } else if (command === 'spr') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('SP-R (MW)')
+            .addFields(
+                { name: 'Muzzle', value: `Monolithic Suppressor (7)`},
+                { name: 'Barrel', value: `SP-R 26" (3)`},
+                { name: 'Laser', value: `Tac Laser (1)`},
+                { name: 'Optic', value: `Solozero SP-R 28mm (10)`},
+                { name: 'Stock', value: `-`},
+                { name: 'Underbarrel', value: `-`},
+                { name: 'Ammunition', value: `.300 Norma Mag 5-R Mags (2)`},
+                { name: 'Rear Grip', value: `-`},
+                { name: 'Perk', value: `-`},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+        } else if (command === 'kar') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('KAR98K (MW)')
+            .addFields(
+                { name: 'Muzzle', value: `Monolithic Suppressor (5)`},
+                { name: 'Barrel', value: `Singuard Xustom 27.6" (3)`},
+                { name: 'Laser', value: `Tac Laser (1)`},
+                { name: 'Optic', value: `Sniper Scope (8)`},
+                { name: 'Stock', value: `FTAC Sport Comb (3)`},
+                { name: 'Underbarrel', value: `-`},
+                { name: 'Rear Grip', value: `-`},
+                { name: 'Perk', value: `-`},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+        } else if (command === 'x16') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('X16 (MW)')
+            .addFields(
+                { name: 'Muzzle', value: `Monolithic Suppressor (2)`},
+                { name: 'Barrel', value: `-`},
+                { name: 'Laser', value: `5mW Laser (3)`},
+                { name: 'Optic', value: `-`},
+                { name: 'Trigger Action', value: `Lightweight Trigger (1)`},
+                { name: 'Ammunition', value: `26 Round Mags (2)`},
+                { name: 'Rear Grip', value: `-`},
+                { name: 'Perk', value: `Akimbo (10)`},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+        } else if (command === 'ffar') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('FFAR (CW)')
+            .addFields(
+                { name: 'Muzzle', value: `-`},
+                { name: 'Barrel', value: `19.5" Reinforced Heavy (3)`},
+                { name: 'Laser', value: `Embed sighting Point (6)`},
+                { name: 'Optic', value: `-`},
+                { name: 'Stock', value: `Raider Stock (6)`},
+                { name: 'Underbarrel', value: `SFOD Speedgrip (6)`},
+                { name: 'Ammunition', value: `Salvo 50 Rnd Fast Mag (6)`},
+                { name: 'Rear Grip', value: `-`},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
         }
         else msg.delete();
     }
