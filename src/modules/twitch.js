@@ -388,7 +388,7 @@ function wallet(information) {
 
     userCollection.findOne({username: username}).then(user => {
         if (user == null && user === []) return;
-        else if (user.game == null) client.say(channel, `@${username}, I can't find you in my database, you !fraction for register`);
+        else if (user.game == null) client.say(channel, `@${username}, I can't find you in my database, use !fraction for register`);
         else if (user.game.wallet == null) console.log(`Database => Error => ${username} => Wallet`);
         else {
             if (user.game.fraction === 'V') client.say(channel, `@${username}, on your bill ${user.game.wallet} gold coins`);
@@ -405,7 +405,7 @@ function hero(information) {
     if (usersBan.includes(username) === true) return;
     userCollection.findOne({username:username}).then(user => {
         if (user == null && user === []) return;
-        else if (user.game == null) client.say(channel, `@${username}, I can't find you in my database, you !fraction for register`);
+        else if (user.game == null) client.say(channel, `@${username}, I can't find you in my database, use !fraction for register`);
         else if (user.game.hero == null) console.log(`Database => Error => ${username} => Hero`);
         else {
             client.say(channel, `@${username}, you have a ${user.game.hero.level} level (${user.game.hero.xp}/${user.game.hero.level * 100 + (user.game.hero.level * 15)}) and ${user.game.hero.hp} heal points`);
@@ -601,6 +601,7 @@ client.on('redeem', (channel, username, rewardType, tags) => {
 client.on('message', (channel, userstate, message, self) => {
     if (userCollection == null) return;
     const username = userstate['display-name'].toLowerCase();
+    if (username === 'jourloy_bot') return;
     const ru_alphabet = 'йцукенгшщзхъфывапролджэёячсмитьбюё';
 
     userCollection.findOne({username: username}).then((user) => {
@@ -612,17 +613,8 @@ client.on('message', (channel, userstate, message, self) => {
             if (username === 'jourloy') {
                 console.log('Twitch => Jourloy => Delete message');
             } else {
-                userCollection.findOne({username: username}).then(user => {
-                    if (user == null || user === []) return;
-                    
-                    if (user.noftificated == null) {
-                        client.say(channel, `@${username}, с 1 марта этот чат станет исключительно для английского языка. На русском языке можно будет общаться только на дискорд сервере, !ds для получения ссылки`);
-                        const upd = {
-                            noftificated: true,
-                        }
-                        userCollection.updateOne({username:username}, {$set:upd});
-                    }
-                });
+                console.log(`Twitch => Jourloy => Delete message => ${username}`);
+                client.deletemessage(userstate['id']);
             }
         }
     }
