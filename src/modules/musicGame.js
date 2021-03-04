@@ -6,7 +6,7 @@ const ytdl = require('ytdl-core');
 const { MongoClient } = require("mongodb");
 
 /* PARAMS */
-const version = 'v1.2';
+const version = 'v1.3';
 const voiceLogo = `
 ╔════════════════════════════════════════════════════════════════════╗
 ║              ███╗░░░███╗██╗░░░██╗░██████╗██╗░█████╗░               ║
@@ -62,21 +62,20 @@ function disp(connection) {
         dispatcher.on('finish', () => {
             step++;
             if (step >= queue.length) step = 0;
-            disp(connection, queue);
+            disp(connection);
         });
     })
 }
 
 function startMusic() {
     try {
-        getChannel('816870430543183872', gameBot).then(channel => {
+        getChannel('817042594164899860', gameBot).then(channel => {
             channel.join().then(connection => {
                 disp(connection);
                 client.on('message', msg => {
                     const channel = msg.channel;
                     const username = msg.author.username.toLowerCase();
                     const message = msg.content;
-
                     const messageSplit = message.split(' ');
                     const msSplit = messageSplit[0].split('!');
                     const command = msSplit[1];
