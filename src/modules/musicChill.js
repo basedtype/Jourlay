@@ -62,7 +62,7 @@ function disp(connection) {
         dispatcher.on('finish', () => {
             step++;
             if (step >= queue.length) step = 0;
-            disp(connection, queue);
+            disp(connection);
         });
     })
 }
