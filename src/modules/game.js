@@ -7,7 +7,7 @@ class Game {
         userCollection.find({}).toArray((err, users) => {
             for (let i in users) {
                 const user = users[i];
-                if (user == null || user.game == null || user.game.inRaid == null || user.game.inRaid === false) return;
+                if (user == null || user.game == null || user.game.inRaid == null || user.game.inRaid === false) continue;
                 const username = user.username;
 
                 const created = user.game.raid.created;
@@ -17,7 +17,6 @@ class Game {
                 let upd = {
                     game: user.game
                 }
-
                 if (created+timeRaid < now) {
                     const xp = user.game.raid.xp;
                     const wallet = user.game.raid.wallet;
@@ -216,7 +215,6 @@ class Game {
 
     static toRaid(username, msg, channel, userCollection, russian) {
         userCollection.findOne({username: username}).then((user) => {
-            let hero = user.hero;
             let upd = {
                 game: user.game
             }
@@ -340,6 +338,20 @@ class Game {
             }
             console.log(`Twitch => Jourloy_bot => Game => Start raid => ${username} => ${formatted}`);
 
+            userCollection.findOne({username: username}).then(user => {
+                upd = {
+                    game: user.game
+                }
+                upd.game.inRaid = true;
+                upd.game.raid = {
+                    created: Math.floor(moment.now() / 1000),
+                    time: time,
+                    wallet: wallet,
+                    xp: xp,
+                }
+                userCollection.updateOne({username: username}, {$set: upd});
+            })
+
             setTimeout(function() {
                 if (russian) {
                     if (user.game.fraction === 'C') {
@@ -427,19 +439,6 @@ class Game {
                     userCollection.updateOne({username: username}, {$set: upd});
                 })
             }, Tools.convertTime({seconds: time}));
-
-            upd = {
-                game: user.game
-            }
-            upd.game.inRaid = true;
-            upd.game.wallet - user.wallet+wallet;
-            upd.game.raid = {
-                created: Math.floor(moment.now() / 1000),
-                time: time,
-                wallet: wallet,
-                xp: xp,
-            }
-            userCollection.updateOne({username: username}, {$set: upd});
         })
     }
 }
