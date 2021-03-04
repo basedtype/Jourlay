@@ -6,7 +6,7 @@ const ytdl = require('ytdl-core');
 const { MongoClient } = require("mongodb");
 
 /* PARAMS */
-const version = 'v1.0';
+const version = 'v1.2';
 const voiceLogo = `
 ╔════════════════════════════════════════════════════════════════════╗
 ║              ███╗░░░███╗██╗░░░██╗░██████╗██╗░█████╗░               ║
