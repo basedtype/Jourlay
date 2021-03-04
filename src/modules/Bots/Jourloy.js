@@ -28,4 +28,4 @@ client.on('connected', onConnectedHandler);
 client.connect();
 
 /* EXPORTS */
-module.exports.admin = client;
+module.exports.client = client;
