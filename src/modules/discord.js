@@ -2,7 +2,7 @@ const { client } = require("./Bots/Jourlay");
 
 const Discord = require("discord.js");
 const { MongoClient } = require("mongodb");
-const { Tools, Errors } = require('../Utils/Tools');
+const { tools, Errors } = require('../Utils/tools');
 const { Game } = require('./game');
 
 let database = null;
@@ -23,172 +23,7 @@ const CH = {
     'bot': '815257750879600642',
 }; // Channels
 
-const channelsID = {
-    noftification: '793404252809986068',
-    moderatorOnly: '748407718414385183',
-    create: {
-        duo: '798853439610159146',
-        trio: '799559562909974538',
-        squad_4: '799559861285158982',
-        squad_5: '799560553525542922',
-    }
-}
-
 /* INTERVALS */
-setInterval(function () {
-    const deleteFunc = (channelNew) => {
-        if (channelNew.members.array().length === 0) {
-            channelNew.delete();
-            return true;
-        }
-        return false;
-    }
-
-    const repeatCheck = function(channelNew) {
-        setTimeout(function() {deleteChannel(channelNew)}, 1000*1);
-    }
-
-    const deleteChannel = function(channelNew) {
-        if (deleteFunc(channelNew) === false) repeatCheck(channelNew);
-    };
-
-    client.channels.fetch(channelsID.create.duo).then(channel => {
-        if (channel == null || channel.full == null || channel.full === false) return;
-
-        const parent = channel.parent;
-        const guild = channel.guild;
-        const name = `👥│DUO`;
-        const options = {
-            type: 'voice',
-            userLimit: 2,
-            position: 4,
-            parent: parent,
-        }
-        
-        let user = channel.members.array()[0].user;
-
-        guild.members.fetch(user.id).then(data => {
-
-            for (let i in data.guild.voiceStates.cache.array()) {
-                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
-            }
-            let idNew = null;
-
-            guild.channels.create(name, options).then(data => {
-                idNew = data.id;
-                let channelNew = undefined;
-                client.channels.fetch(idNew).then(channel => {
-                    channelNew = channel;
-                    user.setChannel(channelNew);
-                    repeatCheck(channelNew);
-                });
-            });
-        })
-    });
-
-    client.channels.fetch(channelsID.create.trio).then(channel => {
-        if (channel == null || channel.full == null || channel.full === false) return;
-
-        const parent = channel.parent;
-        const guild = channel.guild;
-        const name = `👥│TRIO`;
-        const options = {
-            type: 'voice',
-            userLimit: 3,
-            position: 4,
-            parent: parent,
-        }
-        
-        let user = channel.members.array()[0].user;
-
-        guild.members.fetch(user.id).then(data => {
-
-            for (let i in data.guild.voiceStates.cache.array()) {
-                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
-            }
-            let idNew = null;
-
-            guild.channels.create(name, options).then(data => {
-                idNew = data.id;
-                let channelNew = undefined;
-                client.channels.fetch(idNew).then(channel => {
-                    channelNew = channel;
-                    user.setChannel(channelNew);
-                    repeatCheck(channelNew);
-                });
-            });
-        })
-    });
-
-    client.channels.fetch(channelsID.create.squad_4).then(channel => {
-        if (channel == null || channel.full == null || channel.full === false) return;
-
-        const parent = channel.parent;
-        const guild = channel.guild;
-        const name = `👥│SQUAD`;
-        const options = {
-            type: 'voice',
-            userLimit: 4,
-            position: 4,
-            parent: parent,
-        }
-        
-        let user = channel.members.array()[0].user;
-
-        guild.members.fetch(user.id).then(data => {
-
-            for (let i in data.guild.voiceStates.cache.array()) {
-                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
-            }
-            let idNew = null;
-
-            guild.channels.create(name, options).then(data => {
-                idNew = data.id;
-                let channelNew = undefined;
-                client.channels.fetch(idNew).then(channel => {
-                    channelNew = channel;
-                    user.setChannel(channelNew);
-                    repeatCheck(channelNew);
-                });
-            });
-        })
-    });
-
-    client.channels.fetch(channelsID.create.squad_5).then(channel => {
-        if (channel == null || channel.full == null || channel.full === false) return;
-
-        const parent = channel.parent;
-        const guild = channel.guild;
-        const name = `👥│SQUAD`;
-        const options = {
-            type: 'voice',
-            userLimit: 5,
-            position: 4,
-            parent: parent,
-        }
-        
-        let user = channel.members.array()[0].user;
-
-        guild.members.fetch(user.id).then(data => {
-
-            for (let i in data.guild.voiceStates.cache.array()) {
-                if (user.id === data.guild.voiceStates.cache.array()[i].id) user = data.guild.voiceStates.cache.array()[i];
-            }
-            let idNew = null;
-
-            guild.channels.create(name, options).then(data => {
-                idNew = data.id;
-                let channelNew = undefined;
-                client.channels.fetch(idNew).then(channel => {
-                    channelNew = channel;
-                    user.setChannel(channelNew);
-                    repeatCheck(channelNew);
-                });
-            });
-        })
-    });
-}, 1000);
-
 setInterval(function() {
     if (discordCollection == null) return;
     discordCollection.find({type: 'channel'}).limit(50).toArray((err, channels) => {
@@ -206,7 +41,7 @@ setInterval(function() {
         Game.repair(CH['🛡│рейды'], userCollection);
         repaired = true;
     }
-}, Tools.convertTime({seconds: 1}))
+}, tools.convertTime({seconds: 1}))
 
 client.on('guildMemberAdd', member => {
     const channel = member.guild.channels.find(ch => ch.name === 'welcome');
@@ -247,18 +82,6 @@ client.on('message', msg => {
         else if (user.id == null) userCollection.findOneAndUpdate({username:username}, {$set: {id: msg.author.id}});
     });
 
-    const ru_alphabet = 'йцукенгшщзхъфывапролджэёячсмитьбюё';
-
-    for (let i in message) {
-        if (ru_alphabet.includes(message[i])) {
-            const category = msg.channel.parent.name;
-            if (category !== 'Russia' && channel.name !== 'bot') {
-                msg.delete();
-                return;
-            }
-        }
-    }
-
     if (channel.name === 'bot') {
         if (command === 'add') {
             const id = messageSplit[1];
@@ -272,12 +95,12 @@ client.on('message', msg => {
                         }
                         discordCollection.insertOne(docs);
                         channel.send(`${chn.name} is added to database`).then(message => {
-                            message.delete({timeout:Tools.convertTime({seconds: 10})})
+                            message.delete({timeout:tools.convertTime({seconds: 10})})
                         });
                     } else {
                         msg.delete();
                         channel.send(`${chn.name} already in database`).then(message => {
-                            message.delete({timeout:Tools.convertTime({seconds: 10})})
+                            message.delete({timeout:tools.convertTime({seconds: 10})})
                         });
                     }
                 })
@@ -300,7 +123,7 @@ client.on('message', msg => {
 
             client.channels.fetch(id).then(chan => {
                 if (chan == null) channel.send('This channel is undefind. Your id is correct?').then(message => {
-                    message.delete({timeout: Tools.convertTime({seconds: 10})});
+                    message.delete({timeout: tools.convertTime({seconds: 10})});
                 });
                 else chan.send(embed);
             })
@@ -311,7 +134,7 @@ client.on('message', msg => {
 
             client.channels.fetch(id).then(chan => {
                 if (chan == null) channel.send('This channel is undefind. Your id is correct?').then(message => {
-                    message.delete({timeout: Tools.convertTime({seconds: 10})});
+                    message.delete({timeout: tools.convertTime({seconds: 10})});
                 });
                 else chan.send(`${body}`);
             })
@@ -319,7 +142,7 @@ client.on('message', msg => {
             const id = messageSplit[1];
             discordCollection.findOneAndDelete({id:id}).then(res => {
                 channel.send('Channel was deleted').then(message => {
-                    message.delete({timeout: Tools.convertTime({seconds: 10})});
+                    message.delete({timeout: tools.convertTime({seconds: 10})});
                 });
             });
         } else if (command === 'hi') {
@@ -341,7 +164,7 @@ Just join on channel and bot automatically move you in new voice channel with li
 
 ⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤⏤`).then(mss => {
                 mss.react('👋');
-                mss.delete({timeout: Tools.convertTime({seconds: 10})});
+                mss.delete({timeout: tools.convertTime({seconds: 10})});
             });
         } else if (command === 'db_add') {
             const split = message.split(' | ');
@@ -405,13 +228,13 @@ Just join on channel and bot automatically move you in new voice channel with li
 username: ${user.username}
 id: ${user.id}
 game (keys): ${Object.keys(user.game)}
-\`\`\``).then(mss => mss.delete({timeout:Tools.convertTime({seconds: 30})}));
+\`\`\``).then(mss => mss.delete({timeout:tools.convertTime({seconds: 30})}));
             })
         }
         msg.delete();
     } else if (channel.name === '🤖│jourlay') {
         if (command === 'russia') {
-            channel.send(`Пока что эти запросы обрабатываются в ручную, так что прошу подождать и не изменять никнейм, пока роль не будет выдана`).then(mss => mss.delete({timeout: Tools.convertTime({seconds: 20})}));
+            channel.send(`Пока что эти запросы обрабатываются в ручную, так что прошу подождать и не изменять никнейм, пока роль не будет выдана`).then(mss => mss.delete({timeout: tools.convertTime({seconds: 20})}));
             if (CH['moderator-only'] != null) CH['moderator-only'].send(`@JOURLOY, [${username}] wants in Russian category`);
         }
         msg.delete();
