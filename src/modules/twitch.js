@@ -2,8 +2,7 @@
 const { client } = require('./Bots/Jourloy_bot');
 const { admin } = require('./Bots/Jourloy');
 
-const { Game } = require('./game');
-const { Defence } = require('../Utils/defence');
+const { Game } = require('./game'); 
 const { Tools, errors } = require('../Utils/tools');
 const { discord } = require('./discord');
 const moment = require('moment');
@@ -22,7 +21,7 @@ let database = null;
 let userCollection = null;
 let twitchCollection = null;
 
-const uri = "mongodb://localhost:27017/";
+const uri = "mongodb://192.168.0.104:12702/";
 const clientDB = new MongoClient(uri);
 clientDB.connect().then( err => {
     database = clientDB.db('TwitchBot');
@@ -612,9 +611,11 @@ client.on('message', (channel, userstate, message, self) => {
         if (ru_alphabet.includes(message[i]) === true) {
             if (username === 'jourloy') {
                 console.log('Twitch => Jourloy => Delete message');
+                return;
             } else {
                 console.log(`Twitch => Jourloy => Delete message => ${username}`);
-                client.deletemessage(userstate['id']);
+                client.deletemessage(channel, userstate['id']);
+                return;
             }
         }
     }
