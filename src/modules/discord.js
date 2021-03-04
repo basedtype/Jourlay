@@ -10,7 +10,7 @@ let userCollection = null;
 let discordCollection = null;
 let repaired = false;
 
-const uri = "mongodb://localhost:27017/";
+const uri = "mongodb://192.168.0.104:12702/";
 const clientDB = new MongoClient(uri);
 clientDB.connect().then( err => {
     database = clientDB.db('TwitchBot');
@@ -343,6 +343,70 @@ Just join on channel and bot automatically move you in new voice channel with li
                 mss.react('👋');
                 mss.delete({timeout: Tools.convertTime({seconds: 10})});
             });
+        } else if (command === 'db_add') {
+            const split = message.split(' | ');
+            const target = split[1];
+            const thing = split[2]; //wallet, xp, fraction
+            let amount = null;
+            if (thing !== 'fraction') amount = parseInt(split[3]);
+            else amount = split[3];
+
+            userCollection.findOne({username: target}).then(user => {
+                if (user == null || user === []) {
+                    const ex = {
+                        username: target,
+                        game: {
+                            wallet: 0,
+                            hero: {
+                                level: 1,
+                                xp: 0,
+                                hp: 100,
+                            }
+                        }
+                    }
+                    if (thing === 'wallet') ex.game.wallet += amount;
+                    else if (thing === 'xp') {
+                        ex.game.hero.xp += amount;
+                        if (ex.game.hero.xp > ex.game.hero.level * 100 + (ex.game.hero.level * 15)) {
+                            ex.game.hero.level++;
+                            ex.game.hero.xp -= ex.game.hero.level * 100 + (ex.game.hero.level * 15);
+                        }
+                    } else if (thing === 'fraction') ex.game.fraction = amount;
+                    userCollection.insertOne(ex).then(() => {
+                        channel.send(`User (${target}) added in database and add ${amount} ${thing}. Don't forget add fraction: __!db_add | username | fraction | [symbol]__`).then(mss => {
+                            mss.delete({timeout: 10000});
+                        });
+                    });
+                } else {
+                    const data = user;
+                    if (thing === 'wallet') data.game.wallet += amount;
+                    else if (thing === 'xp') {
+                        data.game.hero.xp += amount;
+                        if (data.game.hero.xp > data.game.hero.level * 100 + (data.game.hero.level * 15)) {
+                            data.game.hero.level++;
+                            data.game.hero.xp -= data.game.hero.level * 100 + (data.game.hero.level * 15);
+                        }
+                    } else if (thing === 'fraction') data.game.fraction = amount;
+                    userCollection.updateOne({username:target},{$set:data}).then(() => {
+                        channel.send(`User (${target}) add ${amount} ${thing}`).then(mss => {
+                            mss.delete({timeout: 10000});
+                        });
+                    });
+                }
+            })
+        } else if (command === 'db_get') {
+            const split = message.split(' | ');
+            const target = split[1];
+
+            userCollection.findOne({username: target}).then(user => {
+                if (user == null || user === []) channel.send(`User is undefined`).then(mss => mss.delete({timeout: 10000}));
+                else channel.send(`\`\`\`keys: ${Object.keys(username)}
+
+username: ${user.username}
+id: ${user.id}
+game (keys): ${Object.keys(user.game)}
+\`\`\``).then(mss => mss.delete({timeout:Tools.convertTime({seconds: 30})}));
+            })
         }
         msg.delete();
     } else if (channel.name === '🤖│jourlay') {
@@ -491,7 +555,6 @@ Just join on channel and bot automatically move you in new voice channel with li
         } else if (command === 'рейд') {
             userCollection.findOne({username: username}).then((user) => {
                 if (user == null && user === []) return;
-                console.log(user);
                 if (user.game == null) {
                     const embed = new Discord.MessageEmbed()
                     .setTitle(`Ошибка`)
@@ -502,9 +565,10 @@ Just join on channel and bot automatically move you in new voice channel with li
                 } else if (user.game.fraction == null) {
                     const embed = new Discord.MessageEmbed()
                     .setTitle(`Ошибка`)
-                    .setDescription(`Я не могу найти тебя в своей базе данных, используй команду !фракция для регистрации`)
+                    .setDescription(`Я не могу понять, какая у тебя фракция. Информация отправлена в канал модераторов`)
                     .setColor(0xff0000)
                     channel.send(`<@${msg.author.id}>`, {embed: embed});
+                    if (CH['moderator-only'] != null) CH['moderator-only'].send(`${username} don't have a fraction in database. Try to add in #bot by this command: __!db_add | ${username} | fraction | [symbol]`)
                     return;
                 } else if (user.game.inRaid === true) {
                     const embed = new Discord.MessageEmbed()
