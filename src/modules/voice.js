@@ -1,9 +1,10 @@
 /* IMPORTS */
 const { client } = require('./Bots/Jourlay');
 const { tools } = require('../Utils/tools');
+const { MongoClient } = require("mongodb");
 
 /* PARAMS */
-const version = 'v1.0';
+const version = 'v1.2';
 const voiceLogo = `╔════════════════════════════════════════════════════════════════════╗
 ║                ██╗░░░██╗░█████╗░██╗░█████╗░███████╗                ║
 ║                ██║░░░██║██╔══██╗██║██╔══██╗██╔════╝                ║
@@ -29,9 +30,17 @@ const channelsID = {
     },
     music: '816835066251575337',
 }
+let database = null;
+let musicCollection = null;
+const uri = "mongodb://192.168.0.104:12702/";
+const clientDB = new MongoClient(uri);
 
-tools.clear();
-console.log(voiceLogo);;
+clientDB.connect().then( err => {
+    database = clientDB.db('TwitchBot');
+    musicCollection = database.collection('music');
+    tools.clear();
+    console.log(voiceLogo);;
+});
 
 setInterval(function () {
     const deleteFunc = (channelNew) => {
@@ -186,3 +195,30 @@ setInterval(function () {
         })
     });
 }, 1000);
+
+client.on('message', msg => {
+    const channel = msg.channel;
+    const username = msg.author.username.toLowerCase();
+    const message = msg.content;
+    const messageSplit = message.split(' ');
+    const msSplit = messageSplit[0].split('!');
+    const command = msSplit[1];
+    if (channel.name === 'music') {
+        if (username === 'jourloy') {
+            if (command === 'add') {
+                msg.delete();
+                const url = messageSplit[1];
+                const type = messageSplit[2];
+                const docs = {
+                    url: url,
+                    type: type,
+                }
+                musicCollection.insertOne(docs);
+            } else if (command === 'delete') {
+                msg.delete();
+                const url = messageSplit[1];
+                musicCollection.findOneAndDelete({url: url});
+            }
+        }
+    }
+})
