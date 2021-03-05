@@ -4,7 +4,7 @@ const { tools } = require('../Utils/tools');
 const { MongoClient } = require("mongodb");
 
 /* PARAMS */
-const version = 'v1.2';
+const version = 'v1.5';
 const voiceLogo = `╔════════════════════════════════════════════════════════════════════╗
 ║                ██╗░░░██╗░█████╗░██╗░█████╗░███████╗                ║
 ║                ██║░░░██║██╔══██╗██║██╔══██╗██╔════╝                ║
@@ -28,7 +28,6 @@ const channelsID = {
         squad_4: '799559861285158982',
         squad_5: '799560553525542922',
     },
-    music: '816835066251575337',
 }
 let database = null;
 let musicCollection = null;
@@ -195,6 +194,58 @@ setInterval(function () {
         })
     });
 }, 1000);
+
+async function fetched(id, bot) {
+    const channel = await bot.channels.fetch(id);
+    return channel;
+}
+
+async function getChannel(id, bot) {
+    let channel = null;
+    while (channel == null) {
+        channel = await fetched(id, bot);
+    }
+    return channel;
+}
+
+function play(connection, queue) {
+    return connection.play(ytdl(queue[step].url, { filter: 'audioonly' }));
+}
+
+function disp(connection) {
+    musicCollection.find({type: 'chill'}).toArray((err, queue) => {
+        if (queue == null) return;
+        const dispatcher = play(connection, queue);
+        dispatcher.on('finish', () => {
+            step++;
+            if (step >= queue.length) step = 0;
+            disp(connection);
+        });
+    })
+}
+
+function startMusic() {
+    try {
+        getChannel('816835066251575337', client).then(channel => {
+            channel.join().then(connection => {
+                disp(connection);
+                client.on('message', msg => {
+                    const channel = msg.channel;
+                    const username = msg.author.username.toLowerCase();
+                    const message = msg.content;
+                    const messageSplit = message.split(' ');
+                    const msSplit = messageSplit[0].split('!');
+                    const command = msSplit[1];
+                    if (channel.name === 'music') {
+                        if (command === 'music') channel.send(`Now playing: ${queue[step].url}`);
+                    }
+                })
+            });
+        })
+    } catch {setTimeout(function() {startMusic()}, 10000)}
+}
+
+startMusic();
 
 client.on('message', msg => {
     const channel = msg.channel;
