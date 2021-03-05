@@ -34,6 +34,7 @@ let database = null;
 let musicCollection = null;
 const uri = "mongodb://192.168.0.104:12702/";
 const clientDB = new MongoClient(uri);
+let step = 0;
 
 clientDB.connect().then( err => {
     database = clientDB.db('TwitchBot');
