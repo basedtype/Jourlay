@@ -2,6 +2,7 @@
 const { client } = require('./Bots/Jourlay');
 const { tools } = require('../Utils/tools');
 const { MongoClient } = require("mongodb");
+const ytdl = require('ytdl-core');
 
 /* PARAMS */
 const version = 'v1.5';
