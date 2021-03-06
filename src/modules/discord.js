@@ -4,10 +4,12 @@ const Discord = require("discord.js");
 const { MongoClient } = require("mongodb");
 const { tools, Errors } = require('../Utils/tools');
 const { Game } = require('./game');
+const moment = require('moment');
 
 let database = null;
 let userCollection = null;
 let discordCollection = null;
+let gameCollection = null;
 let repaired = false;
 
 const uri = "mongodb://192.168.0.104:12702/";
@@ -16,14 +18,51 @@ clientDB.connect().then( err => {
     database = clientDB.db('TwitchBot');
     userCollection = database.collection('users');
     discordCollection = database.collection('discord');
+    gameCollection = database.collection('game');
 });
+let guild = null;
 
 /* PARAMS */
 const CH = {
     'bot': '815257750879600642',
 }; // Channels
+const CL = {
+    'GOLD': 0,
+    'GREEN': 0,
+    'BLUE': 0,
+    'YELLOW': 0,
+    'RED': 0,
+}; // Colors
 
 /* INTERVALS */
+setInterval(function() {
+    if (guild == null) {
+        const guilds = client.guilds.cache.array();
+        for (let i in guilds) {
+            if (guilds[i].id === '437601028662231040') guild = guilds[i];
+        }
+    }
+}, tools.convertTime({seconds: 1}));
+
+setInterval(function() {
+    let check = 0;
+    for (let i in CL) {
+        if (CL[i] !== 0 && CL[i] != null) check++;
+    }
+    if (check === CL.length) return;
+    if (guild == null) {
+        console.log(`Guild is undefined`);
+        return;
+    }
+    const roles = guild.roles.cache.array();
+    for (let i in roles) {
+        if (CL[roles[i].name] === 0) CL[roles[i].name] = roles[i];
+    }
+    for (let i in CL) {
+        if (CL[i] === 0) console.log(`${i} in undefined [ROLE]`);
+    }
+}, tools.convertTime({seconds: 1}));
+
 setInterval(function() {
     if (discordCollection == null) return;
     discordCollection.find({type: 'channel'}).limit(50).toArray((err, channels) => {
@@ -230,6 +269,11 @@ id: ${user.id}
 game (keys): ${Object.keys(user.game)}
 \`\`\``).then(mss => mss.delete({timeout:tools.convertTime({seconds: 30})}));
             })
+        } else if (command === 'user') {
+            const users = guild.members.cache.array();
+            let user = null;
+            for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+            console.log(user);
         }
         msg.delete();
     } else if (channel.name === '🤖│jourlay') {
@@ -281,6 +325,8 @@ game (keys): ${Object.keys(user.game)}
                                         level: 1,
                                         xp: 0,
                                         hp: 100,
+                                        baseLucky: 27,
+                                        lucky: 27,
                                     }
                                 }
                             }
@@ -304,6 +350,8 @@ game (keys): ${Object.keys(user.game)}
                                         level: 1,
                                         xp: 0,
                                         hp: 100,
+                                        baseLucky: 33,
+                                        lucky: 33,
                                     }
                                 }
                             }
@@ -327,6 +375,8 @@ game (keys): ${Object.keys(user.game)}
                                         level: 1,
                                         xp: 0,
                                         hp: 100,
+                                        baseLucky: 27,
+                                        lucky: 27,
                                     }
                                 }
                             }
@@ -368,6 +418,10 @@ game (keys): ${Object.keys(user.game)}
                         { name: 'Кошелек', value: `${user.game.wallet} ЕМД`, inline: true },
                         { name: 'Опыт', value: `${user.game.hero.level} уровень (${user.game.hero.xp}/${user.game.hero.level * 100 + (user.game.hero.level * 15)})`, inline: true },
                         { name: 'Здоровье', value: `${user.game.hero.hp} очков здоровья`, inline: true },
+                    )
+                    .addFields(
+                        { name: 'Базовая удача', value: `${user.game.hero.baseLucky}`, inline: true },
+                        { name: 'Текущая удача', value: `${user.game.hero.lucky}`, inline: true },
                     )
                     .addFields(
                         { name: 'Инвентарь', value: `Закрыто`},
@@ -413,10 +467,201 @@ game (keys): ${Object.keys(user.game)}
                     channel.send(`<@${msg.author.id}>`, {embed: embed});
                     return;
                 } else {
-                    Game.toRaid(username, msg, channel, userCollection, true);
+                    if (user.game.hero.lucky == null) {
+                        let upd = {
+                            game: user.game,
+                        }
+                        if (upd.game.fraction === 'V' || upd.game.fraction === 'J') {
+                            upd.game.hero.baseLucky = 27;
+                            upd.game.hero.lucky = 27;
+                        } else {
+                            upd.game.hero.baseLucky = 33;
+                            upd.game.hero.lucky = 33;
+                        }
+                        userCollection.findOneAndUpdate({username: username}, {$set: upd}).then(res => {
+                            Game.toRaid(username, msg, channel, userCollection, true);
+                        })
+                    } else Game.toRaid(username, msg, channel, userCollection, true);
                     return;
                 }
             });
+        } else if (command === 'market') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`Market`)
+            .addFields(
+                { name: 'Potions', value: `!market_potions`, inline: true},
+                { name: 'Weapons', value: `!market_weapons`, inline: true},
+                { name: 'Misc', value: `!market_misc`, inline: true}
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+            return;
+        } else if (command === 'market_potions') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`Potions`)
+            .setColor(0xffff00)
+            .addFields(
+                { name: 'Potion of Lucky', value: `Price: 13 SWC (!buy p_lucky) | +5% to lucky`, inline: true},
+                { name: 'Potion of Swiftness', value: `Price: 12 SWC (!buy p_speed) | -3% to raid time`, inline: true},
+                { name: 'Potion of Vision', value: `Price: 15 SWC (!buy p_vision) | +4% to rewards from raid`, inline: true},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+            return;
+        } else if (command === 'market_weapons') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`Closed`)
+            .setColor(0xff0000)
+            .addDescription('Closed')
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+            return;
+        } else if (command === 'market_misc') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle(`Misc`)
+            .setColor(0xffff00)
+            .addFields(
+                { name: 'Name color', value: `**GOLD** | !buy gold_color | Price: 20 SWC | Time: 14 days\n**GREEN** | !buy green_color | Price: 10 SWC | Time: 14 days\n**BLUE** | !buy blue_color | Price: 10 SWC | Time: 14 days\n**YELLOW** | !buy yellow_color | Price: 10 SWC | Time: 14 days\n**RED** | !buy red_color | Price: 10 SWC | Time: 14 days`, inline: true},
+            )
+            channel.send(`<@${msg.author.id}>`, {embed: embed});
+            return;
+        } else if (command === 'buy') {
+            const thing = messageSplit[1];
+
+            if (thing === 'gold_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 20) {
+                            user.roles.add(CL['GOLD']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 20;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'green_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 10) {
+                            user.roles.add(CL['GREEN']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 10;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'yellow_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 10) {
+                            user.roles.add(CL['YELLOW']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 10;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'blue_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 10) {
+                            user.roles.add(CL['BLUE']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 10;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'red_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 10) {
+                            user.roles.add(CL['RED']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 10;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            }
+            else msg.delete();
         }
         else msg.delete();
     } else if (channel.name === '🔫│loadouts') {
