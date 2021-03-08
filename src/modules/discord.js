@@ -87,9 +87,11 @@ setInterval(function() {
 }, tools.convertTime({seconds: 1}))
 
 client.on('guildMemberAdd', member => {
-    const channel = member.guild.channels.find(ch => ch.name === 'welcome');
-    if (!channel) return;
-    channel.send(`**Welcome on JOURLOY server, ${username}!**
+    let channel = null
+    const channels = member.guild.channels.cache.array();
+    for (let i in channels) if (channels[i].id === '811606058741006386') channel = channels[i];
+    if (channel == null) return;
+    channel.send(`**Welcome on JOURLOY server, <@${member.user.id}>!**
 My name is JOURLOY, it's my server, where you can find teammates, get help with game, get notification about stream and just talking about what you want
 
 **RULES**
@@ -278,17 +280,33 @@ game (keys): ${Object.keys(user.game)}
             let user = null;
             for (let i in users) if (users[i].id === msg.author.id) user = users[i];
             console.log(user);
+        } else if (command === 'embed_for_scorp') {
+            const embed = new Discord.MessageEmbed()
+            .setTitle('Название фильма')
+            .addFields(
+                { name: 'Предложил', value: 'Ник', inline: true},
+                { name: 'Дата', value:'12.12.2023', inline: true},
+            )
+            .setURL('https://blank.html')
+            .setFooter('клик по названию для перехода на yandex диск');
+            channel.send(embed).then(mss => mss.delete({timeout: 10000}))
         }
         msg.delete();
+
     } else if (channel.name === '🤖│jourlay') {
+
         if (command === 'russia') {
             channel.send(`Пока что эти запросы обрабатываются в ручную, так что прошу подождать и не изменять никнейм, пока роль не будет выдана`).then(mss => mss.delete({timeout: tools.convertTime({seconds: 20})}));
             if (CH['moderator-only'] != null) CH['moderator-only'].send(`@JOURLOY, [${username}] wants in Russian category`);
         }
         msg.delete();
+
     } else if (channel.name === '🖌│творчество') {
+
         if (msg.attachments.size === 0) msg.delete();
+
     } else if (channel.name === '🛡│рейды') {
+
         if (command === 'фракция') {
             if (messageSplit[1] == null || (messageSplit[1] !== 'V' && messageSplit[1] !== 'J' && messageSplit[1] !== 'C' && (messageSplit[1] !== 'K' && username !== 'jourloy'))) {
                 const embed = new Discord.MessageEmbed()
@@ -489,17 +507,17 @@ game (keys): ${Object.keys(user.game)}
                     return;
                 }
             });
-        } else if (command === 'market') {
+        } else if (command === 'магазин') {
             const embed = new Discord.MessageEmbed()
             .setTitle(`Market`)
             .addFields(
-                { name: 'Potions', value: `!market_potions`, inline: true},
-                { name: 'Weapons', value: `!market_weapons`, inline: true},
-                { name: 'Misc', value: `!market_misc`, inline: true}
+                { name: 'Potions', value: `!магазин_зелья`, inline: true},
+                { name: 'Weapons', value: `!магазин_оружие`, inline: true},
+                { name: 'Misc', value: `!магазин_разное`, inline: true}
             )
             channel.send(`<@${msg.author.id}>`, {embed: embed});
             return;
-        } else if (command === 'market_potions') {
+        } else if (command === 'магазин_зелья') {
             const embed = new Discord.MessageEmbed()
             .setTitle(`Potions`)
             .setColor(0xffff00)
@@ -510,14 +528,14 @@ game (keys): ${Object.keys(user.game)}
             )
             channel.send(`<@${msg.author.id}>`, {embed: embed});
             return;
-        } else if (command === 'market_weapons') {
+        } else if (command === 'магазин_оружие') {
             const embed = new Discord.MessageEmbed()
             .setTitle(`Closed`)
             .setColor(0xff0000)
             .addDescription('Closed')
             channel.send(`<@${msg.author.id}>`, {embed: embed});
             return;
-        } else if (command === 'market_misc') {
+        } else if (command === 'магазин_разное') {
             const embed = new Discord.MessageEmbed()
             .setTitle(`Misc`)
             .setColor(0xffff00)
@@ -774,6 +792,38 @@ game (keys): ${Object.keys(user.game)}
                 }
             }
             else msg.delete();
+        } else if (command === 'статус') {
+            userCollection.findOne({username:username}).then(user => {
+                if (user.game.inRaid === true) {
+                    const now = Math.floor(moment.now() / 1000);
+                    const timeRaid = user.game.raid.time;
+                    const created = user.game.raid.created;
+
+                    const time = (timeRaid + created) - now;
+
+                    let hours = Math.floor(time/60/60);
+                    let minutes = Math.floor(time/60)-(hours*60);
+                    let seconds = time%60;
+
+                    const formatted = [
+                        hours.toString().padStart(2, '0'),
+                        minutes.toString().padStart(2, '0'),
+                        seconds.toString().padStart(2, '0')
+                    ].join(':');
+
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`В рейде`)
+                    .setDescription(`Твой персонаж находится в рейде. Осталось ${formatted}`)
+                    .setColor(0x00ff00)
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                } else {
+                    const embed = new Discord.MessageEmbed()
+                    .setTitle(`Готов`)
+                    .setDescription(`Твой персонаж готов отправиться в рейд (**!рейд**)`)
+                    .setColor(0x00ff00)
+                    channel.send(`<@${msg.author.id}>`, {embed: embed});
+                }
+            })
         }
         else msg.delete();
     } else if (channel.name === '🔫│loadouts') {
