@@ -5,7 +5,7 @@ const { MongoClient } = require("mongodb");
 const ytdl = require('ytdl-core');
 
 /* PARAMS */
-const version = 'v1.5';
+const version = 'v1.6';
 const voiceLogo = `╔════════════════════════════════════════════════════════════════════╗
 ║                ██╗░░░██╗░█████╗░██╗░█████╗░███████╗                ║
 ║                ██║░░░██║██╔══██╗██║██╔══██╗██╔════╝                ║
@@ -228,7 +228,7 @@ function disp(connection) {
 
 function startMusic() {
     try {
-        getChannel('816835066251575337', client).then(channel => {
+        getChannel('818504281480626186', client).then(channel => {
             channel.join().then(connection => {
                 disp(connection);
                 client.on('message', msg => {
