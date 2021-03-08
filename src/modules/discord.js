@@ -32,6 +32,10 @@ const CL = {
     'BLUE': 0,
     'YELLOW': 0,
     'RED': 0,
+    'WHITE': 0,
+    'PINK': 0,
+    'ORANGE': 0,
+    'SKY': 0,
 }; // Colors
 
 /* INTERVALS */
@@ -518,7 +522,7 @@ game (keys): ${Object.keys(user.game)}
             .setTitle(`Misc`)
             .setColor(0xffff00)
             .addFields(
-                { name: 'Name color', value: `**GOLD** | !buy gold_color | Price: 20 SWC | Time: 14 days\n**GREEN** | !buy green_color | Price: 10 SWC | Time: 14 days\n**BLUE** | !buy blue_color | Price: 10 SWC | Time: 14 days\n**YELLOW** | !buy yellow_color | Price: 10 SWC | Time: 14 days\n**RED** | !buy red_color | Price: 10 SWC | Time: 14 days`, inline: true},
+                { name: 'Name color', value: `**GOLD** | !buy gold_color | Price: 100 SWC | Time: 14 days\n**GREEN** | !buy green_color | Price: 75 SWC | Time: 14 days\n**BLUE** | !buy blue_color | Price: 50 SWC | Time: 14 days\n**YELLOW** | !buy yellow_color | Price: 75 SWC | Time: 14 days\n**RED** | !buy red_color | Price: 75 SWC | Time: 14 days\n**WHITE** | !buy white_color | Price: 40 SWC | Time: 14 days\n**ORANGE** | !buy orange_color | Price: 50 SWC | Time: 14 days\n**SKY** | !buy sky_color | Price: 50 SWC | Time: 14 days\n**PINK** | !buy pink_color | Price: 75 SWC | Time: 14 days`, inline: true},
             )
             channel.send(`<@${msg.author.id}>`, {embed: embed});
             return;
@@ -531,13 +535,13 @@ game (keys): ${Object.keys(user.game)}
                 for (let i in users) if (users[i].id === msg.author.id) user = users[i];
                 if (user != null) {
                     userCollection.findOne({username: username}).then(usr => {
-                        if (usr.game.wallet >= 20) {
+                        if (usr.game.wallet >= 100) {
                             user.roles.add(CL['GOLD']);
                             let upd = {
                                 colorTime: Math.floor(moment.now() / 1000),
                                 game: usr.game,
                             }
-                            upd.game.wallet -= 20;
+                            upd.game.wallet -= 100;
                             userCollection.findOneAndUpdate({username: username}, {$set: upd});
                             const embed = new Discord.MessageEmbed()
                             .setTitle(`Successful`)
@@ -558,13 +562,13 @@ game (keys): ${Object.keys(user.game)}
                 for (let i in users) if (users[i].id === msg.author.id) user = users[i];
                 if (user != null) {
                     userCollection.findOne({username: username}).then(usr => {
-                        if (usr.game.wallet >= 10) {
+                        if (usr.game.wallet >= 75) {
                             user.roles.add(CL['GREEN']);
                             let upd = {
                                 colorTime: Math.floor(moment.now() / 1000),
                                 game: usr.game,
                             }
-                            upd.game.wallet -= 10;
+                            upd.game.wallet -= 75;
                             userCollection.findOneAndUpdate({username: username}, {$set: upd});
                             const embed = new Discord.MessageEmbed()
                             .setTitle(`Successful`)
@@ -585,13 +589,13 @@ game (keys): ${Object.keys(user.game)}
                 for (let i in users) if (users[i].id === msg.author.id) user = users[i];
                 if (user != null) {
                     userCollection.findOne({username: username}).then(usr => {
-                        if (usr.game.wallet >= 10) {
+                        if (usr.game.wallet >= 75) {
                             user.roles.add(CL['YELLOW']);
                             let upd = {
                                 colorTime: Math.floor(moment.now() / 1000),
                                 game: usr.game,
                             }
-                            upd.game.wallet -= 10;
+                            upd.game.wallet -= 75;
                             userCollection.findOneAndUpdate({username: username}, {$set: upd});
                             const embed = new Discord.MessageEmbed()
                             .setTitle(`Successful`)
@@ -612,13 +616,13 @@ game (keys): ${Object.keys(user.game)}
                 for (let i in users) if (users[i].id === msg.author.id) user = users[i];
                 if (user != null) {
                     userCollection.findOne({username: username}).then(usr => {
-                        if (usr.game.wallet >= 10) {
+                        if (usr.game.wallet >= 50) {
                             user.roles.add(CL['BLUE']);
                             let upd = {
                                 colorTime: Math.floor(moment.now() / 1000),
                                 game: usr.game,
                             }
-                            upd.game.wallet -= 10;
+                            upd.game.wallet -= 50;
                             userCollection.findOneAndUpdate({username: username}, {$set: upd});
                             const embed = new Discord.MessageEmbed()
                             .setTitle(`Successful`)
@@ -639,13 +643,121 @@ game (keys): ${Object.keys(user.game)}
                 for (let i in users) if (users[i].id === msg.author.id) user = users[i];
                 if (user != null) {
                     userCollection.findOne({username: username}).then(usr => {
-                        if (usr.game.wallet >= 10) {
+                        if (usr.game.wallet >= 75) {
                             user.roles.add(CL['RED']);
                             let upd = {
                                 colorTime: Math.floor(moment.now() / 1000),
                                 game: usr.game,
                             }
-                            upd.game.wallet -= 10;
+                            upd.game.wallet -= 75;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'white_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 40) {
+                            user.roles.add(CL['WHITE']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 40;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'pink_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 75) {
+                            user.roles.add(CL['PINK']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 75;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'orange_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 50) {
+                            user.roles.add(CL['ORANGE']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 50;
+                            userCollection.findOneAndUpdate({username: username}, {$set: upd});
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Successful`)
+                            .setColor(0x00ff00)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        } else {
+                            const embed = new Discord.MessageEmbed()
+                            .setTitle(`Error`)
+                            .setDescription(`You don't have enough money for this operation`)
+                            .setColor(0xff0000)
+                            channel.send(`<@${msg.author.id}>`, {embed: embed});
+                        }
+                    })
+                }
+            } else if (thing === 'sky_color') {
+                const users = guild.members.cache.array();
+                let user = null;
+                for (let i in users) if (users[i].id === msg.author.id) user = users[i];
+                if (user != null) {
+                    userCollection.findOne({username: username}).then(usr => {
+                        if (usr.game.wallet >= 50) {
+                            user.roles.add(CL['SKY']);
+                            let upd = {
+                                colorTime: Math.floor(moment.now() / 1000),
+                                game: usr.game,
+                            }
+                            upd.game.wallet -= 50;
                             userCollection.findOneAndUpdate({username: username}, {$set: upd});
                             const embed = new Discord.MessageEmbed()
                             .setTitle(`Successful`)
