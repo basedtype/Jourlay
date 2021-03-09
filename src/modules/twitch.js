@@ -3,7 +3,7 @@ const { client } = require('./Bots/Jourloy_bot');
 const { admin } = require('./Bots/Jourloy');
 
 const { Game } = require('./game'); 
-const { tools, errors } = require('../Utils/Tools');
+const { tools, errors } = require('../Utils/tools');
 const { discord } = require('./discord');
 const moment = require('moment');
 const { MongoClient } = require("mongodb");
