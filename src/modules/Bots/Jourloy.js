@@ -2,11 +2,18 @@
 const tmi = require('tmi.js');
 const config = require('./config');
 
-/* TWITCH SETTINGS */
+/* PARAMS */
+const version = 'v1.3';
+const logo = `╔════════════════════════════════════════════════════════════════════╗
+║        ████████╗░██╗░░░░░░░██╗██╗████████╗░█████╗░██╗░░██╗         ║
+║        ╚══██╔══╝░██║░░██╗░░██║██║╚══██╔══╝██╔══██╗██║░░██║         ║
+║        ░░░██║░░░░╚██╗████╗██╔╝██║░░░██║░░░██║░░╚═╝███████║         ║
+║        ░░░██║░░░░░████╔═████║░██║░░░██║░░░██║░░██╗██╔══██║         ║
+║        ░░░██║░░░░░╚██╔╝░╚██╔╝░██║░░░██║░░░╚█████╔╝██║░░██║         ║
+║        ░░░╚═╝░░░░░░╚═╝░░░╚═╝░░╚═╝░░░╚═╝░░░░╚════╝░╚═╝░░╚═╝         ║
+╚═══╣${version}╠═══════════════════════════════════════════════════════════╝`;
 const options = {
-    options: {
-        debug: false
-    },
+    options: { debug: false },
     connection: {
         cluster: 'aws',
         reconnect: true
@@ -17,13 +24,15 @@ const options = {
     },
     channels:['#jourloy'],
 };
-
 const client = new tmi.client(options);
-
 client.channel = options.channels[0];
+
+/* FUNCTIONS */
 function onConnectedHandler() {
-    console.log('Twitch => Jourloy => Ready');
+    console.log(logo);
 }
+
+/* CODE */
 client.on('connected', onConnectedHandler);
 client.connect();
 
