@@ -5,7 +5,7 @@ const moment = require('moment');
 
 /* PARAMS */
 let logChannel = null;
-const version = 'v1.0'
+const version = 'v1.2'
 const logo = `╔════════════════════════════════════════════════════════════════════╗
 ║                  ██╗░░░░░░█████╗░░██████╗░░██████╗                 ║
 ║                  ██║░░░░░██╔══██╗██╔════╝░██╔════╝                 ║
@@ -108,8 +108,7 @@ client.on('guildMemberRemove', (guild, user) => {
 client.on('guildMemberUpdate', (memberOld, member) => {
     if (memberOld.user.username === member.user.username) return
     const embed = new Discord.MessageEmbed()
-    .setAuthor(`${member.user.username} update message`, member.user.avatarURL(), null)
-    .setTitle(`Member change username`)
+    .setAuthor(`${member.user.username} update username`, member.user.avatarURL(), null)
     .setTimestamp()
     .addFields(
         { name: 'Before', value: memberOld.user.username, inline: false},
@@ -144,6 +143,21 @@ client.on('messageUpdate', (messageOld, message) => {
         { name: 'After', value: message.content, inline: false}
     )
     .addField('Channel:', `<#${message.channel.id}>`)
+    .setColor(0xffff00)
+    .setFooter(`id: ${message.id}`, null)
+    .setURL(message.url)
+    logChannel.send(embed);
+})
+
+client.on('presenceUpdate', (presenceOld, presence) => {
+    if (presenceOld.status === presence.status) return;
+    const embed = new Discord.MessageEmbed()
+    .setAuthor(`${message.author.username} update status`, message.author.avatarURL(), null)
+    .setTimestamp()
+    .addFields(
+        { name: 'Before', value: presenceOld.status, inline: false},
+        { name: 'After', value: presence.status, inline: false}
+    )
     .setColor(0xffff00)
     .setFooter(`id: ${message.id}`, null)
     .setURL(message.url)
