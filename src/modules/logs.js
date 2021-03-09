@@ -58,7 +58,7 @@ client.on('channelDelete', channel => {
 
 client.on('channelPinsUpdate', channel => {
     const embed = new Discord.MessageEmbed()
-    .setTitle(`Channel pins update (<#${channel.id}>`)
+    .setTitle(`Channel pins update`)
     .setTimestamp()
     .addFields(
         { name: 'Channel name', value: `<#${channel.id}>`, inline: true},
@@ -105,6 +105,21 @@ client.on('guildMemberRemove', (guild, user) => {
     logChannel.send(embed);
 })
 
+client.on('guildMemberUpdate', (memberOld, member) => {
+    if (memberOld.user.username === member.user.username) return
+    const embed = new Discord.MessageEmbed()
+    .setAuthor(`${member.user.username} update message`, member.user.avatarURL(), null)
+    .setTitle(`Member change username`)
+    .setTimestamp()
+    .addFields(
+        { name: 'Before', value: memberOld.user.username, inline: false},
+        { name: 'After', value: member.user.username, inline: false}
+    )
+    .setColor(0xff0000)
+    .setFooter(`id: ${member.user.id}`)
+    logChannel.send(embed);
+})
+
 client.on('messageDelete', message => {
     if (message.channel.name === 'server-logs') return;
     const embed = new Discord.MessageEmbed()
@@ -120,6 +135,7 @@ client.on('messageDelete', message => {
 
 client.on('messageUpdate', (messageOld, message) => {
     if (message.channel.name === 'server-logs') return;
+    if (messageOld.content === message.content) return;
     const embed = new Discord.MessageEmbed()
     .setAuthor(`${message.author.username} update message`, message.author.avatarURL(), null)
     .setTimestamp()
