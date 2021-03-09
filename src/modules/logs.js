@@ -5,7 +5,7 @@ const moment = require('moment');
 
 /* PARAMS */
 let logChannel = null;
-const version = 'v1.2'
+const version = 'v1.3'
 const logo = `╔════════════════════════════════════════════════════════════════════╗
 ║                  ██╗░░░░░░█████╗░░██████╗░░██████╗                 ║
 ║                  ██║░░░░░██╔══██╗██╔════╝░██╔════╝                 ║
@@ -150,7 +150,8 @@ client.on('messageUpdate', (messageOld, message) => {
 })
 
 client.on('presenceUpdate', (presenceOld, presence) => {
-    if (presenceOld.status === presence.status) return;
+    if ((presenceOld.status == null && presence.status == null) || (presenceOld.status === presence.status)) return;
+    if (presence.status == null) return;
     const embed = new Discord.MessageEmbed()
     .setAuthor(`${message.author.username} update status`, message.author.avatarURL(), null)
     .setTimestamp()
