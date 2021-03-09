@@ -931,11 +931,14 @@ game (keys): ${Object.keys(user.game)}
     } else if (channel.name === '📝│общение') { // ========================================= CHANNEL ======================================================================
 
         if (command === 'бот') {
-            const lines = stats.getLines();
+            const statistic = stats.getStats();
             const embed = new Discord.MessageEmbed()
             .setColor(0x00ff00)
             .addFields(
-                { name: 'Строк кода', value: lines, inline: true}
+                { name: 'Количество файлов', value: statistic.files},
+                { name: 'Строк', value: statistic.lines},
+                { name: 'Пустых строк', value: statistic.space, inline: true},
+                { name: 'Строк комментариев', value: statistic.comments, inline: true},
             )
             channel.send(`<@${msg.author.id}>`, {embed: embed});
         }
