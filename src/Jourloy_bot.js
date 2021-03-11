@@ -1,5 +1,5 @@
 /* IMPORTS */
-const { client } = require('./modules/Bots/Jourloy_bot');
+const { client } = require('./modules/Bots/twitch');
 const { tools } = require('./Utils/tools');
 const { defence } = require('./Utils/defence');
 const moment = require('moment');
