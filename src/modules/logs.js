@@ -153,7 +153,7 @@ client.on('presenceUpdate', (presenceOld, presence) => {
     if ((presenceOld.status == null && presence.status == null) || (presenceOld.status === presence.status)) return;
     if (presence.status == null) return;
     const embed = new Discord.MessageEmbed()
-    .setAuthor(`${presence.user.username} update status`, presence.user.avatarURL(), null)
+    .setAuthor(`${message.author.username} update status`, message.author.avatarURL(), null)
     .setTimestamp()
     .addFields(
         { name: 'Before', value: presenceOld.status, inline: false},
