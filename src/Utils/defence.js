@@ -1,23 +1,11 @@
 /* IMPORTS */
-const { tools } = require('../Utils/tools');
+const { tools } = require('./tools');
 
 /* PARAMS */
-const version = 'v1.3';
 const ru_alphabet = 'йцукенгшщзхъфывапролджэёячсмитьбюё';
-const defenceLogo = `╔════════════════════════════════════════════════════════════════════╗
-║      ██████╗░███████╗███████╗███████╗███╗░░██╗░█████╗░███████╗     ║
-║      ██╔══██╗██╔════╝██╔════╝██╔════╝████╗░██║██╔══██╗██╔════╝     ║
-║      ██║░░██║█████╗░░█████╗░░█████╗░░██╔██╗██║██║░░╚═╝█████╗░░     ║
-║      ██║░░██║██╔══╝░░██╔══╝░░██╔══╝░░██║╚████║██║░░██╗██╔══╝░░     ║
-║      ██████╔╝███████╗██║░░░░░███████╗██║░╚███║╚█████╔╝███████╗     ║
-║      ╚═════╝░╚══════╝╚═╝░░░░░╚══════╝╚═╝░░╚══╝░╚════╝░╚══════╝     ║
-╚═══╣${version}╠═══════════════════════════════════════════════════════════╝`
-
-tools.clear();
-console.log(defenceLogo)
 
 /* CLASSES */
-class twitch {
+class defence {
     static checkBanWords(message, username, client) {
         let check = false;
         const bannedWords = ['ниггер', 'нигга', 'пидор', 'черножопый', 'нигретос', 'глиномес', 'пидрила', 'пидорас', 'хиджаб', 'нига', 'хохлы', 'хохол', 'гетвиверс', 'Stream Details',
@@ -72,28 +60,23 @@ class twitch {
         return true;
     }
 
-    static run() {
-        const { client } = require('./Bots/Jourloy');
-        client.on('message', (channel, userstate, message, self) => {
-            if (self) return;
-            const username = userstate['username'];
-            if (username === 'jourloy') return;
-            for (let i in message) {
-                if (ru_alphabet.includes(message[i]) === true) {
-                    client.deletemessage(channel, userstate['id']);
-                    return;
-                }
+    static run(message, userstate, client) {
+        const username = userstate['username'];
+        for (let i in message) {
+            if (ru_alphabet.includes(message[i]) === true) {
+                client.deletemessage(channel, userstate['id']);
+                return false;
             }
-            if (this.checkBanWords(message, username, client) === false) return;
-            if (this.checkDeleteWords(message, username, client) === false) return;
-            if (this.checkLength(message, username, client) === false) return;
-        })
+        }
+        if (this.checkBanWords(message, username, client) === false) return false;
+        if (this.checkDeleteWords(message, username, client) === false) return false;
+        if (this.checkLength(message, username, client) === false) return false;
     }
 }
 
-class discord {
+/* class discord {
     static run() {
-        const { client } = require('./Bots/Jourlay');
+        const { client } = require('../modules/Bots/Jourlay');
         client.on('message', msg => {
             if (msg.author.bot) return;
             const channel = msg.channel;
@@ -112,7 +95,7 @@ class discord {
             }
         });
     }
-}
+} */
 
-twitch.run();
-discord.run();
+/* EXPORTS */
+module.exports.defence = defence;

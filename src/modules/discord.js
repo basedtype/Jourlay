@@ -521,20 +521,16 @@ game (keys): ${Object.keys(user.game)}
             return;
         } else if (command === 'магазин_зелья') {
             const embed = new Discord.MessageEmbed()
-            .setTitle(`Potions`)
-            .setColor(0xffff00)
-            .addFields(
-                { name: 'Potion of Lucky', value: `Price: 13 SWC (!buy p_lucky) | +5% to lucky`, inline: true},
-                { name: 'Potion of Swiftness', value: `Price: 12 SWC (!buy p_speed) | -3% to raid time`, inline: true},
-                { name: 'Potion of Vision', value: `Price: 15 SWC (!buy p_vision) | +4% to rewards from raid`, inline: true},
-            )
+            .setTitle(`Closed`)
+            .setColor(0xff0000)
+            .setDescription('Closed')
             channel.send(`<@${msg.author.id}>`, {embed: embed});
             return;
         } else if (command === 'магазин_оружие') {
             const embed = new Discord.MessageEmbed()
             .setTitle(`Closed`)
             .setColor(0xff0000)
-            .addDescription('Closed')
+            .setDescription('Closed')
             channel.send(`<@${msg.author.id}>`, {embed: embed});
             return;
         } else if (command === 'магазин_разное') {
