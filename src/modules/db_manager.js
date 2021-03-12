@@ -5,6 +5,8 @@ const { MongoClient } = require("mongodb");
 let database = null;
 let userCollection = null;
 let channelCollection = null;
+const uri = "mongodb://192.168.0.104:12702/";
+const clientDB = new MongoClient(uri);
 
 /* CODE */
 clientDB.connect().then( err => {
@@ -71,6 +73,62 @@ class db_manager {
                 if (data.ignoreUsers[i] !== username) newArray.push(data.ignoreUsers[i]);
             }
             data.ignoreUsers = newArray;
+            channelCollection.findOneAndUpdate({channel: channel}, {$set: data});
+        });
+    }
+
+    /**
+     * Add word to delete list
+     * @param {string} channel
+     */
+     static addDeleteWord(channel, del) {
+        channelCollection.findOne({channel: channel}).then( data => {
+            if (data.deleteWords == null) data.deleteWords = [];
+            data.deleteWords.push(del);
+            channelCollection.findOneAndUpdate({channel: channel}, {$set: data});
+        });
+    }
+
+    /**
+     * Remove word from delete list
+     * @param {string} channel
+     */
+     static removeDeleteWord(channel, del) {
+        channelCollection.findOne({channel: channel}).then( data => {
+            if (data.deleteWords == null) data.deleteWords = [];
+            const newArray = [];
+            for (let i in data.deleteWords) {
+                if (data.deleteWords[i] !== del) newArray.push(data.deleteWords[i]);
+            }
+            data.deleteWords = newArray;
+            channelCollection.findOneAndUpdate({channel: channel}, {$set: data});
+        });
+    }
+
+    /**
+     * Add word to timeout list
+     * @param {string} channel
+     */
+     static addTimeoutWord(channel, timeout) {
+        channelCollection.findOne({channel: channel}).then( data => {
+            if (data.timeoutWords == null) data.timeoutWords = [];
+            data.timeoutWords.push(timeout);
+            channelCollection.findOneAndUpdate({channel: channel}, {$set: data});
+        });
+    }
+
+    /**
+     * Remove word from timeout list
+     * @param {string} channel
+     */
+     static removeTimeoutWord(channel, timeout) {
+        channelCollection.findOne({channel: channel}).then( data => {
+            if (data.timeoutWords == null) data.timeoutWords = [];
+            const newArray = [];
+            for (let i in data.timeoutWords) {
+                if (data.timeoutWords[i] !== timeout) newArray.push(data.timeoutWords[i]);
+            }
+            data.timeoutWords = newArray;
             channelCollection.findOneAndUpdate({channel: channel}, {$set: data});
         });
     }
