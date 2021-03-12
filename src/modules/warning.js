@@ -40,7 +40,7 @@ class warning {
         if (settings == null) settings = this.settings;
 
         const warning = new this(sender, settings, reason);
-        db_manager.addWarning()
+        db_manager.addWarning(username, warning);
     }
 }
 
