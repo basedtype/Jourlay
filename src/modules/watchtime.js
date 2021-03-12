@@ -1,5 +1,7 @@
 /* IMPORTS */
 const request = require('request');
+const { db_manager } = require('./db_manager');
+const { uptime } = require('./uptime');
 
 class watchtime {
     static run() {
@@ -9,8 +11,8 @@ class watchtime {
                 const chatters = chatInfo.chatters;
                 for (let i in chatters) {
                     for (let j in chatters[i]) {
-                        const user = chatters[i][j];
-                        
+                        const username = chatters[i][j];
+                        if (uptime.get() != null) db_manager.addWatchtime(username);
                     }
                 }
             })
