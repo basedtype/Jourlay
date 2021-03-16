@@ -4,7 +4,7 @@ const config = require('./config')
 
 /* PARAMS */
 const client = new Discord.Client();
-client.login(config.jourlay);
+client.login(config.discord);
 
 /* EXPORTS */
 module.exports.client = client;
