@@ -25,32 +25,6 @@ clientDB.connect().then( err => {
 })
 
 /* INTERVALS */
-setInterval(function () {
-    client.api({
-        url: `https://api.twitch.tv/kraken/streams/158466757`,
-        method: "GET",
-        headers: {
-            'Accept': 'application/vnd.twitchtv.v5+json',
-            "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1",
-            'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly'
-        }
-    }, (err, res, body) => {
-        if (body == null || body.stream == null) uptime = null;
-        else if (body != null && body.stream != null) {
-            viewers = body.stream.viewers;
-            if (viewers > maxViewers) maxViewers = viewers;
-            game = body.stream.game;
-            if (gameHistory.includes(game) === false) gameHistory.push(game);
-
-            let now = new Date();
-            let then = body.stream.created_at;
-            let ms = moment(now).diff(moment(then));
-            let d = moment.duration(ms);
-            uptime = Math.floor(d.asHours()) + moment.utc(ms).format(":mm:ss");
-        }
-    })
-}, tools.convertTime({seconds: 1}));
-
 client.on("timeout", (channel, username, reason, duration) => {
     if (duration > 600) client.say(channel, `OMEGALUL => @${username}`);
 });
@@ -78,6 +52,10 @@ client.on('redeem', (channel, username, rewardType, tags) => {
     }
 });
 
+client.on("subscription", (channel, username, method, message, userstate) => {
+    console.log(method);
+});
+
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
     if (defence.run(message, userstate, client) === false) return;
@@ -88,12 +66,23 @@ client.on('message', (channel, userstate, message, self) => {
     const msSplit = messageSplit[0].split('!');
     const command = msSplit[1];
 
-    if (username === 'jourloy') {
+    //
+
+
+    if (username === 'jourloy' || username === 'kartinka_katerinka') {
         if (command === 'ping') {
 
             client.action(channel, `pong`);
             return;
 
+        } else if (command === 'sub') {
+            console.log(userstate)
+            const { req } = require('./modules/req');
+            req.getUserID('jourloy').then(id => {
+                req.get(`https://api.twitch.tv/kraken/users/${id}/subscriptions/${userstate['user-id']}`).then(res => {
+                    console.log(res)
+                });
+            })
         }
     }
 
