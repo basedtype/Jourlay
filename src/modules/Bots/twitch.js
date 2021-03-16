@@ -13,7 +13,7 @@ const options = {
     },
     identity: {
         username: 'jourlay',
-        password: config.jourloy_bot,
+        password: config.twitch,
     },
     channels:['#jourloy'],
 };
@@ -23,7 +23,6 @@ const client = new tmi.client(options);
 client.channel = options.channels[0];
 function onConnectedHandler() {
     client.color("OrangeRed");
-    console.log('Twitch => Jourloy_bot => Ready');
 }
 client.on('connected', onConnectedHandler);
 client.connect();
