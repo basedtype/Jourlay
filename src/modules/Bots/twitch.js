@@ -1,31 +1,39 @@
 /* IMPORTS */
 const tmi = require('tmi.js');
-const config = require('./config');
+const { MongoClient } = require("mongodb");
 
-/* TWITCH SETTINGS */
+/* PARAMETERS */
 const options = {
-    options: {
-        debug: false
-    },
+    options: { debug: false },
     connection: {
         cluster: 'aws',
         reconnect: true
     },
     identity: {
         username: 'jourlay',
-        password: config.twitch,
+        password: null,
     },
     channels:['#jourloy'],
 };
-
+const uri = "mongodb://192.168.0.104:12702/";
+const clientDB = new MongoClient(uri);
 const client = new tmi.client(options);
 
-client.channel = options.channels[0];
-function onConnectedHandler() {
-    client.color("OrangeRed");
-}
+/* FUNCTIONS */
+function onConnectedHandler() { client.color("OrangeRed") }
+
+/* CODE */
+clientDB.connect().then(err => {
+    const database = clientDB.db('config');
+    const config = database.collection('config');
+    config.findOne({name: 'DragonBot', type: 'Twitch'}).then(conf => {
+        options.identity.password = conf.oauth;
+        client.connect();
+    });
+})
+
+/* REACTIONS */
 client.on('connected', onConnectedHandler);
-client.connect();
 
 /* EXPORTS */
 module.exports.client = client;
