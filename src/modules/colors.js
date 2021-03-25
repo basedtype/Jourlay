@@ -10,9 +10,9 @@ class colors {
     /**
      * 
      * @param {string} text 
-     * @param {string} FgColor `FgBlack` | `FgRed` | `FgGreen` | `FgYellow` | `FgBlue` | `FgMagenta` | `FgCyan` | `FgWhite` | ''
-     * @param {string} BgColor `BgBlack` | `BgRed` | `BgGreen` | `BgYellow` | `BgBlue` | `BgMagenta` | `BgCyan` | `BgWhite` | ''
-     * @param {string} option `Bright` | `Dim` | `Underscore` | `Blink` | `Reverse` | `Hidden` | ''
+     * @param {string?} FgColor `FgBlack` | `FgRed` | `FgGreen` | `FgYellow` | `FgBlue` | `FgMagenta` | `FgCyan` | `FgWhite` | ''
+     * @param {string?} BgColor `BgBlack` | `BgRed` | `BgGreen` | `BgYellow` | `BgBlue` | `BgMagenta` | `BgCyan` | `BgWhite` | ''
+     * @param {string?} option `Bright` | `Dim` | `Underscore` | `Blink` | `Reverse` | `Hidden` | ''
      */
     static get(text, FgColor, BgColor, option) {
         if (FgColor == null) FgColor = '';
@@ -55,6 +55,41 @@ class colors {
         }
 
         return FgColors[FgColor] + BgColors[BgColor] + optColors[option] + text + optColors.Reset;
+    }
+
+    /**
+     * 
+     * @param {string} text Text in box
+     * @param {string?} FgColor Border color => `FgBlack` | `FgRed` | `FgGreen` | `FgYellow` | `FgBlue` | `FgMagenta` | `FgCyan` | `FgWhite` | ''
+     * @param {string?} BgColor Border color => `BgBlack` | `BgRed` | `BgGreen` | `BgYellow` | `BgBlue` | `BgMagenta` | `BgCyan` | `BgWhite` | ''
+     * @param {string?} option Border color => `Bright` | `Dim` | `Underscore` | `Blink` | `Reverse` | `Hidden` | ''
+     * @returns {string}
+     */
+    static box(text, FgColor, BgColor, option) {
+        if (FgColor == null) FgColor = '';
+        if (BgColor == null) BgColor = '';
+        if (option == null) option = '';
+        const split = text.split('\n');
+        let result = this.get('╔', FgColor, BgColor, option);
+        let maxLength = 0;
+        for (let i in split) if (split[i].length > maxLength) maxLength = split[i].length;
+        maxLength += 4;
+        for (let i = 0; i < maxLength; i++) result += this.get('═', FgColor, BgColor, option);
+        result += '╗\n';
+        for (let i in split) {
+            result += this.get('║', FgColor, BgColor, option) + '  ';
+            if (split[i].length < maxLength - 6) {
+                const left = Math.ceil((maxLength - 6) / 4);
+                result += ' '.repeat(left);
+                result += split[i];
+                result += ' '.repeat(maxLength - 6 - left);
+            } else result += split[i];
+            result += '  ' + this.get('║', FgColor, BgColor, option) + '\n';
+        }
+        result += this.get('╚', FgColor, BgColor, option);
+        for (let i = 0; i < maxLength; i++) result += this.get('═', FgColor, BgColor, option);
+        result += this.get('╝', FgColor, BgColor, option);
+        return result;
     }
 }
 
