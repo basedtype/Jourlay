@@ -1,30 +1,20 @@
 {
-  "name": "twitchbot",
-  "version": "2.5.0",
+  "name": "dragonbot",
+  "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "run": "node src/index.js"
-  },
+  "main": "src/main.js",
+  "scripts": {},
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Jourloy",
+  "license": "",
   "dependencies": {
     "@discordjs/opus": "^0.4.0",
-    "crypto": "^1.0.1",
     "discord.js": "^12.5.1",
     "ffmpeg-static": "^4.2.7",
     "moment": "^2.27.0",
     "mongodb": "^3.6.4",
     "node-fetch": "^2.6.1",
-    "node-irc": "0.0.5",
-    "node-json-db": "^1.1.0",
-    "node-telegram-bot-api": "^0.50.0",
-    "node-webhooks": "^1.4.2",
-    "request": "^2.88.2",
     "tmi.js": "file:tmi.js",
-    "ws": "^7.4.4",
     "ytdl-core": "^4.5.0"
   },
   "devDependencies": {}
