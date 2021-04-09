@@ -3,9 +3,13 @@
  */
 
 /* IMPORTS */
+require('./modules/NAMVSEYASNO/start');
+require('./modules/miner')
+require('./modules/server')
 const { colors } = require('./modules/colors');
 
 /* PARAMETERS */
+global.pool = [];
 
 /* CODE */
 
