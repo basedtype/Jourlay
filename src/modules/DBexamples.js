@@ -1,64 +1,69 @@
 /* EXAMPLES */
 
-const _twitchUser = {
-    username: '',
-    id: '',
-    watchtime: '',
-    defence: {
-        warnings: [],
-        timers: {
-            uptime: 0,
-            information: 0,
-        }
-    },
-    discordID: '',
-}
-
 const _twitchChannel = {
-    username: '',
-    id: '',
-    defence: {
-        timers: {},
-        deleteWords: [],
-        timeoutWords: [],
-        banWords: [],
-    }
-}
 
-const _discordUser = {
-    username: '',
-    id: '',
-    game: {
-        raid: {},
-        hero: {},
-        village: {},
-        fraction: {},
-    },
-    defence: {
-        warnings: [],
-        timers: {
-            voiceChannels: 0,
-        },
-    },
-    twitchID: '',
 }
 
 const _globalUser = {
+    channel: '',
+    twitchID: '',
+    discordID: '',
+    twitch: {
+        watchtime: 0,
+        defence: {
+            timers: {},
+            deleteWords: [],
+            timeoutWords: [],
+            banWords: [],
+        }
+    },
+    discord: {
+        game: {
+            raid: {},
+            hero: {},
+            village: {},
+            fraction: {},
+        },
+        defence: {
+            timers: {
+                voiceChannels: 0,
+            },
+        },
+    },
     defence: {
         warnings: [],
-    },
-    discordID: '',
-    twitchID: '',
+    }
+}
+
+const _configChannel = {
+    
+}
+
+const _configBot = {
+    username: '',
+    type: '',
+    oauth: '',
+}
+
+const _poolBlock = {
+    type: '', // Twitch, Discord and etc
+    owner: '',
+    do: '', // What did bot 
 }
 
 /* EXPORTS */
 exports.twitch = {
-    user: _twitchUser,
     channel: _twitchChannel,
 }
 exports.discord = {
-    user: _discordUser,
+}
+exports.config = {
+    channel: _configChannel,
+    bot: _configBot,
 }
 exports.global = {
     user: _globalUser,
+}
+exports.pool = {
+    block: _poolBlock,
 }
