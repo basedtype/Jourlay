@@ -58,7 +58,7 @@ class colors {
     }
 
     /**
-     * 
+     * Put text into symbol box
      * @param {string} text Text in box
      * @param {string?} FgColor Border color => `FgBlack` | `FgRed` | `FgGreen` | `FgYellow` | `FgBlue` | `FgMagenta` | `FgCyan` | `FgWhite` | ''
      * @param {string?} BgColor Border color => `BgBlack` | `BgRed` | `BgGreen` | `BgYellow` | `BgBlue` | `BgMagenta` | `BgCyan` | `BgWhite` | ''
@@ -75,7 +75,7 @@ class colors {
         for (let i in split) if (split[i].length > maxLength) maxLength = split[i].length;
         maxLength += 4;
         for (let i = 0; i < maxLength; i++) result += this.get('═', FgColor, BgColor, option);
-        result += '╗\n';
+        result += this.get('╗', FgColor, BgColor, option) + '\n';
         for (let i in split) {
             result += this.get('║', FgColor, BgColor, option) + '  ';
             if (split[i].length < maxLength - 6) {
