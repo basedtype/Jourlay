@@ -11,7 +11,7 @@ let channel = null;
 
 /* CODE */
 clientDB.connect().then(err => {
-    database = clientDB.db('Wolfbot');
+    database = clientDB.db('Nidhoggbot');
     poolCollection = database.collection('pool');
 })
 
