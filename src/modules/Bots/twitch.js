@@ -22,9 +22,9 @@ class twitch {
         const uri = "mongodb://192.168.0.100:12702/";
         const clientDB = new MongoClient(uri, { useUnifiedTopology: true });
         return clientDB.connect().then(err => {
-            const database = clientDB.db('Wolfbot');
+            const database = clientDB.db('Nidhoggbot');
             const config = database.collection('config');
-            config.findOne({name: 'Wolfbot', type: 'Twitch'}).then(conf => {
+            config.findOne({name: 'Nidhoggbot', type: 'Twitch'}).then(conf => {
                 options.identity.password = conf.oauth;
                 this.client = new tmi.client(options);
                 this.client.connect();
