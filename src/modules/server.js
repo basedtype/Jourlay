@@ -7,7 +7,10 @@ const port = 80;
 const server = http.createServer((request, response) => {
     let file = `./src/modules/site${request.url}`;
     try {
-        response.setHeader('Content-Type', 'text/html')
+        const urlSplit = request.url.split('.');
+        const file = urlSplit[urlSplit.length - 1];
+        const header = `text/${file}`
+        response.setHeader('Content-Type', header)
         response.statusCode = 200;
         response.end(fs.readFileSync(file));
     } catch {
