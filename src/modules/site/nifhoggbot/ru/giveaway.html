@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../css/index.css" type="text/css">
+    <title>Розыгрыши | Nidhoggbot</title>
+</head>
+
+<body>
+    <div class='DOCfirst'>
+        <h2>Создание розыгрыша:</h2>
+        <p><code id='codeFirst'>!gstart %time%amount%title%url%imageUrl</code></p>
+        <p>Параметры (* - обязательный):</p>
+        <div class="params">
+            <p>*time ⏤ время до конца розыгрыша. Измеряется в d(дни), h(часы), m(минуты), s(секунды). <br>
+            Например, для того, чтобы создать розыгрыш на 2 дня, необходимо написать "2d"<br>
+            *amount ⏤ количество участников<br>
+            *title ⏤ заголовок розыгрыша<br>
+            url ⏤ ссылка на предмет розыгрыша<br>
+            imageUrl ⏤ ссылка на картинку, которая будет вставлена в оповещение о начале и конце</p>
+        </div>
+    </div>
+    <div class='DOCsecond'>
+        <h2>Завершение розыгрыша:</h2>
+        <p><code id='codeSecond'>!gend ID</code></p>
+        <p>Параметры (* ⏤ обязательный):</p>
+        <div class="params">
+            <p>*ID ⏤ ID сообщения о начале розыгрыша</p>
+        </div>
+    </div>
+    <div class='DOCfirst'>
+        <h2>Перевыбор участников:</h2>
+        <p><code id='codeFirst'>!greroll amount ID</code></p>
+        <p>Параметры (* ⏤ обязательный):</p>
+        <div class="params">
+            <p>*amount ⏤ количество новых победителей<br>
+            *ID ⏤ ID сообщения о начале розыгрыша</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
