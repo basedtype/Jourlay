@@ -12,7 +12,7 @@ let twitchCollection = null;
 
 /* CODE */
 clientDB.connect().then(err => {
-    database = clientDB.db('Wolfbot');
+    database = clientDB.db('Nidhoggbot');
     usersCollection = database.collection('users');
     twitchCollection = database.collection('twitch');
     configCollection = database.collection('config');
@@ -111,7 +111,7 @@ class DBmanager {
      * @param {number} priority 
      * @returns 
      */
-    static _poolAddlBlock(type, owner, doing) {
+    static _poolAddBlock(type, owner, doing) {
         const block = DBexamples.pool.block;
         block.type = type,
             block.owner = owner;
