@@ -8,7 +8,7 @@ const server = http.createServer((request, response) => {
     if (request.url === '/nidhoggbot/ru/giveaway') {
         response.setHeader('Content-Type', 'text/html')
         response.statusCode = 200;
-        response.end('./src/modules/site/nidhoggbot/ru/giveaway.html');
+        response.end(fs.readFileSync('./src/modules/site/nidhoggbot/ru/giveaway.html'));
     } else {
         response.setHeader('Content-Type', 'text/plain')
         response.statusCode = 200;
