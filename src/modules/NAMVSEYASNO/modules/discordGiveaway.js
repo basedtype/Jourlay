@@ -221,6 +221,16 @@ client.on('message', msg => {
                 giveaways[id].urlImage = data
             }
             msg.delete()
+        } else if (command === giveaway.config.random) {
+            // !rand % 1 % 2 % 3
+
+            let commandSplit = msg.content.split('%');
+            commandSplit = commandSplit.shift();
+            if (commandSplit.length > 0) {
+                const answer = tools.randomElementFromArray(commandSplit);
+                channel.send(`<@${msg.author.id}>, я случайным образом выбираю: **${answer}**`);
+            } 
+            msg.delete()
         }
     }
 })
