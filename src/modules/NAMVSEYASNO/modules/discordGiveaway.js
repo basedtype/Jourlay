@@ -209,7 +209,7 @@ client.on('message', msg => {
                     msTime = tools.convertTime({ days: timeSplit });
                 }
                 msTime = Math.floor(msTime / 1000)
-                giveaways[id].end = giveaways[id].created + msTime;
+                giveaways[id].end = Math.floor(moment.now() / 1000) + msTime;
                 giveaways[id].length = msTime;
             } else if (type === 'amount') {
                 giveaways[id].amount = parseInt(data);
