@@ -61,7 +61,7 @@ setInterval(() => {
                 .setImage(give.urlImage)
                 .setURL(give.urlTitle)
                 .setFooter(`With ❤️ by Jourloy`)
-            client.channels.fetch('829888336511762452').then(channel => {
+            client.channels.fetch('822945040337862677').then(channel => {
                 channel.send(`${winners}`, { embed: embed }).then(mss => mss.react('🎉'));
                 channel.messages.fetch(give.msgID)
                     .then(msg => msg.delete())
@@ -79,7 +79,7 @@ setInterval(() => {
         const now = Math.floor(moment.now() / 1000);
         const time = end - now;
         if (time <= 10) continue;
-        client.channels.fetch('829888336511762452').then(channel => {
+        client.channels.fetch('822945040337862677').then(channel => {
             channel.messages.fetch(give.msgID).then(msg => {
                 if (msg == null) return;
                 const end = give.end;
@@ -100,7 +100,7 @@ setInterval(() => {
                     .setImage(give.urlImage)
                     .setURL(give.urlTitle)
                     .setFooter(`With ❤️ by Jourloy`)
-                msg.edit(`<@&829891758992523324>`, {embed: embed})
+                msg.edit(`<@&822198199140745246>`, {embed: embed})
             })
         })
     }
@@ -108,7 +108,7 @@ setInterval(() => {
 
 /* REACTIONS */
 client.on('message', msg => {
-    if (msg.guild.id !== '827928792424775740') return;
+    if (msg.guild.id !== '268082227601080340') return;
     if (guild == null) guild = msg.guild;
     const channel = msg.channel;
     const messageSplit = msg.content.split(' ');
@@ -158,7 +158,7 @@ client.on('message', msg => {
                 .setImage(urlImage)
                 .setURL(urlTitle)
                 .setFooter(`With ❤️ by Jourloy`)
-            channel.send(`<@&829891758992523324>`, { embed: embed }).then(mss => {
+            channel.send(`<@&822198199140745246>`, { embed: embed }).then(mss => {
                 const give = {
                     msgID: mss.id,
                     amount: amount,
