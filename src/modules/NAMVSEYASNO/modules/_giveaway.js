@@ -4,11 +4,10 @@ class giveaway {
         start: 'gstart',
         end: 'gend',
         reroll: 'greroll',
+        setting: 'gset',
         nameRole: 'giveaway',
         nameChannel: 'розыгрыш'
     }
-
-
 }
 
 /* EXPORTS */
