@@ -36,9 +36,7 @@ setInterval(() => {
         const end = give.end;
         const now = Math.floor(moment.now() / 1000);
         const time = end - now;
-        let seconds = time % 60;
-        console.log(seconds)
-        if (seconds === 1) {
+        if (time === 1) {
             let winners = '';
             let win = [];
             let tryCount = give.people.length * 10;
@@ -80,8 +78,7 @@ setInterval(() => {
         const end = give.end;
         const now = Math.floor(moment.now() / 1000);
         const time = end - now;
-        let seconds = time % 60;
-        if (seconds <= 10) continue;
+        if (time <= 10) continue;
         client.channels.fetch('829888336511762452').then(channel => {
             channel.messages.fetch(give.msgID).then(msg => {
                 if (msg == null) return;
@@ -123,7 +120,7 @@ client.on('message', msg => {
             // !gstart % time % amount % title % url % imageUrl
             const commandSplit = msg.content.split('%');
             const time = commandSplit[1];
-            const amount = commandSplit[2];
+            let amount = commandSplit[2];
             const title = commandSplit[3];
             const urlTitle = commandSplit[4] || '';
             const urlImage = commandSplit[5] || '';
@@ -148,6 +145,9 @@ client.on('message', msg => {
             const seconds = msTime%60;
             const formatted = `${days}д ${hours}:${minutes}:${seconds}`;
 
+            if (amount === '' || amount === []) amount = 1;
+            amount = parseInt(amount);
+
             const embed = new Discord.MessageEmbed()
                 .setAuthor(`${msg.author.username} запускает розыгрыш`, msg.author.avatarURL())
                 .setTitle(title)
@@ -164,6 +164,7 @@ client.on('message', msg => {
                     amount: amount,
                     length: msTime,
                     end: Math.floor(moment.now() / 1000) + msTime,
+                    created: Math.floor(moment.now() / 1000),
                     people: [],
                     urlTitle: urlTitle,
                     urlImage: urlImage,
@@ -178,14 +179,48 @@ client.on('message', msg => {
             DBmanager._poolAddBlock('Discord', 'NAMVSEYASNO', 'Start giveaway')
         } else if (command === giveaway.config.end) {
             const ID = messageSplit[1];
-            giveaways[ID].end = Math.floor(moment.now() / 1000);
+            giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
             msg.delete();
         } else if (command === giveaway.config.reroll) {
             const amount = messageSplit[1];
             const ID = messageSplit[2];
             giveaways[ID].amount = amount;
-            giveaways[ID].end = Math.floor(moment.now() / 1000) + 1;
+            giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
             msg.delete();
+        } else if (command === giveaway.config.setting) {
+            const commandSplit = msg.content.split('%');
+            const id = commandSplit[1];
+            const type = commandSplit[2];
+            const data = commandSplit[3];
+
+            if (type === 'time') {
+                let msTime = null;
+                if (data.includes('s') === true) {
+                    const timeSplit = data.split('s')[0]
+                    msTime = tools.convertTime({ seconds: timeSplit });
+                } else if (data.includes('m') === true) {
+                    const timeSplit = data.split('m')[0]
+                    msTime = tools.convertTime({ minutes: timeSplit });
+                } else if (data.includes('h') === true) {
+                    const timeSplit = data.split('h')[0]
+                    msTime = tools.convertTime({ hours: timeSplit });
+                } else if (data.includes('d') === true) {
+                    const timeSplit = data.split('d')[0]
+                    msTime = tools.convertTime({ days: timeSplit });
+                }
+                msTime = Math.floor(msTime / 1000)
+                giveaways[id].end = giveaways[id].created + msTime;
+                giveaways[id].length = msTime;
+            } else if (type === 'amount') {
+                giveaways[id].amount = parseInt(data);
+            } else if (type === 'title') {
+                giveaways[id].title = data
+            } else if (type === 'url') {
+                giveaways[id].urlTitle = data
+            } else if (type === 'urlImage') {
+                giveaways[id].urlImage = data
+            }
+            msg.delete()
         }
     }
 })
