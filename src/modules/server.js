@@ -5,7 +5,7 @@ const hostname = '192.168.0.106';
 const port = 80;
 
 const server = http.createServer((request, response) => {
-    let file = `./src/modules/site${request.url}`;
+    console.log(request)
     try {
         let filePath = `./src/modules/site${request.url}`;
         const urlSplit = request.url.split('.');
