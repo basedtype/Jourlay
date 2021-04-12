@@ -226,11 +226,10 @@ client.on('message', msg => {
 
             let commandSplit = msg.content.split('%');
             commandSplit.shift();
-            console.log(commandSplit)
-            /* if (commandSplit.length > 0) {
+            if (commandSplit.length > 0) {
                 const answer = tools.randomElementFromArray(commandSplit);
                 channel.send(`<@${msg.author.id}>, я случайным образом выбираю: **${answer}**`);
-            }  */
+            } 
             msg.delete()
         }
     }
