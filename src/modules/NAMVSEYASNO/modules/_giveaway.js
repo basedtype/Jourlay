@@ -5,7 +5,7 @@ class giveaway {
         end: 'gend',
         reroll: 'greroll',
         setting: 'gset',
-        nameRole: 'giveaway',
+        nameRole: 'Giveaways',
         nameChannel: 'розыгрыш'
     }
 }
