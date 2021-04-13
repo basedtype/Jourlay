@@ -3,6 +3,7 @@ const { client } = require('../../Bots/discord');
 const { giveaway } = require('./_giveaway');
 const { DBmanager } = require('../../DBmanager');
 const { tools } = require('../../tools');
+const { discordLog } = require('../../discordTools');
 const Discord = require("discord.js");
 const moment = require('moment');
 
@@ -27,6 +28,17 @@ function checkRole(guild, userID, nameRole) {
         }
     }
     return check;
+}
+
+async function getGiveaways() {
+    const giveawaysFind = await DBmanager._giveawayGet('NAMVSEYASNO');
+    giveawaysFind.toArray((err, result) => {
+        for (let i in result) {
+            if (giveaways[result[i].msgID] == null) {
+                giveaways[result[i].msgID] = result[i];
+            }
+        }
+    })
 }
 
 /* INTERVALS */
@@ -100,11 +112,16 @@ setInterval(() => {
                     .setImage(give.urlImage)
                     .setURL(give.urlTitle)
                     .setFooter(`With ❤️ by Jourloy`)
-                msg.edit(`<@&822198199140745246>`, {embed: embed})
+                msg.edit(`Test`, {embed: embed})
             })
         })
     }
 }, 10000)
+
+//<@&822198199140745246>
+setInterval(() => {
+    getGiveaways();
+}, 1000)
 
 /* REACTIONS */
 client.on('message', msg => {
@@ -121,7 +138,15 @@ client.on('message', msg => {
             const commandSplit = msg.content.split('%');
             const time = commandSplit[1];
             let amount = commandSplit[2];
+            if (amount > 50) {
+                discordLog.error(channel, `Слишком много победителей`);
+                return false;
+            }
             const title = commandSplit[3];
+            if (title.length > 255) {
+                discordLog.error(channel, `Заголовок слишком длинный`);
+                return false;
+            }
             const urlTitle = commandSplit[4] || '';
             const urlImage = commandSplit[5] || '';
             let msTime = null;
@@ -143,6 +168,10 @@ client.on('message', msg => {
             const hours = Math.floor(msTime / 60 / 60) - (days * 24);
             const minutes = Math.floor(msTime / 60) - (hours * 60) - (days * 24 * 60);
             const seconds = msTime%60;
+            if (days > 30) {
+                discordLog.error(channel, `Слишком большой таймер`);
+                return false;
+            }
             const formatted = `${days}д ${hours}:${minutes}:${seconds}`;
 
             if (amount === '' || amount === []) amount = 1;
@@ -158,7 +187,7 @@ client.on('message', msg => {
                 .setImage(urlImage)
                 .setURL(urlTitle)
                 .setFooter(`With ❤️ by Jourloy`)
-            channel.send(`<@&822198199140745246>`, { embed: embed }).then(mss => {
+            channel.send(`Test`, { embed: embed }).then(mss => {
                 const give = {
                     msgID: mss.id,
                     amount: amount,
@@ -173,29 +202,34 @@ client.on('message', msg => {
                     authorURL: msg.author.avatarURL(),
                 }
                 giveaways[mss.id] = give;
+                DBmanager._giveawayAdd('NAMVSEYASNO', give);
                 mss.react('🎁')
             });
             msg.delete();
             DBmanager._poolAddBlock('Discord', 'NAMVSEYASNO', 'Start giveaway')
         } else if (command === giveaway.config.end) {
             const ID = messageSplit[1];
-            giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
             msg.delete();
+            giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
         } else if (command === giveaway.config.reroll) {
             const amount = messageSplit[1];
             const ID = messageSplit[2];
+            msg.delete();
+            if (giveaways[ID] == null) return;
             giveaways[ID].amount = amount;
             giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
-            msg.delete();
         } else if (command === giveaway.config.setting) {
             const commandSplit = msg.content.split('%');
             const id = commandSplit[1];
             const type = commandSplit[2];
             const data = commandSplit[3];
+            msg.delete();
+            if (giveaways[id] == null) return;
 
             if (type === 'time') {
                 let msTime = null;
                 if (data.includes('s') === true) {
+                    
                     const timeSplit = data.split('s')[0]
                     msTime = tools.convertTime({ seconds: timeSplit });
                 } else if (data.includes('m') === true) {
@@ -220,7 +254,6 @@ client.on('message', msg => {
             } else if (type === 'urlImage') {
                 giveaways[id].urlImage = data
             }
-            msg.delete()
         } else if (command === giveaway.config.random) {
             // !grand % 1 % 2 % 3
 
@@ -246,5 +279,6 @@ client.on('messageReactionAdd', msg => {
         if (users[i].username === 'Nidhoggbot') continue;
         const id = users[i].id
         if (giveaways[msg.message.id].people.includes(id) === false) giveaways[msg.message.id].people.push(id);
+        console.log(giveaways[msg.message.id].people)
     }
 })
