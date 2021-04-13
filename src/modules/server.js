@@ -8,6 +8,7 @@ const fs = require('fs');
 const hostname = '192.168.0.106';
 const port = 80;
 const banCount = 30;
+const allowList = ['127.0.0.1', '192.168.0.106']
 
 /* FUNCTIONS */
 const server = http.createServer((request, response) => {
@@ -50,8 +51,8 @@ const server = http.createServer((request, response) => {
                 response.statusCode = 200;
                 response.end(fs.readFileSync(filePath));
             } catch {
-                if (request.url !== '/') DBmanager._serverIPAdd(requestIP, 3);
-                if (request.url === '/') DBmanager._serverIPAdd(requestIP, 1);
+                if (request.url !== '/' && allowList.includes(requestIP) === false) DBmanager._serverIPAdd(requestIP, 3);
+                if (request.url === '/' && allowList.includes(requestIP) === false) DBmanager._serverIPAdd(requestIP, 1);
                 response.setHeader('Content-Type', 'text/plain')
                 response.statusCode = 404;
                 response.end('Lol what?');
