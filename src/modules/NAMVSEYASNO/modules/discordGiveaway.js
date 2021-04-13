@@ -91,6 +91,16 @@ setInterval(() => {
         const end = give.end;
         const now = Math.floor(moment.now() / 1000);
         const time = end - now;
+        if (time < 0) DBmanager._giveawayRemove(give.msgID);
+    }
+}, 1000)
+
+setInterval(() => {
+    for (let i in giveaways) {
+        const give = giveaways[i];
+        const end = give.end;
+        const now = Math.floor(moment.now() / 1000);
+        const time = end - now;
         if (time <= 10) continue;
         client.channels.fetch('822945040337862677').then(channel => {
             channel.messages.fetch(give.msgID).then(msg => {

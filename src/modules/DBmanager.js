@@ -140,7 +140,7 @@ class DBmanager {
      * @param {string} id msgID
      * @returns 
      */
-    static _giveawayRemove(owner, id) {
+    static _giveawayRemove(id) {
         if (owner == null) return false;
         if (id == null) return false;
         giveawaysCollection.findOneAndDelete({msgID: id});
