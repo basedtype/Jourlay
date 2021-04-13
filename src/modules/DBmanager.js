@@ -17,6 +17,7 @@ clientDB.connect().then(err => {
     twitchCollection = database.collection('twitch');
     configCollection = database.collection('config');
     poolCollection = database.collection('pool');
+    giveawaysCollection = database.collection('giveaways');
     namUsersCollection = database.collection('NAMVSEYASNO_users');
     namGiveCollection = database.collection('NAMVSEYASNO_giveaways');
 })
@@ -101,6 +102,36 @@ class DBmanager {
         docs.oauth = oauth;
         configCollection.insertOne(docs)
         return true;
+    }
+
+    /**
+     * 
+     * @param {{
+     *     msgID: string,
+     *     amount: number,
+     *     length: number,
+     *     end: number,
+     *     created: number,
+     *     people: [],
+     *     urlTitle: string,
+     *     urlImage: string,
+     *     title: string,
+     *     authorUsername: string,
+     *     authorURL: function()
+     * }} give 
+     */
+    static _giveawayAdd(owner, give) {
+        if (owner == null) return false;
+        if (give == null) return false;
+        give.owner = owner;
+        giveawaysCollection.insertOne(give);
+        return true;
+    }
+
+    static async _giveawayGet(owner) {
+        if (owner == null) return false;
+        const giveaways = await giveawaysCollection.find({owner: owner})
+        return giveaways;
     }
 
     /**
