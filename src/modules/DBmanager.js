@@ -135,6 +135,19 @@ class DBmanager {
     }
 
     /**
+     * 
+     * @param {string} owner 
+     * @param {string} id msgID
+     * @returns 
+     */
+    static _giveawayRemove(owner, id) {
+        if (owner == null) return false;
+        if (id == null) return false;
+        giveawaysCollection.findOneAndDelete({msgID: id});
+        return true;
+    }
+
+    /**
      * Add new block in pool
      * @param {string} type 
      * @param {string} destination 
