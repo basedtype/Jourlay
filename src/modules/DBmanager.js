@@ -17,6 +17,7 @@ clientDB.connect().then(err => {
     twitchCollection = database.collection('twitch');
     configCollection = database.collection('config');
     poolCollection = database.collection('pool');
+    serverCollection = database.collection('server');
     giveawaysCollection = database.collection('giveaways');
     namUsersCollection = database.collection('NAMVSEYASNO_users');
     namGiveCollection = database.collection('NAMVSEYASNO_giveaways');
@@ -128,6 +129,11 @@ class DBmanager {
         return true;
     }
 
+    /**
+     * 
+     * @param {string} owner 
+     * @returns 
+     */
     static async _giveawayGet(owner) {
         if (owner == null) return false;
         const giveaways = await giveawaysCollection.find({owner: owner})
@@ -144,6 +150,73 @@ class DBmanager {
         if (id == null) return false;
         giveawaysCollection.findOneAndDelete({msgID: id});
         return true;
+    }
+
+    /**
+     * Add IP address in watchdog
+     * @param {string} ip 
+     * @returns 
+     */
+    static _serverIPAdd(ip, amount) {
+        if (ip == null) return false;
+        if (amount == null) amount = 1;
+        serverCollection.findOne({ip: ip}).then(ipAddress => {
+            if (ipAddress == null) {
+                serverCollection.insertOne({ip: ip, count: amount, ban: false, description: ''});
+                return true;
+            } else {
+                ipAddress.count += amount;
+                serverCollection.findOneAndUpdate({ip: ip}, {$set: ipAddress});
+            }
+        })
+    }
+
+    /**
+     * Ban IP address for server
+     * @param {string} ip 
+     * @returns 
+     */
+    static _serverIPban(ip) {
+        if (ip == null) return false;
+        serverCollection.findOne({ip: ip}).then(ipAddress => {
+            if (ipAddress == null) return;
+            ipAddress.ban = true;
+            serverCollection.findOneAndUpdate({ip: ip}, {$set: ipAddress});
+        })
+    }
+
+    /**
+     * Unban IP address for server
+     * @param {string} ip 
+     * @returns 
+     */
+    static _serverIPunban(ip) {
+        if (ip == null) return false;
+        serverCollection.findOne({ip: ip}).then(ipAddress => {
+            if (ipAddress == null) return;
+            ipAddress.ban = false;
+            serverCollection.findOneAndUpdate({ip: ip}, {$set: ipAddress});
+        })
+    }
+
+    /**
+     * Get IP address object
+     * @param {string} ip 
+     * @returns {{ip: string, count: number, ban: boolean, description: string}|false}
+     */
+    static async _serverIPGet(ip) {
+        if (ip == null) return false;
+        const ipAddress = await serverCollection.findOne({ip: ip});
+        return ipAddress;
+    }
+
+    /**
+     * Get banned IP addresses array
+     * @returns
+     */
+    static async _serverIPGetBanned() {
+        const bannedIP = await serverCollection.find({ban: true});
+        return bannedIP;
     }
 
     /**
