@@ -112,13 +112,12 @@ setInterval(() => {
                     .setImage(give.urlImage)
                     .setURL(give.urlTitle)
                     .setFooter(`With ❤️ by Jourloy`)
-                msg.edit(`Test`, {embed: embed})
+                msg.edit(`<@&822198199140745246>`, {embed: embed})
             })
         })
     }
 }, 10000)
 
-//<@&822198199140745246>
 setInterval(() => {
     getGiveaways();
 }, 1000)
@@ -187,7 +186,7 @@ client.on('message', msg => {
                 .setImage(urlImage)
                 .setURL(urlTitle)
                 .setFooter(`With ❤️ by Jourloy`)
-            channel.send(`Test`, { embed: embed }).then(mss => {
+            channel.send(`<@&822198199140745246>`, { embed: embed }).then(mss => {
                 const give = {
                     msgID: mss.id,
                     amount: amount,
