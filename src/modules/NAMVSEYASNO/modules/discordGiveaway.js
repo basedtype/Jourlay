@@ -78,6 +78,7 @@ setInterval(() => {
                 channel.messages.fetch(give.msgID)
                     .then(msg => msg.delete())
                     .catch(() => {})
+                DBmanager._giveawayRemove(give.msgID);
             })
             DBmanager._poolAddBlock('Discord', 'NAMVSEYASNO', 'End giveaway')
         }
