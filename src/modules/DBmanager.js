@@ -144,6 +144,7 @@ class DBmanager {
             if (give == null) return;
             if (give.people.includes(userID) === true) return;
             give.people.push(userID);
+            giveawaysCollection.findOneAndUpdate({owner: owner, msgID: id}, {$set: give})
         })
         return true;
     }
@@ -258,3 +259,6 @@ class DBmanager {
 
 /* EXPORTS */
 module.exports.DBmanager = DBmanager;
+
+//'308924864407011328' => [User],
+//'347031224121819136'
