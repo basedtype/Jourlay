@@ -132,6 +132,25 @@ class DBmanager {
     /**
      * 
      * @param {string} owner 
+     * @param {string} id msgID
+     * 
+     * @returns 
+     */
+     static _giveawayAddPeople(owner, id, userID) {
+        if (owner == null) return false;
+        if (id == null) return false;
+        if (userID == null) return false;
+        giveawaysCollection.findOne({owner: owner, msgID: id}).then(give => {
+            if (give == null) return;
+            if (give.people.includes(userID) === true) return;
+            give.people.push(userID);
+        })
+        return true;
+    }
+
+    /**
+     * 
+     * @param {string} owner 
      * @returns 
      */
     static async _giveawayGet(owner) {
