@@ -61,6 +61,12 @@ app.use((request, response, next) => {
 app.use((request, response, next) => {
     const requestIP = request.ip.split(':').pop();
     DBmanager._serverIPGet(requestIP).then(ipAddress => {
+        if (ipAddress == null) {
+            response.setHeader('Content-Type', 'text/plain')
+            response.statusCode = 403;
+            response.end('');
+            return;
+        }
         if (ipAddress.count > banCount) {
             DBmanager._serverIPban(requestIP);
             console.log(colors.get(`[WARNING] IP address was banned {${requestIP}}`, 'FgYellow'));
