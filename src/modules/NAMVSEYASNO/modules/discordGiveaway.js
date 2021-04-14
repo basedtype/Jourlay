@@ -35,6 +35,7 @@ async function getGiveaways() {
     giveawaysFind.toArray((err, result) => {
         for (let i in result) {
             giveaways[result[i].msgID] = result[i];
+            console.log(giveaways[result[i].msgID].people);
         }
     })
 }
