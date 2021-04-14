@@ -17,7 +17,7 @@ const allowList = ['127.0.0.1', '192.168.0.106']
  */
  app.use((request, response, next) => {
     const requestIP = request.ip.split(':').pop();
-    DBmanager._serverIPGet.then(ipAddress => {
+    DBmanager._serverIPGet().then(ipAddress => {
         if (ipAddress === null) DBmanager._serverIPAdd(requestIP);
         next();
     })
