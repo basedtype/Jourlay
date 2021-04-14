@@ -35,7 +35,6 @@ async function getGiveaways() {
     giveawaysFind.toArray((err, result) => {
         for (let i in result) {
             giveaways[result[i].msgID] = result[i];
-            console.log(giveaways[result[i].msgID].people);
         }
     })
 }
@@ -126,7 +125,7 @@ setInterval(() => {
             })
         })
     }
-}, 60000)
+}, 30000)
 
 setInterval(() => {
     getGiveaways();
@@ -288,6 +287,5 @@ client.on('messageReactionAdd', msg => {
         if (users[i].username === 'Nidhoggbot') continue;
         const id = users[i].id
         DBmanager._giveawayAddPeople('NAMVSEYASNO', msg.message.id, id);
-        console.log(giveaways[msg.message.id].people)
     }
 })
