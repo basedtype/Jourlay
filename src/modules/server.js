@@ -9,7 +9,7 @@ const app = express()
 const hostname = '192.168.0.106';
 const port = 80;
 const banCount = 30;
-const allowList = ['127.0.0.1', '192.168.0.106']
+const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141']
 
 /* REACTIONS */
 /**
