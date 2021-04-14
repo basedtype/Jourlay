@@ -13,6 +13,17 @@ const allowList = ['127.0.0.1', '192.168.0.106']
 
 /* REACTIONS */
 /**
+ * Check IP address in database and and if need
+ */
+ app.use((request, response, next) => {
+    const requestIP = request.ip.split(':').pop();
+    DBmanager._serverIPGet.then(ipAddress => {
+        if (ipAddress === null) DBmanager._serverIPAdd(requestIP);
+        next();
+    })
+})
+
+/**
  * Stop banned trafic
  */
 app.use((request, response, next) => {
