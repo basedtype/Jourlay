@@ -34,9 +34,7 @@ async function getGiveaways() {
     const giveawaysFind = await DBmanager._giveawayGet('NAMVSEYASNO');
     giveawaysFind.toArray((err, result) => {
         for (let i in result) {
-            if (giveaways[result[i].msgID] == null) {
-                giveaways[result[i].msgID] = result[i];
-            }
+            giveaways[result[i].msgID] = result[i];
         }
     })
 }
@@ -127,7 +125,7 @@ setInterval(() => {
             })
         })
     }
-}, 10000)
+}, 60000)
 
 setInterval(() => {
     getGiveaways();
@@ -288,7 +286,7 @@ client.on('messageReactionAdd', msg => {
     for (let i in users) {
         if (users[i].username === 'Nidhoggbot') continue;
         const id = users[i].id
-        if (giveaways[msg.message.id].people.includes(id) === false) giveaways[msg.message.id].people.push(id);
+        DBmanager._giveawayAddPeople('NAMVSEYASNO', msg.message.id, id);
         console.log(giveaways[msg.message.id].people)
     }
 })
