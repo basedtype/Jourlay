@@ -229,7 +229,7 @@ client.on('message', msg => {
             msg.delete();
             if (giveaways[ID] == null) return;
             const dataGive = {
-                length: msTime,
+                length: 5,
                 end: Math.floor(moment.now() / 1000) + 5,
                 amount: amount
             }
