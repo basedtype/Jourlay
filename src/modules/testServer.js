@@ -5,6 +5,7 @@ const express = require('express')
 const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const fetch = require('node-fetch');
+const favicon = require('serve-favicon');
 
 /* PARAMS */
 const app = express()
@@ -18,6 +19,7 @@ const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141']
  * Check IP address in database and add if need
  */
 app.use((request, response, next) => {
+    console.log(request.url)
     const requestIP = request.ip.split(':').pop();
     DBmanager._serverIPGet(requestIP).then(ipAddress => {
         if (ipAddress === null) DBmanager._serverIPAdd(requestIP);
@@ -78,6 +80,8 @@ app.use((request, response, next) => {
     })
 })
 
+app.use('/favicon.ico', favicon('./src/modules/site/favicon.ico'))
+
 /**
  * Response css and etc files for server
  */
@@ -85,9 +89,9 @@ app.use((request, response, next) => {
     const requestIP = request.ip.split(':').pop();
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
-    if ((file === 'css' || file === 'js') && allowList.includes(requestIP) === true) {
+    if ((file === 'css' || file === 'js' || file === 'ico') && allowList.includes(requestIP) === true) {
         let filePath = `./src/modules/site${request.url}`;
-        const header = `text/${file}`
+        const header = (file === 'png' || file === 'jpg') ? `image/${file}` : `text/${file}`;
         response.setHeader('Content-Type', header)
         response.statusCode = 200;
         response.end(fs.readFileSync(filePath));
