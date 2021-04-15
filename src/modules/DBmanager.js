@@ -133,6 +133,43 @@ class DBmanager {
     /**
      * 
      * @param {string} owner 
+     * @param {string} ID 
+     * @param {string} type 
+     * @param {{}} data 
+     * @returns 
+     */
+    static _giveawayUpdate(owner, ID, type, data) {
+        if (owner == null) return false;
+        if (type == null) return false;
+        if (data == null) return false;
+        giveawaysCollection.findOne({owner: owner, msgID: ID}).then(give => {
+            if (give == null) return;
+            if (type === 'time') {
+                give.end = data.end;
+                give.length = data.length;
+                if (data.amount != null) give.amount = data.amount;
+                giveawaysCollection.findOneAndUpdate({owner: owner, msgID: ID}, {$set: give});
+            } else if (type === 'amount') {
+                give.amount = data.amount;
+                giveawaysCollection.findOneAndUpdate({owner: owner, msgID: ID}, {$set: give});
+            } else if (type === 'title') {
+                give.title = data.title;
+                giveawaysCollection.findOneAndUpdate({owner: owner, msgID: ID}, {$set: give});
+            } else if (type === 'url') {
+                give.urlTitle = data.urlTitle;
+                giveawaysCollection.findOneAndUpdate({owner: owner, msgID: ID}, {$set: give});
+            } else if (type === 'urlImage') {
+                give.urlImage = data.urlImage;
+                giveawaysCollection.findOneAndUpdate({owner: owner, msgID: ID}, {$set: give});
+            }
+            return;
+        })
+        return true;
+    }
+
+    /**
+     * 
+     * @param {string} owner 
      * @param {string} id msgID
      * 
      * @returns 
