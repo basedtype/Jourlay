@@ -25,6 +25,7 @@
     "mongodb": "^3.6.5",
     "multi-progress": "^4.0.0",
     "node-fetch": "^2.6.1",
+    "serve-favicon": "^2.5.0",
     "tmi.js": "^1.7.5"
   }
 }
