@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
+
+body {
+    background: rgb(42, 9, 9);
+}
+
+.DOCfirst {
+    background: linear-gradient(to right, rgb(42, 9, 9) 5%, rgb(87, 20, 20) 20%, rgb(87, 20, 20) 80%, rgb(42, 9, 9) 95%);;
+    color: #DCD9CD;
+    margin-left: -50px;
+    margin-top: 2%;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    border-radius: 15px;
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+}
+
+.DOCsecond {
+    color: #DCD9CD;
+    margin-left: -50px;
+    margin-top: 2%;
+    padding-left: 5%;
+    padding-right: 5%;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    border-radius: 15px;
+    font-family: 'Oswald', sans-serif;
+    text-align: center;
+}
+
+#state {
+    background: rgb(42, 9, 9);
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
