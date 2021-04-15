@@ -83,13 +83,12 @@ app.use((request, response, next) => {
 app.use('/favicon.ico', favicon('./src/modules/site/favicon.ico'))
 
 /**
- * Response css and etc files for server
+ * Response css and etc files
  */
 app.use((request, response, next) => {
-    const requestIP = request.ip.split(':').pop();
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
-    if ((file === 'css' || file === 'js' || file === 'ico') && allowList.includes(requestIP) === true) {
+    if (file === 'css' || file === 'js') {
         let filePath = `./src/modules/site${request.url}`;
         const header = (file === 'png' || file === 'jpg') ? `image/${file}` : `text/${file}`;
         response.setHeader('Content-Type', header)
