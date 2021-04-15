@@ -222,7 +222,7 @@ client.on('message', msg => {
                 length: 5,
                 end: Math.floor(moment.now() / 1000) + 5,
             }
-            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, type, dataGive);
+            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, 'time', dataGive);
         } else if (command === giveaway.config.reroll) {
             const amount = messageSplit[1];
             const ID = messageSplit[2];
@@ -233,7 +233,7 @@ client.on('message', msg => {
                 end: Math.floor(moment.now() / 1000) + 5,
                 amount: amount
             }
-            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, type, dataGive);
+            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, 'time', dataGive);
         } else if (command === giveaway.config.setting) {
             const commandSplit = msg.content.split('%');
             const id = commandSplit[1];
