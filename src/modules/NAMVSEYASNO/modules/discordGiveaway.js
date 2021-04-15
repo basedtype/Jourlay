@@ -89,7 +89,7 @@ setInterval(() => {
         const end = give.end;
         const now = Math.floor(moment.now() / 1000);
         const time = end - now;
-        if (time < 0) DBmanager._giveawayRemove(give.msgID);
+        //if (time < 0) DBmanager._giveawayRemove(give.msgID);
     }
 }, 1000)
 
