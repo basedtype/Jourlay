@@ -218,14 +218,22 @@ client.on('message', msg => {
         } else if (command === giveaway.config.end) {
             const ID = messageSplit[1];
             msg.delete();
-            giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
+            const dataGive = {
+                length: 5,
+                end: Math.floor(moment.now() / 1000) + 5,
+            }
+            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, type, dataGive);
         } else if (command === giveaway.config.reroll) {
             const amount = messageSplit[1];
             const ID = messageSplit[2];
             msg.delete();
             if (giveaways[ID] == null) return;
-            giveaways[ID].amount = amount;
-            giveaways[ID].end = Math.floor(moment.now() / 1000) + 5;
+            const dataGive = {
+                length: msTime,
+                end: Math.floor(moment.now() / 1000) + 5,
+                amount: amount
+            }
+            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, type, dataGive);
         } else if (command === giveaway.config.setting) {
             const commandSplit = msg.content.split('%');
             const id = commandSplit[1];
@@ -251,16 +259,31 @@ client.on('message', msg => {
                     msTime = tools.convertTime({ days: timeSplit });
                 }
                 msTime = Math.floor(msTime / 1000)
-                giveaways[id].end = Math.floor(moment.now() / 1000) + msTime;
-                giveaways[id].length = msTime;
+                const dataGive = {
+                    length: msTime,
+                    end: Math.floor(moment.now() / 1000) + msTime,
+                }
+                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
             } else if (type === 'amount') {
-                giveaways[id].amount = parseInt(data);
+                const dataGive = {
+                    amount: parseInt(data)
+                }
+                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
             } else if (type === 'title') {
-                giveaways[id].title = data
+                const dataGive = {
+                    title: data
+                }
+                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
             } else if (type === 'url') {
-                giveaways[id].urlTitle = data
+                const dataGive = {
+                    urlTitle: data
+                }
+                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
             } else if (type === 'urlImage') {
-                giveaways[id].urlImage = data
+                const dataGive = {
+                    urlImage: data
+                }
+                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
             }
         } else if (command === giveaway.config.random) {
             // !grand % 1 % 2 % 3
