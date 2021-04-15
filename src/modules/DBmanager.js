@@ -18,6 +18,7 @@ clientDB.connect().then(err => {
     configCollection = database.collection('config');
     poolCollection = database.collection('pool');
     serverCollection = database.collection('server');
+    eveCollection = database.collection('eve');
     giveawaysCollection = database.collection('giveaways');
     namUsersCollection = database.collection('NAMVSEYASNO_users');
     namGiveCollection = database.collection('NAMVSEYASNO_giveaways');
@@ -254,6 +255,47 @@ class DBmanager {
         block.do = doing;
         poolCollection.insertOne(block);
         return true;
+    }
+
+
+    /**
+     *  
+     * @param {string} username 
+     * @param {string} access_token 
+     * @param {string} refresh_token 
+     * @returns 
+     */
+    static _eveAdduser(username, access_token, refresh_token) {
+        eveCollection.findOne({username: username}).then(user => {
+            if (user != null) {
+                eveCollection.findOneAndDelete({username: username});
+                const docs = {
+                    username: username,
+                    accessToken: access_token,
+                    refreshToken: refresh_token,
+                    type: 'user',
+                }
+                eveCollection.insertOne(docs);
+                return;
+            }
+            const docs = {
+                username: username,
+                accessToken: access_token,
+                refreshToken: refresh_token,
+                type: 'user',
+            }
+            eveCollection.insertOne(docs);
+        })
+        return true;
+    }
+
+    /**
+     * Get all eve users
+     * @returns 
+     */
+    static async _eveGetusers() {
+        const users = await eveCollection.find({type: 'user'});
+        return users;
     }
 }
 
