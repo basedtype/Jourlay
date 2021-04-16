@@ -104,6 +104,60 @@ app.use(cookieParser('NqiqDq'));
 app.use(express.urlencoded({ extended: false }))
 
 /**
+ * Redirect to start page
+ */
+app.get('/', function (request, response, next) {
+    response.redirect('/index.html')
+});
+
+/**
+ * Start page
+ */
+app.get('/index.html', function (request, response, next) {
+    let filePath = `./src/modules/site${request.url}`.split('?')[0];
+    const urlSplit = request.url.split('.');
+    const file = urlSplit[urlSplit.length - 1];
+    const header = `text/${file}`
+    response.setHeader('Content-Type', header)
+    response.statusCode = 200;
+    response.end(fs.readFileSync(filePath));
+});
+
+/**
+ * Login
+ */
+app.get('/login', function (request, response, next) {
+    if (request.query.name == null && request.query.username == null) {
+        response.redirect(`http://${hostname}/authErr.html#Try later`);
+        return;
+    }
+
+    let type = '';
+    if (request.query.username != null) type = 'login';
+    else if (request.query.name != null) type = 'register';
+
+    if (type === 'login') {
+        if (request.query.password == null) {
+            response.redirect(`http://${hostname}/authErr.html#Password is undefined`);
+            return;
+        }
+
+        DBmanager._authGetUser(request.query.username).then(user => {
+            if (user == null || user === false) {
+                response.redirect(`http://${hostname}/authErr.html#Username or Password is incorrect`);
+                return;
+            }
+            else if (user.password === request.query.password) {
+                response.cookie('auth', 'true');
+                response.cookie('login', request.query.username);
+                response.redirect(`http://${hostname}/authErr.html#Success`);
+            }
+            else response.redirect(`http://${hostname}/authErr.html#Username or Password is incorrect`);
+        });
+    }
+});
+
+/**
  * Nidhoggbot discord giveaway documentation
  */
 app.get('/nidhoggbot/ru/giveaway.html', function (request, response, next) {
@@ -134,6 +188,19 @@ app.get('/eve/authErr.html', function (request, response, next) {
  * Nidhoggbot eve auth success
  */
  app.get('/eve/auth.html', function (request, response, next) {
+    let filePath = `./src/modules/site${request.url}`;
+    const urlSplit = request.url.split('.');
+    const file = urlSplit[urlSplit.length - 1];
+    const header = `text/${file}`
+    response.setHeader('Content-Type', header)
+    response.statusCode = 200;
+    response.end(fs.readFileSync(filePath));
+});
+
+/**
+ * Nidhoggbot eve auth success
+ */
+ app.get('/authErr.html', function (request, response, next) {
     let filePath = `./src/modules/site${request.url}`;
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
@@ -197,10 +264,34 @@ app.get('/eve/callback', function (request, response, next) {
     }
 });
 
-app.get('/api', function (request, response, next) {
+app.get('/api/database', function (request, response, next) {
+    response.setHeader('Content-Type', 'application/json')
+    response.statusCode = 200;
     const query = request.query;
-});
+    if (query.database == null) {
+        response.json(`false`)
+        return;
+    }
+    const database = query.database;
+    if (database === 'auth') {
+        if (query.database === 'auth' && query.login == null) {
+            return;
+        }
+        const login = query.login;
+        if (query.database === 'auth' && query.password == null) {
+            response.json(`false`)
+            return;
+        }
+        const password = query.password;
 
+        DBmanager._authGetUser(login).then(user => {
+            if (user == null || user === false) response.json(`false`)
+            else if (user.password === password) response.json(`true`)
+            else response.json(`false`);
+        });
+    }
+});
+//http://127.0.0.7/api/database?database=auth&login=rnmioewioqfb&password=w5Bofnowebr213r2f3
 /**
  * Error handler for 404 error
  */
