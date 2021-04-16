@@ -19,6 +19,7 @@ clientDB.connect().then(err => {
     poolCollection = database.collection('pool');
     serverCollection = database.collection('server');
     eveCollection = database.collection('eve');
+    authCollection = database.collection('auth');
     giveawaysCollection = database.collection('giveaways');
     namUsersCollection = database.collection('NAMVSEYASNO_users');
     namGiveCollection = database.collection('NAMVSEYASNO_giveaways');
@@ -333,6 +334,17 @@ class DBmanager {
     static async _eveGetusers() {
         const users = await eveCollection.find({type: 'user'});
         return users;
+    }
+
+    /**
+     * Get registered users
+     * @param {string} login
+     * @returns 
+     */
+    static async _authGetUser(login) {
+        if (login == null) return false;
+        const user = await authCollection.findOne({login: login});
+        return user;
     }
 }
 
