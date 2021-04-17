@@ -216,12 +216,14 @@ class DBmanager {
      * @param {string} ip 
      * @returns 
      */
-    static _serverIPAdd(ip, amount) {
+    static _serverIPAdd(ip, amount, ban, note) {
         if (ip == null) return false;
         if (amount == null) amount = 1;
+        if (ban == null) ban = false;
+        if (note == null) note = '';
         serverCollection.findOne({ip: ip}).then(ipAddress => {
             if (ipAddress == null) {
-                serverCollection.insertOne({ip: ip, count: amount, ban: false, description: ''});
+                serverCollection.insertOne({ip: ip, count: amount, ban: ban, description: note});
                 return true;
             } else {
                 ipAddress.count += amount;
