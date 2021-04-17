@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <link rel="stylesheet" href="../css/index.css" type="text/css">
+    <title>Розыгрыши | Nidhoggbot</title>
+</head>
+
+<body>
+    <div class="login-page">
+        <div class="form">
+            <p id="name-logo">NIDHOGGBOT<br>Создание розыгрыша</p>
+            <form class="login-form" id="login-form" action="login">
+                <input type="text" name="guildID" placeholder="ID сервера" />
+                <input type="text" name="title" placeholder="Название" />
+                <input type="text" name="time" placeholder="Время" />
+                <input type="text" name="amount" placeholder="Количество победителей" />
+                <input type="text" name="urlTitle" placeholder="Ссылка в названии (необязательно)" />
+                <input type="text" name="urlImage" placeholder="Ссылка на картинку (необязательно)" />
+                <button id="login-button">Создать</button>
+            </form>
+            <div id="incorrect">
+                <p id="err">Username or password is incorrect</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
