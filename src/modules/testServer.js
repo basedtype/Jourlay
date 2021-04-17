@@ -13,6 +13,7 @@ const hostname = '127.0.0.1';
 const port = 80;
 const banCount = 30;
 const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141']
+const bannedURLs = ['phpmyadmin', 'wp-login.php', 'manager', 'vendor', 'jenkins', 'samba', 'config', 'myadmin']
 
 /* REACTIONS */
 /**
@@ -21,6 +22,16 @@ const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141']
 app.use((request, response, next) => {
     console.log(request.url)
     const requestIP = request.ip.split(':').pop();
+    const requestIPsplit = requestIP.split('/');
+    for (let i in requestIPsplit) {
+        if (bannedURLs.includes(requestIPsplit[i].toLowerCase) === true) {
+            DBmanager._serverIPGet(requestIP).then(ipAddress => {
+                if (ipAddress === null) DBmanager._serverIPAdd(requestIP, 1, true, 'Used banned url');
+                console.log(colors.get(`[WARNING] IP address was banned {${requestIP}} | Reason: Used banned url`, 'FgYellow'));
+            })
+            return;
+        }
+    }
     DBmanager._serverIPGet(requestIP).then(ipAddress => {
         if (ipAddress === null) DBmanager._serverIPAdd(requestIP);
         next();
@@ -73,7 +84,7 @@ app.use((request, response, next) => {
         }
         if (ipAddress.count > banCount) {
             DBmanager._serverIPban(requestIP);
-            console.log(colors.get(`[WARNING] IP address was banned {${requestIP}}`, 'FgYellow'));
+            console.log(colors.get(`[WARNING] IP address was banned {${requestIP}} | Reason: Reach limit`, 'FgYellow'));
             return;
         }
         next();
@@ -88,7 +99,7 @@ app.use('/favicon.ico', favicon('./src/modules/site/favicon.ico'))
 app.use((request, response, next) => {
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
-    if (file === 'css' || file === 'js') {
+    if (file === 'css' || file === 'js' || file === 'ts') {
         let filePath = `./src/modules/site${request.url}`;
         const header = (file === 'png' || file === 'jpg') ? `image/${file}` : `text/${file}`;
         response.setHeader('Content-Type', header)
@@ -127,33 +138,39 @@ app.get('/index.html', function (request, response, next) {
  * Login
  */
 app.get('/login', function (request, response, next) {
-    if (request.query.name == null && request.query.username == null) {
-        response.redirect(`http://${hostname}/authErr.html#Try later`);
+    if (request.query.type == null) {
+        response.json('Try later (type error)');
         return;
     }
-
-    let type = '';
-    if (request.query.username != null) type = 'login';
-    else if (request.query.name != null) type = 'register';
-
-    if (type === 'login') {
-        if (request.query.password == null) {
-            response.redirect(`http://${hostname}/authErr.html#Password is undefined`);
+    if (request.query.type === 'login') {
+        if (request.query.username == null || request.query.username == '') {
+            response.json('Username is undefined');
             return;
         }
+        const username = request.query.username;
+        if (request.query.password == null || request.query.password == '') {
+            response.json('Password is undefined');
+            return;
+        }
+        const password = request.query.password;
 
-        DBmanager._authGetUser(request.query.username).then(user => {
+        DBmanager._authGetUser(username).then(user => {
             if (user == null || user === false) {
-                response.redirect(`http://${hostname}/authErr.html#Username or Password is incorrect`);
+                response.json('Login or password is incorrect');
                 return;
             }
-            else if (user.password === request.query.password) {
+            else if (user.password === password) {
                 response.cookie('auth', 'true');
-                response.cookie('login', request.query.username);
-                response.redirect(`http://${hostname}/authErr.html#Success`);
+                response.cookie('login', username);
+                response.json(`Success authErr.html#Success`);
             }
-            else response.redirect(`http://${hostname}/authErr.html#Username or Password is incorrect`);
+            else response.json('Login or password is incorrect');
         });
+    } else if (request.query.type === 'register') {
+
+    } else {
+        response.json('Try later (Kind of type error)');
+        return;
     }
 });
 
@@ -161,6 +178,21 @@ app.get('/login', function (request, response, next) {
  * Nidhoggbot discord giveaway documentation
  */
 app.get('/nidhoggbot/ru/giveaway.html', function (request, response, next) {
+    //response.cookie('remember', 1, { maxAge: 60000 });
+    //console.log(request.cookies)
+    let filePath = `./src/modules/site${request.url}`;
+    const urlSplit = request.url.split('.');
+    const file = urlSplit[urlSplit.length - 1];
+    const header = `text/${file}`
+    response.setHeader('Content-Type', header)
+    response.statusCode = 200;
+    response.end(fs.readFileSync(filePath));
+});
+
+/**
+ * Nidhoggbot discord giveaway create
+ */
+ app.get('/nidhoggbot/ru/create.html', function (request, response, next) {
     //response.cookie('remember', 1, { maxAge: 60000 });
     //console.log(request.cookies)
     let filePath = `./src/modules/site${request.url}`;
