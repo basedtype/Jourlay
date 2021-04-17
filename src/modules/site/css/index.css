@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
-@import url(https://fonts.googleapis.com/css?family=Exo:100,200,400);
-@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:700,400,300);
+@import url('https://fonts.googleapis.com/css?family=Roboto:300');
 
 body {
     background: rgb(42, 9, 9);
@@ -30,8 +29,6 @@ body {
     border-radius: 10px;
     text-align: center;
 }
-
-@import url(https://fonts.googleapis.com/css?family=Roboto:300);
 
 .login-page {
   width: 360px;
@@ -121,4 +118,16 @@ body {
 }
 .container .info span .fa {
   color: #EF3B3A;
+}
+
+#incorrect {
+  background: rgb(42, 9, 9);
+  color:white;
+  font-size: 10pt;
+  font-family: "Roboto", sans-serif;
+  border-radius: 8px;
+  padding: 0.1px;
+  margin-top: 30px;
+  display: none;
+  visibility: hidden;
 }
