@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Jourloy/Wolfbot#readme",
   "dependencies": {
     "cookie-parser": "^1.4.5",
+    "crypto": "^1.0.1",
     "discord.js": "^12.5.3",
     "express": "^4.17.1",
     "moment": "^2.29.1",
