@@ -6,6 +6,7 @@ const fs = require('fs');
 const cookieParser = require('cookie-parser');
 const fetch = require('node-fetch');
 const favicon = require('serve-favicon');
+const crypto = require('crypto');
 
 /* PARAMS */
 const app = express()
@@ -13,7 +14,58 @@ const hostname = '127.0.0.1';
 const port = 80;
 const banCount = 30;
 const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141']
-const bannedURLs = ['phpmyadmin', 'wp-login.php', 'manager', 'vendor', 'jenkins', 'samba', 'config', 'myadmin']
+const bannedURLs = ['phpmyadmin', 'wp-login.php', 'manager', 'vendor', 'jenkins', 'samba', 'config', 'myadmin', '.git']
+
+/* FUNCTIONS */
+/**
+ * Response requested page
+ * @param {express.Request} request 
+ * @param {express.Response} response 
+ * @returns {true}
+ */
+function getPage(request, response) {
+    let filePath = `./src/modules/site${request.url}`.split('?')[0];
+    const urlSplit = request.url.split('.');
+    const file = urlSplit[urlSplit.length - 1];
+    const header = `text/${file}`
+    response.setHeader('Content-Type', header)
+    response.statusCode = 200;
+    response.end(fs.readFileSync(filePath));
+    return true;
+}
+
+/**
+ * Response requested page if user was login
+ * @param {express.Request} request 
+ * @param {express.Response} response 
+ * @returns {true}
+ */
+ function getPageForLogined(request, response) {
+    const cookie = request.cookies;
+    if (cookie.auth == null || cookie.auth !== '1') {
+        response.redirect('/user/login.html');
+    } else {
+        DBmanager._authGetUser(cookie.username).then(user => {
+            if (user == null || user === false) {
+                response.redirect('/user/login.html');
+            } else {
+                const cryptoData = crypto.createHash('sha256').update(`${user.username}:${user.password}:authData`).digest('hex');
+                if (cookie.data !== cryptoData) {
+                    response.redirect('/user/login.html');
+                } else {
+                    let filePath = `./src/modules/site${request.url}`.split('?')[0];
+                    const urlSplit = request.url.split('.');
+                    const file = urlSplit[urlSplit.length - 1];
+                    const header = `text/${file}`
+                    response.setHeader('Content-Type', header)
+                    response.statusCode = 200;
+                    response.end(fs.readFileSync(filePath));
+                    return true;
+                }
+            }
+        });
+    }
+}
 
 /* REACTIONS */
 /**
@@ -65,7 +117,6 @@ app.use((request, response, next) => {
         fs.readFileSync(filePath);
     } catch {
         if (request.url !== '/' && allowList.includes(requestIP) === false) DBmanager._serverIPAdd(requestIP, 3);
-        if (request.url === '/' && allowList.includes(requestIP) === false) DBmanager._serverIPAdd(requestIP, 1);
     }
     next();
 })
@@ -120,24 +171,68 @@ app.use(express.urlencoded({ extended: false }))
 app.get('/', function (request, response, next) {
     response.redirect('/index.html')
 });
-
+//crypto.createHash('sha256').update(pwd).digest('hex');
 /**
  * Start page
  */
 app.get('/index.html', function (request, response, next) {
-    let filePath = `./src/modules/site${request.url}`.split('?')[0];
-    const urlSplit = request.url.split('.');
-    const file = urlSplit[urlSplit.length - 1];
-    const header = `text/${file}`
-    response.setHeader('Content-Type', header)
-    response.statusCode = 200;
-    response.end(fs.readFileSync(filePath));
+    getPage(request, response);
 });
 
 /**
- * Login
+ * Donate page
  */
-app.get('/login', function (request, response, next) {
+ app.get('/donate.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * Login page
+ */
+ app.get('/user/login.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * Nidhoggbot discord giveaway documentation
+ */
+app.get('/nidhoggbot/ru/giveaway.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * Nidhoggbot discord giveaway create
+ */
+app.get('/nidhoggbot/ru/create.html', function (request, response, next) {
+    getPageForLogined(request, response);
+});
+
+/**
+ * EVE auth error page
+ */
+app.get('/eve/authErr.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * EVE auth success page
+ */
+ app.get('/eve/auth.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * Auth error page
+ * @deprecated
+ */
+ app.get('/authErr.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * Login api
+ */
+ app.get('/login', function (request, response, next) {
     if (request.query.type == null) {
         response.json('Try later (type error)');
         return;
@@ -160,8 +255,10 @@ app.get('/login', function (request, response, next) {
                 return;
             }
             else if (user.password === password) {
-                response.cookie('auth', 'true');
-                response.cookie('login', username);
+                const cryptoData = crypto.createHash('sha256').update(`${user.username}:${user.password}:authData`).digest('hex');
+                response.cookie('auth', '1', {maxAge: 60000, httpOnly: true});
+                response.cookie('username', username, {maxAge: 60000, httpOnly: true});
+                response.cookie('data', cryptoData, {maxAge: 60000, httpOnly: true})
                 response.json(`Success authErr.html#Success`);
             }
             else response.json('Login or password is incorrect');
@@ -175,75 +272,7 @@ app.get('/login', function (request, response, next) {
 });
 
 /**
- * Nidhoggbot discord giveaway documentation
- */
-app.get('/nidhoggbot/ru/giveaway.html', function (request, response, next) {
-    //response.cookie('remember', 1, { maxAge: 60000 });
-    //console.log(request.cookies)
-    let filePath = `./src/modules/site${request.url}`;
-    const urlSplit = request.url.split('.');
-    const file = urlSplit[urlSplit.length - 1];
-    const header = `text/${file}`
-    response.setHeader('Content-Type', header)
-    response.statusCode = 200;
-    response.end(fs.readFileSync(filePath));
-});
-
-/**
- * Nidhoggbot discord giveaway create
- */
- app.get('/nidhoggbot/ru/create.html', function (request, response, next) {
-    //response.cookie('remember', 1, { maxAge: 60000 });
-    //console.log(request.cookies)
-    let filePath = `./src/modules/site${request.url}`;
-    const urlSplit = request.url.split('.');
-    const file = urlSplit[urlSplit.length - 1];
-    const header = `text/${file}`
-    response.setHeader('Content-Type', header)
-    response.statusCode = 200;
-    response.end(fs.readFileSync(filePath));
-});
-
-app.get('/eve/authErr.html', function (request, response, next) {
-    //response.cookie('remember', 1, { maxAge: 60000 });
-    //console.log(request.cookies)
-    let filePath = `./src/modules/site${request.url}`;
-    const urlSplit = request.url.split('.');
-    const file = urlSplit[urlSplit.length - 1];
-    const header = `text/${file}`
-    response.setHeader('Content-Type', header)
-    response.statusCode = 200;
-    response.end(fs.readFileSync(filePath));
-});
-
-/**
- * Nidhoggbot eve auth success
- */
- app.get('/eve/auth.html', function (request, response, next) {
-    let filePath = `./src/modules/site${request.url}`;
-    const urlSplit = request.url.split('.');
-    const file = urlSplit[urlSplit.length - 1];
-    const header = `text/${file}`
-    response.setHeader('Content-Type', header)
-    response.statusCode = 200;
-    response.end(fs.readFileSync(filePath));
-});
-
-/**
- * Nidhoggbot eve auth success
- */
- app.get('/authErr.html', function (request, response, next) {
-    let filePath = `./src/modules/site${request.url}`;
-    const urlSplit = request.url.split('.');
-    const file = urlSplit[urlSplit.length - 1];
-    const header = `text/${file}`
-    response.setHeader('Content-Type', header)
-    response.statusCode = 200;
-    response.end(fs.readFileSync(filePath));
-});
-
-/**
- * Nidhoggbot eve auth redirect
+ * EVE auth redirect
  */
 app.get('/eve/auth', function (request, response, next) {
     if (request.query.username == null) response.redirect(`http://${hostname}/eve/authErr.html#queryUsernameUndefined`);
@@ -268,7 +297,7 @@ app.get('/eve/auth', function (request, response, next) {
 });
 
 /**
- * Nidhoggbot eve auth redirect
+ * EVE callback
  */
 app.get('/eve/callback', function (request, response, next) {
     if (request.query.code == null) response.redirect(`http://${hostname}/eve/authErr.html#authCodeUndefined`)
@@ -296,6 +325,9 @@ app.get('/eve/callback', function (request, response, next) {
     }
 });
 
+/**
+ * Get access to database
+ */
 app.get('/api/database', function (request, response, next) {
     response.setHeader('Content-Type', 'application/json')
     response.statusCode = 200;
@@ -323,7 +355,7 @@ app.get('/api/database', function (request, response, next) {
         });
     }
 });
-//http://127.0.0.7/api/database?database=auth&login=rnmioewioqfb&password=w5Bofnowebr213r2f3
+
 /**
  * Error handler for 404 error
  */
