@@ -3,6 +3,7 @@ const { DBmanager } = require('../DBmanager');
 const { colors } = require('../colors');
 const config = require('./config');
 
+const subdomain = require('express-subdomain');
 const cookieParser = require('cookie-parser');
 const favicon = require('serve-favicon');
 const fetch = require('node-fetch');
@@ -12,13 +13,19 @@ const fs = require('fs');
 
 /* PARAMS */
 const app = express()
-const hostname = config.TEST_IP;
-const port = 80;
+const api = express.Router();
+const hostname = config.ip;
+const port = config.port;
 const banCount = 30;
 const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141'];
 const bannedURLs = ['phpmyadmin', 'wp-login.php', 'manager', 'vendor', 'jenkins', 'samba', 'config', 'myadmin', '.git'];
 
 /* FUNCTIONS */
+/**
+ * Define subdomains
+ */
+app.use(subdomain('api', api));
+
 /**
  * Response requested page
  * @param {express.Request} request 
@@ -267,7 +274,7 @@ app.get('/eve/auth', function (request, response, next) {
         ]
         scopes = scopes.join('%20')
         response.cookie('username', request.query.username, { maxAge: 60000 });
-        response.redirect(`https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=http://${hostname}/eve/callback&client_id=67655ff739984b6cbab0782118bcbd2f&scope=${scopes}&state=NqiqDq`);
+        response.redirect(`https://login.eveonline.com/v2/oauth/authorize/?response_type=code&redirect_uri=http://77.66.178.141/eve/callback&client_id=67655ff739984b6cbab0782118bcbd2f&scope=${scopes}&state=NqiqDq`);
     }
 });
 
@@ -287,10 +294,9 @@ app.get('/eve/callback', function (request, response, next) {
             body: `grant_type=authorization_code&code=${request.query.code}`
         }
         
-        //test(options)
         fetch(`https://login.eveonline.com/v2/oauth/token`, options).then(res => {
             res.json().then(data => {
-                const username = request.cookies.username;
+                const username = 'jourloy'
                 const accessToken = data.access_token;
                 const refreshToken = data.refresh_token;
                 DBmanager._eveAdduser(username, accessToken, refreshToken);
@@ -301,6 +307,21 @@ app.get('/eve/callback', function (request, response, next) {
 });
 
 // <===================| API |===================>
+
+api.get('/', function (request, response) {
+    response.redirect(`https://api.77.66.178.141/api.html`)  
+})
+
+api.get('/api.html', function (request, response) {
+    let filePath = `./src/modules/site/api/${request.url}`.split('?')[0];
+    const urlSplit = request.url.split('.');
+    const file = urlSplit[urlSplit.length - 1];
+    const header = `text/${file}`
+    response.setHeader('Content-Type', header)
+    response.statusCode = 200;
+    response.end(fs.readFileSync(filePath));
+    return true;
+})
 
 /**
  * Get access to database
