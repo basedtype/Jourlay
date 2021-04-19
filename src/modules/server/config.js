@@ -1,3 +1,15 @@
+/* PARAMS */
+const test = true;
+const IP = '192.168.0.106';
+const PORT = 80;
+const TEST_IP = '192.168.0.103';
+const TEST_PORT = 80
+
 /* EXPORTS */
-exports.IP = '192.168.0.106';
-exports.TEST_IP = '127.0.0.1';
+if (test === true) {
+    exports.ip = TEST_IP;
+    exports.port = TEST_PORT;
+} else {
+    exports.ip = IP;
+    exports.port = PORT;
+}
