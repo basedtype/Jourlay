@@ -44,16 +44,19 @@ function getPage(request, response) {
  */
 function getPageForLogined(request, response) {
     const cookie = request.cookies;
+    const URLsplit = request.url.split('/');
+    let tag = '#'
+    if (URLsplit[1] === 'nidhoggbot' || URLsplit[1] === 'eve') tag += URLsplit[1];
     if (cookie == null || cookie.auth == null || cookie.auth !== '1') {
-        response.redirect('/user/login.html');
+        response.redirect('/user/login.html' + tag);
     } else {
         DBmanager._authGetUser(cookie.username).then(user => {
             if (user == null || user === false) {
-                response.redirect('/user/login.html');
+                response.redirect('/user/login.html' + tag);
             } else {
                 const cryptoData = crypto.createHash('sha256').update(`${user.username}:${user.password}:authData`).digest('hex');
                 if (cookie.data !== cryptoData) {
-                    response.redirect('/user/login.html');
+                    response.redirect('/user/login.html' + tag);
                 } else {
                     let filePath = `./src/modules/site/${request.url}`.split('?')[0];
                     const urlSplit = request.url.split('.');
@@ -147,7 +150,8 @@ app.use((request, response, next) => {
 /**
  * Add favicon
  */
-app.use('/favicon.ico', favicon('./src/modules/site/favicon.ico'))
+//app.use('/favicon.ico', favicon('./src/modules/site/favicon.ico'))
+app.use('/favicon/favicon.ico', express.static('./src/modules/site/favicon/favicon.ico'));
 
 /**
  * Response css and etc files
@@ -156,12 +160,14 @@ app.use((request, response, next) => {
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
     if (file === 'css' || file === 'js' || file === 'ts') {
-        const subdomains = request.subdomains.join('/')
-        let filePath = `./src/modules/site/${subdomains}/${request.url}`;
-        const header = (file === 'png' || file === 'jpg') ? `image/${file}` : `text/${file}`;
+        let filePath = `./src/modules/site${request.url}`;
+        const header = (file === 'png' || file === 'jpg' || file === 'ico') ? `image/${file}` : `text/${file}`;
         response.setHeader('Content-Type', header)
         response.statusCode = 200;
         response.end(fs.readFileSync(filePath));
+
+        console.log("fav" + " | " + file)
+        return;
     } else next();
 })
 
@@ -207,7 +213,7 @@ app.get('/donate.html', function (request, response, next) {
  * Nidhoggbot standart path
  */
 app.get('/nidhoggbot/', function (request, response, next) {
-    response.redirect(`/ru/giveaway.html`)
+    response.redirect(`/nidhoggbot/ru/giveaway.html`)
 });
 
 /**
@@ -299,7 +305,7 @@ app.get('/eve/callback', function (request, response, next) {
 /**
  * Get access to database
  */
- app.get('/database', function (request, response, next) {
+ app.get('/api/database', function (request, response, next) {
     response.setHeader('Content-Type', 'application/json')
     response.statusCode = 200;
     const query = request.query;
@@ -330,7 +336,7 @@ app.get('/eve/callback', function (request, response, next) {
 /**
  * Login api
  */
-app.get('/login', function (request, response, next) {
+app.get('/api/login', function (request, response, next) {
     if (request.query.type == null) {
         response.json('Try later (type error)');
         return;
@@ -357,7 +363,7 @@ app.get('/login', function (request, response, next) {
                 response.cookie('auth', '1', {maxAge: 60000, httpOnly: true});
                 response.cookie('username', username, {maxAge: 60000, httpOnly: true});
                 response.cookie('data', cryptoData, {maxAge: 60000, httpOnly: true})
-                response.json(`Success authErr.html#Success`);
+                response.json(`Success`);
             }
             else response.json('Login or password is incorrect');
         });
@@ -375,7 +381,7 @@ app.get('/login', function (request, response, next) {
  * Error handler for 404 error
  */
 app.use((request, response, next) => {
-    response.statusCode = 404;
+    if (request.statusCode == null || (request.statusCode != null && request.statusCode != 404)) return;
     response.setHeader('Content-Type', 'text/html')
     response.end(fs.readFileSync('./src/modules/site/404.html'));
 })
