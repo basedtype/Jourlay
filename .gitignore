@@ -7,3 +7,4 @@ tmi.js
 *test.js
 config.js
 src/test2.js
+src/modules/server/testServer.js
