@@ -9,6 +9,14 @@ const uri = "mongodb://192.168.0.100:12702/";
 const clientDB = new MongoClient(uri, { useUnifiedTopology: true });
 let usersCollection = null;
 let twitchCollection = null;
+let configCollection = null;
+let poolCollection = null;
+let serverCollection = null;
+let eveCollection = null;
+let authCollection = null;
+let giveawaysCollection = null;
+let namUsersCollection = null;
+let namGiveCollection = null;
 
 /* CODE */
 clientDB.connect().then(err => {
