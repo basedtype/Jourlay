@@ -2,8 +2,8 @@
 const { client } = require('../../Bots/discord');
 const { giveaway } = require('./_giveaway');
 const { DBmanager } = require('../../DBmanager');
-const { tools } = require('../../tools');
-const { discordLog } = require('../../discordTools');
+const { tools } = require('../../tools/tools');
+const { discordLog } = require('../../tools/discordTools');
 const Discord = require("discord.js");
 const moment = require('moment');
 
@@ -70,7 +70,6 @@ setInterval(() => {
                 .setColor(0xd25757)
                 .setImage(give.urlImage)
                 .setURL(give.urlTitle)
-                .setFooter(`With ❤️ by Jourloy`)
             client.channels.fetch('822945040337862677').then(channel => {
                 channel.send(`${winners}`, { embed: embed }).then(mss => mss.react('🎉'));
                 channel.messages.fetch(give.msgID)
@@ -110,13 +109,12 @@ setInterval(() => {
                 const hours = Math.floor(time / 60 / 60) - (days * 24);
                 const minutes = Math.floor(time / 60) - (hours * 60) - (days * 24 * 60);
                 const seconds = time%60;
-                const formatted = `${days}д ${hours}:${minutes}:${seconds}`;
+                const formatted = `${days}д ${hours}ч ${minutes}м`;
                 const embed = new Discord.MessageEmbed()
-                    .setAuthor(`${give.authorUsername} запускает розыгрыш`, give.authorURL)
                     .setTitle(give.title)
                     .setDescription(`Жми на 🎁 для участия`)
-                    .addField('Количество победителей:', give.amount, true)
                     .addField('Осталось до конца:', formatted, true)
+                    .addField('Победителей:', give.amount, true)
                     .setColor(0xd25757)
                     .setImage(give.urlImage)
                     .setURL(give.urlTitle)
@@ -125,7 +123,7 @@ setInterval(() => {
             })
         })
     }
-}, 30000)
+}, tools.convertTime({minutes: 1}))
 
 setInterval(() => {
     getGiveaways();
@@ -180,17 +178,16 @@ client.on('message', msg => {
                 discordLog.error(channel, `Слишком большой таймер`);
                 return false;
             }
-            const formatted = `${days}д ${hours}:${minutes}:${seconds}`;
+            const formatted = `${days}д ${hours}ч ${minutes}м`;
 
             if (amount === '' || amount === []) amount = 1;
             amount = parseInt(amount);
 
             const embed = new Discord.MessageEmbed()
-                .setAuthor(`${msg.author.username} запускает розыгрыш`, msg.author.avatarURL())
                 .setTitle(title)
                 .setDescription(`Жми на 🎁 для участия`)
-                .addField('Количество победителей:', amount, true)
                 .addField('Осталось до конца:', formatted, true)
+                .addField('Победителей:', amount, true)
                 .setColor(0xd25757)
                 .setImage(urlImage)
                 .setURL(urlTitle)
