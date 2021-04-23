@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css2?family=Oswald&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <script src="http://77.66.178.141/js/JQueryCookies.js"></script>
+    <script src="../js/giveaways.js"></script>
     <link rel="stylesheet" href="../css/index.css" type="text/css">
     <link rel="icon" href="/favicon/favicon.ico" type="image/x-icon"/>
     <link rel="shortcut icon" href="/favicon/favicon.ico" type="image/x-icon"/>
@@ -15,20 +17,21 @@
 </head>
 
 <body>
-    <div class="login-page">
+    <div class="create-page">
         <div class="form">
             <p id="name-logo">NIDHOGGBOT<br>Создание розыгрыша</p>
-            <form class="login-form" id="login-form" action="login">
-                <input type="text" name="guildID" placeholder="ID сервера" />
-                <input type="text" name="title" placeholder="Название" />
-                <input type="text" name="time" placeholder="Время" />
-                <input type="text" name="amount" placeholder="Количество победителей" />
-                <input type="text" name="urlTitle" placeholder="Ссылка в названии (необязательно)" />
-                <input type="text" name="urlImage" placeholder="Ссылка на картинку (необязательно)" />
-                <button id="login-button">Создать</button>
+            <form class="create-form" id="create-form" action="login">
+                <input type="text" required name="guildID" placeholder="ID сервера" />
+                <input type="text" required name="title" placeholder="Название" />
+                <input type="text" required name="time" placeholder="Время" />
+                <input type="number" required name="amount" placeholder="Количество победителей" />
+                <input type="url" name="urlTitle" placeholder="Ссылка в названии (необязательно)" />
+                <input type="url" name="urlImage" placeholder="Ссылка на картинку (необязательно)" />
+                <button id="create-button">Создать</button>
+                <p class="message""><a href="http://77.66.178.141/nidhoggbot/">Вернуться на главную</a></p>
             </form>
             <div id="incorrect">
-                <p id="err">Username or password is incorrect</p>
+                <p id="err"></p>
             </div>
         </div>
     </div>
