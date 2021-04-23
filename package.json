@@ -18,16 +18,23 @@
   },
   "homepage": "https://github.com/Jourloy/Wolfbot#readme",
   "dependencies": {
+    "@types/mongodb": "^3.6.12",
     "cookie-parser": "^1.4.5",
     "crypto": "^1.0.1",
     "discord.js": "^12.5.3",
+    "dygraphs": "^2.1.0",
     "express": "^4.17.1",
+    "express-statsd": "^0.3.0",
     "express-subdomain": "^1.0.5",
+    "fusioncharts": "^3.16.0",
     "moment": "^2.29.1",
-    "mongodb": "^3.6.5",
+    "mongodb": "^3.6.6",
     "multi-progress": "^4.0.0",
     "node-fetch": "^2.6.1",
+    "prom-client": "^13.1.0",
     "serve-favicon": "^2.5.0",
+    "smtp-server": "^3.8.0",
+    "spamc-stream": "^1.0.2",
     "tmi.js": "^1.7.5"
   }
 }
