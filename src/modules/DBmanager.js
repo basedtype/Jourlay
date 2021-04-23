@@ -1,21 +1,62 @@
 /* IMPORTS */
 const DBexamples = require('./DBexamples');
 const { colors } = require('./colors');
-const { MongoClient } = require("mongodb");
+const { MongoClient} = require("mongodb");
 const moment = require('moment');
+
+async function connectDB() {
+    const uri = "mongodb://192.168.0.100:12702/";
+    const clientDB = new MongoClient(uri, { useUnifiedTopology: true });
+    await clientDB.connect();
+    return clientDB;
+}
 
 /* PARAMS */
 const uri = "mongodb://192.168.0.100:12702/";
 const clientDB = new MongoClient(uri, { useUnifiedTopology: true });
+/**
+ * @type {import('mongodb').Db}
+ */
+let database = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let usersCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let twitchCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let configCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let poolCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let serverCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let eveCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let authCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let giveawaysCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let namUsersCollection = null;
+/**
+ * @type {import('mongodb').Collection}
+ */
 let namGiveCollection = null;
 
 /* CODE */
@@ -116,6 +157,44 @@ class DBmanager {
     }
 
     /**
+     * Get access array for resource
+     * @param {string} resourseName 
+     * @returns 
+     */
+    static async _configGetResourceAccess(resourseName) {
+        if (resourseName == null) return 'resource name is undefined';
+        const resourceAccess = await configCollection.findOne({type: 'resource', name: resourseName});
+        return resourceAccess;
+    }
+
+    /**
+     * Get access array for resource
+     * @param {string} guildID 
+     * @returns 
+     */
+     static async _configGetGuild(guildID) {
+        if (guildID == null) return 'guildID is undefined';
+        const guild = await configCollection.findOne({guildID: guildID});
+        return guild;
+    }
+
+    static _configAddUser(username, data) {
+        if (username == null) return 'username is undefined';
+        if (data == null) return 'data is undefined';
+        // TODO
+    }
+
+    /**
+     * Get access array for resource
+     * @param {string} username 
+     * @returns 
+     */
+    static async _configGetUser(username) {
+        const user = await configCollection.findOne({username: username});
+        return user;
+    }
+
+    /**
      * 
      * @param {{
      *     msgID: string,
@@ -180,7 +259,7 @@ class DBmanager {
      * 
      * @param {string} owner 
      * @param {string} id msgID
-     * 
+     * @param {string} userID
      * @returns 
      */
      static _giveawayAddPeople(owner, id, userID) {
@@ -217,6 +296,39 @@ class DBmanager {
         if (id == null) return false;
         giveawaysCollection.findOneAndDelete({msgID: id});
         return true;
+    }
+
+    /**
+     * 
+     * @param {string} guildID 
+     * @param {string} channelID 
+     * @param {string} userID 
+     * @returns 
+     */
+    static _giveawayAddChannelInGuild(guildID, channelID, userID) {
+        if (guildID == null) return false;
+        if (channelID == null) return false;
+
+        configCollection.findOne({guildID: guildID}).then(guild => {
+            if (guild == null) {
+                const docs = {
+                    guildID: guildID,
+                    giveaways: {
+                        channelID: channelID,
+                        userAccess: [],
+                    }
+                }
+                docs.giveaways.userAccess.push(userID);
+                configCollection.insertOne(docs);
+                return true;
+            } else {
+                if (guild.giveaways == null) guild.giveaways = {};
+                if (guild.giveaways.userAccess == null) guild.giveaways.userAccess = [];
+                guild.giveaways.channel = channelID,
+                guild.giveaways.userAccess.push(userID);
+                configCollection.findOneAndUpdate({guildID: guildID}, {$set: guild});
+            }
+        })
     }
 
     /**
@@ -291,12 +403,12 @@ class DBmanager {
     /**
      * Add new block in pool
      * @param {string} type 
-     * @param {string} destination 
-     * @param {} data 
-     * @param {number} priority 
-     * @returns 
+     * @param {string} owner 
+     * @param {string} doing 
+     * @deprecated throw error
      */
     static _poolAddBlock(type, owner, doing) {
+        return 0;
         const block = DBexamples.pool.block;
         block.type = type,
             block.owner = owner;
@@ -360,6 +472,3 @@ class DBmanager {
 
 /* EXPORTS */
 module.exports.DBmanager = DBmanager;
-
-//'308924864407011328' => [User],
-//'347031224121819136'
