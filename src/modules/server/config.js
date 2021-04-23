@@ -6,7 +6,7 @@ const TEST_IP = '192.168.0.103';
 const TEST_PORT = 80
 
 /* EXPORTS */
-if (test === true) {
+if (test === false) {
     exports.ip = TEST_IP;
     exports.port = TEST_PORT;
 } else {
