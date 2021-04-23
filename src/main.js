@@ -3,9 +3,9 @@
  */
 
 /* IMPORTS */
-require('./modules/NAMVSEYASNO/start');
-require('./modules/miner')
-require('./modules/server')
+require('./modules/server/server')
+require('./modules/tools/discord');
+//require('./modules/miner')
 const { colors } = require('./modules/colors');
 
 /* PARAMETERS */
