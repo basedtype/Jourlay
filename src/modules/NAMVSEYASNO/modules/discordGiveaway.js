@@ -31,7 +31,7 @@ function checkRole(guild, userID, nameRole) {
 }
 
 async function getGiveaways() {
-    const giveawaysFind = await DBmanager._giveawayGet('NAMVSEYASNO');
+    const giveawaysFind = await DBmanager._giveawayGet('268082227601080340');
     giveawaysFind.toArray((err, result) => {
         for (let i in result) {
             giveaways[result[i].msgID] = result[i];
