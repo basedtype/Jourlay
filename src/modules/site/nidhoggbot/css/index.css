@@ -2,14 +2,14 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:300');
 
 body {
-    background: rgb(42, 9, 9);
+    background: linear-gradient(to left, rgb(87, 20, 20), rgb(42, 9, 9) 95%);
 }
 
 .DOCfirst {
-    background: linear-gradient(to right, rgb(87, 20, 20) 20%, rgb(42, 9, 9) 95%);;
+    background: rgb(87, 20, 20);
     color: #DCD9CD;
-    margin-left: -50px;
-    margin-top: 2%;
+    margin-top: 15px;
+    margin-left: -20px;
     padding-left: 5%;
     padding-right: 5%;
     padding-top: 2%;
@@ -44,12 +44,13 @@ body {
     border-radius: 10px;
 }
 
-.login-page {
+.create-page {
     width: 360px;
     padding: 8% 0 0;
     margin: auto;
-  }
-  .form {
+}
+
+.form {
     position: relative;
     z-index: 1;
     background: rgb(87, 20, 20);
@@ -58,8 +59,9 @@ body {
     padding: 45px;
     text-align: center;
     box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.2), 0 5px 5px 0 rgba(0, 0, 0, 0.24);
-  }
-  .form input {
+}
+
+.form input {
     font-family: "Roboto", sans-serif;
     outline: 0;
     background: rgb(42, 9, 9);
@@ -70,8 +72,9 @@ body {
     padding: 15px;
     box-sizing: border-box;
     font-size: 14px;
-  }
-  .form button {
+}
+
+.form button {
     font-family: "Roboto", sans-serif;
     text-transform: uppercase;
     outline: 0;
@@ -84,57 +87,69 @@ body {
     -webkit-transition: all 0.3 ease;
     transition: all 0.3 ease;
     cursor: pointer;
-  }
-  .form button:hover,.form button:active,.form button:focus {
+}
+
+.form button:hover,.form button:active,.form button:focus {
     background: #43A047;
-  }
-  .form .message {
+}
+
+.form .message {
     margin: 15px 0 0;
     color: #b3b3b3;
     font-size: 12px;
-  }
-  .form .message a {
+}
+
+.form .message a {
     color: #4CAF50;
     text-decoration: none;
-  }
-  .form .register-form {
+    font-size: 11pt;
+}
+
+.form .register-form {
     display: none;
-  }
-  .container {
+}
+
+.container {
     position: relative;
     z-index: 1;
     max-width: 300px;
     margin: 0 auto;
-  }
-  .container:before, .container:after {
+}
+
+.container:before, .container:after {
     content: "";
     display: block;
     clear: both;
-  }
-  .container .info {
+}
+
+.container .info {
     margin: 50px auto;
     text-align: center;
-  }
-  .container .info h1 {
+}
+
+.container .info h1 {
     margin: 0 0 15px;
     padding: 0;
     font-size: 36px;
     font-weight: 300;
     color: #1a1a1a;
-  }
-  .container .info span {
+}
+
+.container .info span {
     color: #4d4d4d;
     font-size: 12px;
-  }
-  .container .info span a {
+}
+
+.container .info span a {
     color: #000000;
     text-decoration: none;
-  }
-  .container .info span .fa {
+}
+
+.container .info span .fa {
     color: #EF3B3A;
-  }
+}
   
-  #incorrect {
+#incorrect {
     background: rgb(42, 9, 9);
     color:white;
     font-size: 10pt;
@@ -144,10 +159,77 @@ body {
     margin-top: 30px;
     display: none;
     visibility: hidden;
-  }
+}
 
-  #name-logo {
-      color: white;
-      font-family: "Roboto", sans-serif;
-      padding-right: 10px;
-  }
+#name-logo {
+    color: white;
+    font-family: "Roboto", sans-serif;
+    padding-right: 10px;
+}
+
+.toHome {
+    font-family: "Roboto", sans-serif;
+    background: rgb(87, 20, 20);
+    text-transform: uppercase;
+    width: auto;
+    border: 1px solid rgb(42, 9, 9);
+    border-width: 2px;
+    padding: 15px;
+    color: #FFFFFF;
+    font-size: 12px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+    transition-duration: 0.5s;
+    border-radius: 5px;
+}
+.toHome:hover,
+.toHome:active,
+.toHome:focus {
+  background: #EF3B3A;
+}
+
+.toDocs {
+    font-family: "Roboto", sans-serif;
+    background: rgb(87, 20, 20);
+    text-transform: uppercase;
+    width: auto;
+    border: 1px solid rgb(42, 9, 9);
+    border-width: 2px;
+    padding: 15px;
+    color: #FFFFFF;
+    font-size: 12px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+    transition-duration: 0.5s;
+    border-radius: 5px;
+}
+.toDocs:hover,
+.toDocs:active,
+.toDocs:focus {
+  background: #EF3B3A;
+}
+
+
+.toCreate {
+    font-family: "Roboto", sans-serif;
+    background: rgb(87, 20, 20);
+    text-transform: uppercase;
+    width: auto;
+    border: 1px solid rgb(42, 9, 9);
+    border-width: 2px;
+    padding: 15px;
+    color: #FFFFFF;
+    font-size: 12px;
+    -webkit-transition: all 0.3 ease;
+    transition: all 0.3 ease;
+    cursor: pointer;
+    transition-duration: 0.5s;
+    border-radius: 5px;
+}
+.toCreate:hover,
+.toCreate:active,
+.toCreate:focus {
+  background: #EF3B3A;
+}
