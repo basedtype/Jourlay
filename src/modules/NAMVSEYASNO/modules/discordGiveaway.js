@@ -121,6 +121,7 @@ setInterval(() => {
                     .setFooter(`With ❤️ by Jourloy`)
                 msg.edit(`<@&822198199140745246>`, {embed: embed})
             })
+            .catch(() => {})
         })
     }
 }, tools.convertTime({minutes: 1}))
@@ -306,6 +307,6 @@ client.on('messageReactionAdd', msg => {
     for (let i in users) {
         if (users[i].username === 'Nidhoggbot') continue;
         const id = users[i].id
-        DBmanager._giveawayAddPeople('NAMVSEYASNO', msg.message.id, id);
+        DBmanager._giveawayAddPeople('268082227601080340', msg.message.id, id);
     }
 })
