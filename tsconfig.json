@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "removeComments": true,
+        "outDir": "./js/",
+        "sourceMap": false,
+    },
+    "exclude":[
+        "./src/modules/www",
+        "node_modules"
+    ]
+}
