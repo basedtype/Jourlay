@@ -1,4 +1,5 @@
 /* IMPORTS */
+const { discordTools } = require('../tools/discordTools')
 const { DBmanager } = require('../DBmanager');
 const { colors } = require('../colors');
 const config = require('./config');
@@ -10,6 +11,7 @@ const fetch = require('node-fetch');
 const express = require('express')
 const crypto = require('crypto');
 const fs = require('fs');
+const { tools } = require('../tools/tools');
 
 /* PARAMS */
 const app = express()
@@ -17,8 +19,8 @@ const api = express.Router();
 const hostname = config.ip;
 const port = config.port;
 const banCount = 30;
-const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141'];
-const bannedURLs = ['phpmyadmin', 'wp-login.php', 'manager', 'vendor', 'jenkins', 'samba', 'config', 'myadmin', '.git'];
+const allowList = ['127.0.0.1', '192.168.0.106', '77.66.178.141', '192.168.0.103',];
+const bannedURLs = ['phpmyadmin', 'wp-login.php', 'manager', 'vendor', 'jenkins', 'samba', 'config', 'myadmin', '.git', 'config', 'users'];
 
 /* FUNCTIONS */
 /**
@@ -210,7 +212,14 @@ app.get('/donate.html', function (request, response, next) {
 /**
  * Login page
  */
- app.get('/user/login.html', function (request, response, next) {
+app.get('/user/login.html', function (request, response, next) {
+    getPage(request, response);
+});
+
+/**
+ * Login page
+ */
+app.get('/user/graphs.html', function (request, response, next) {
     getPage(request, response);
 });
 
@@ -220,7 +229,14 @@ app.get('/donate.html', function (request, response, next) {
  * Nidhoggbot standart path
  */
 app.get('/nidhoggbot/', function (request, response, next) {
-    response.redirect(`/nidhoggbot/ru/giveaway.html`)
+    response.redirect(`/nidhoggbot/user.html`)
+});
+
+/**
+ * Nidhoggbot user page
+ */
+app.get('/nidhoggbot/user.html', function (request, response, next) {
+    getPageForLogined(request, response);
 });
 
 /**
@@ -293,7 +309,7 @@ app.get('/eve/callback', function (request, response, next) {
             },
             body: `grant_type=authorization_code&code=${request.query.code}`
         }
-        
+
         fetch(`https://login.eveonline.com/v2/oauth/token`, options).then(res => {
             res.json().then(data => {
                 const username = 'jourloy'
@@ -309,7 +325,7 @@ app.get('/eve/callback', function (request, response, next) {
 // <===================| API |===================>
 
 api.get('/', function (request, response) {
-    response.redirect(`https://api.77.66.178.141/api.html`)  
+    response.redirect(`https://api.77.66.178.141/api.html`)
 })
 
 api.get('/api.html', function (request, response) {
@@ -326,7 +342,7 @@ api.get('/api.html', function (request, response) {
 /**
  * Get access to database
  */
- app.get('/api/database', function (request, response, next) {
+app.get('/api/database', function (request, response, next) {
     response.setHeader('Content-Type', 'application/json')
     response.statusCode = 200;
     const query = request.query;
@@ -381,9 +397,9 @@ app.get('/api/login', function (request, response, next) {
             }
             else if (user.password === password) {
                 const cryptoData = crypto.createHash('sha256').update(`${user.username}:${user.password}:authData`).digest('hex');
-                response.cookie('auth', '1', {maxAge: 60000, httpOnly: true});
-                response.cookie('username', username, {maxAge: 60000, httpOnly: true});
-                response.cookie('data', cryptoData, {maxAge: 60000, httpOnly: true})
+                response.cookie('auth', '1', { maxAge: tools.convertTime({days: 30})});
+                response.cookie('username', username, { maxAge: tools.convertTime({days: 30})});
+                response.cookie('data', cryptoData, { maxAge: tools.convertTime({days: 30})});
                 response.json(`Success`);
             }
             else response.json('Login or password is incorrect');
@@ -391,10 +407,41 @@ app.get('/api/login', function (request, response, next) {
     } else if (request.query.type === 'register') {
 
     } else {
-        response.json('Try later (Kind of type error)');
+        response.json('Try later (Type error)');
         return;
     }
 });
+
+app.get('/api/giveaway/create', function (request, response, next) {
+    const query = request.query;
+    const give = {
+        msgID: '',
+        time: query.time,
+        amount: query.amount,
+        created: query.created,
+        people: [],
+        urlTitle: query.urlTitle,
+        urlImage: query.urlImage,
+        title: query.title,
+        guildID: query.guildID,
+        webUsername: query.webUsername,
+    }
+    discordTools.createGiveaway(give, response);
+})
+
+app.get('/api/config/user', function (request, response, next) {
+    const query = request.query;
+    
+    if (query.type === 'check_access') {
+        DBmanager._configGetUser(query.username).then(user => {
+            if (user == null) response.json(`Access denied`);
+            else if (user.giveaways == null) response.json(`Access denied`);
+            else if (user.giveaways.includes(query.guildID) === false) response.json(`Access denied`);
+            else response.json(`Success`);
+            return;
+        })
+    }
+})
 
 // <===================| ERRORS AND START |===================>
 
