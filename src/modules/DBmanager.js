@@ -52,10 +52,12 @@ let authCollection = null;
 let giveawaysCollection = null;
 /**
  * @type {import('mongodb').Collection}
+ * @deprecated
  */
 let namUsersCollection = null;
 /**
  * @type {import('mongodb').Collection}
+ * @deprecated
  */
 let namGiveCollection = null;
 
