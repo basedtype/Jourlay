@@ -1,9 +1,4 @@
-
 package-lock.json
 node_modules
 .DS_Store
-tmi.js
-*.json
-*test.js
-src/test2.js
-src/modules/server/testServer.js
+test.js
