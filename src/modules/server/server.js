@@ -35,7 +35,7 @@ app.use(subdomain('api', api));
  * @returns {true}
  */
 function getPage(request, response) {
-    let filePath = `./src/modules/site/${request.url}`.split('?')[0];
+    let filePath = `./src/modules/www/${request.url}`.split('?')[0];
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
     const header = `text/${file}`
@@ -67,7 +67,7 @@ function getPageForLogined(request, response) {
                 if (cookie.data !== cryptoData) {
                     response.redirect('/user/login.html' + tag);
                 } else {
-                    let filePath = `./src/modules/site/${request.url}`.split('?')[0];
+                    let filePath = `./src/modules/www/${request.url}`.split('?')[0];
                     const urlSplit = request.url.split('.');
                     const file = urlSplit[urlSplit.length - 1];
                     const header = `text/${file}`
@@ -126,7 +126,7 @@ app.use((request, response, next) => {
 app.use((request, response, next) => {
     const requestIP = request.ip.split(':').pop();
     const requestURL = request.url;
-    let filePath = `./src/modules/site${requestURL}`;
+    let filePath = `./src/modules/www${requestURL}`;
     try {
         fs.readFileSync(filePath);
     } catch {
@@ -159,8 +159,8 @@ app.use((request, response, next) => {
 /**
  * Add favicon
  */
-//app.use('/favicon.ico', favicon('./src/modules/site/favicon.ico'))
-app.use('/favicon/favicon.ico', express.static('./src/modules/site/favicon/favicon.ico'));
+//app.use('/favicon.ico', favicon('./src/modules/www/favicon.ico'))
+app.use('/favicon/favicon.ico', express.static('./src/modules/www/favicon/favicon.ico'));
 
 /**
  * Response css and etc files
@@ -169,7 +169,7 @@ app.use((request, response, next) => {
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
     if (file === 'css' || file === 'js' || file === 'ts') {
-        let filePath = `./src/modules/site${request.url}`;
+        let filePath = `./src/modules/www${request.url}`;
         const header = (file === 'png' || file === 'jpg' || file === 'ico') ? `image/${file}` : `text/${file}`;
         response.setHeader('Content-Type', header)
         response.statusCode = 200;
@@ -329,7 +329,7 @@ api.get('/', function (request, response) {
 })
 
 api.get('/api.html', function (request, response) {
-    let filePath = `./src/modules/site/api/${request.url}`.split('?')[0];
+    let filePath = `./src/modules/www/api/${request.url}`.split('?')[0];
     const urlSplit = request.url.split('.');
     const file = urlSplit[urlSplit.length - 1];
     const header = `text/${file}`
@@ -451,7 +451,7 @@ app.get('/api/config/user', function (request, response, next) {
 app.use((request, response, next) => {
     if (request.statusCode == null || (request.statusCode != null && request.statusCode != 404)) return;
     response.setHeader('Content-Type', 'text/html')
-    response.end(fs.readFileSync('./src/modules/site/404.html'));
+    response.end(fs.readFileSync('./src/modules/www/404.html'));
 })
 
 /**
