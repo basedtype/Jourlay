@@ -6,7 +6,7 @@
  */
 
 /* CLASSES */
-export class colors {
+export class color {
     /**
      * 
      * @param text 
@@ -15,7 +15,7 @@ export class colors {
      * @param option `Bright` | `Dim` | `Underscore` | `Blink` | `Reverse` | `Hidden` | ''
      * @returns 
      */
-    public static get(text: string, FgColor: string, BgColor: string, option: string): string {
+    public static get(text: string, FgColor?: string, BgColor?: string, option?: string): string {
         if (FgColor == null) FgColor = '';
         if (BgColor == null) BgColor = '';
         if (option == null) option = '';
