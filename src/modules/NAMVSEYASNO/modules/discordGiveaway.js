@@ -208,7 +208,7 @@ client.on('message', msg => {
                     authorURL: msg.author.avatarURL(),
                 }
                 giveaways[mss.id] = give;
-                DBmanager._giveawayAdd('NAMVSEYASNO', give);
+                DBmanager._giveawayAdd('268082227601080340', give);
                 mss.react('🎁')
             });
             msg.delete();
@@ -220,7 +220,7 @@ client.on('message', msg => {
                 length: 5,
                 end: Math.floor(moment.now() / 1000) + 5,
             }
-            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, 'time', dataGive);
+            DBmanager._giveawayUpdate('268082227601080340', ID, 'time', dataGive);
         } else if (command === giveaway.config.reroll) {
             const amount = messageSplit[1];
             const ID = messageSplit[2];
@@ -231,7 +231,7 @@ client.on('message', msg => {
                 end: Math.floor(moment.now() / 1000) + 5,
                 amount: amount
             }
-            DBmanager._giveawayUpdate('NAMVSEYASNO', ID, 'time', dataGive);
+            DBmanager._giveawayUpdate('268082227601080340', ID, 'time', dataGive);
         } else if (command === giveaway.config.setting) {
             const commandSplit = msg.content.split('%');
             const id = commandSplit[1];
@@ -261,27 +261,27 @@ client.on('message', msg => {
                     length: msTime,
                     end: Math.floor(moment.now() / 1000) + msTime,
                 }
-                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
+                DBmanager._giveawayUpdate('268082227601080340', id, type, dataGive);
             } else if (type === 'amount') {
                 const dataGive = {
                     amount: parseInt(data)
                 }
-                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
+                DBmanager._giveawayUpdate('268082227601080340', id, type, dataGive);
             } else if (type === 'title') {
                 const dataGive = {
                     title: data
                 }
-                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
+                DBmanager._giveawayUpdate('268082227601080340', id, type, dataGive);
             } else if (type === 'url') {
                 const dataGive = {
                     urlTitle: data
                 }
-                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
+                DBmanager._giveawayUpdate('268082227601080340', id, type, dataGive);
             } else if (type === 'urlImage') {
                 const dataGive = {
                     urlImage: data
                 }
-                DBmanager._giveawayUpdate('NAMVSEYASNO', id, type, dataGive);
+                DBmanager._giveawayUpdate('268082227601080340', id, type, dataGive);
             }
         } else if (command === giveaway.config.random) {
             // !grand % 1 % 2 % 3
