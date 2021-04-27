@@ -1,5 +1,6 @@
 /* IMPORTS */
-import * as color from "../tools/colors";
+import { manager as database } from "../Database";
+import { color } from "../tools/colors";
 
 import * as subdomain from "express-subdomain";
 import * as cookieParser from "cookie-parser";
@@ -22,18 +23,17 @@ function checkURL(request: express.Request, response: express.Response): number 
 
     for (let uri in url) {
         if (blockURLs.includes(uri) === true) {
-            this.banIP(IP);
+            database.serverBanIP(IP);
             return 1;
         }
         const extensions = uri.split('.');
         for (let extension in extensions) {
             if (blockURLs.includes(extension) === true) {
-                this.banIP(IP);
+                database.serverBanIP(IP);
                 return 1;
             }
         }
     }
-
     return 0;
 }
 
@@ -54,22 +54,22 @@ function getPage(request: express.Request, response: express.Response): boolean 
     return true;
 }
 
-function host(app: any) {
+function host(app: express.Express): express.Express {
     /**
      * Defence server
      */
-    app.use((request, response, next) => {
+    app.use((request: express.Request, response: express.Response, next: express.NextFunction) => {
+        const IP = request.ip.split(":").pop();
         const state = checkURL(request, response);
-        if (state === 1) {
+        if (state === 1) return 0;
 
-            // TODO: ADD IP IN DATABASE
+        database.serverGetBannedIP().then(array => {
+            array.forEach(address => {
+                if (address.IP === IP) return;
+            });
+        })
 
-            return 0;
-        }
-
-        // TODO: GET BANNED IP FROM DATABASE
-
-        // TODO: ADD WARNING OBJECT FOR IP
+        database.serverAddWarning(IP);
 
         next();
     })
@@ -88,7 +88,7 @@ function host(app: any) {
     /**
      * Response css and js files
      */
-    app.use((request, response, next) => {
+    app.use((request: express.Request, response: express.Response, next: express.NextFunction) => {
         const urlSplit = request.url.split('.');
         const file = urlSplit[urlSplit.length - 1];
         if (file === 'css' || file === 'js') {
@@ -101,7 +101,7 @@ function host(app: any) {
         } else next();
     })
 
-    app.get('/index.html', (request, response, next) => {
+    app.get('/index.html', (request: express.Request, response: express.Response, next: express.NextFunction) => {
         getPage(request, response);
         return 0;
     })
@@ -113,23 +113,32 @@ export class server {
     static app = express();
     static api = express.Router();
 
-    private static banIP(IP: string) {
-
-    }
-
     private static preStart(): number {
         this.app.use(subdomain('api', this.api));
         return 0;
     }
 
-    public static run(): void {
+    public static testRun(): void {
         this.preStart();
+        const HOST = '127.0.0.1'
         const PORT = 8000;
 
         this.app = host(this.app);
 
-        this.app.listen(PORT, () => {
-            console.log(`⚡️[server]: Server is running at https://localhost:${PORT}`);
+        this.app.listen(PORT, HOST, () => {
+            console.log(`${color.get(`[server]`, `FgCyan`)} - start ${color.get('test', 'FgGreen')} on ${HOST}:${PORT}`);
+        });
+    }
+
+    public static run(): void {
+        this.preStart();
+        const HOST = '77.66.178.141'
+        const PORT = 80;
+
+        this.app = host(this.app);
+
+        this.app.listen(PORT, HOST, () => {
+            console.log(`${color.get(`[server]`, `FgCyan`)} - start ${color.get('host', 'FgRed')} on ${HOST}:${PORT}`);
         });
     }
 }
