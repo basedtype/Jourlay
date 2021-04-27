@@ -1,114 +1,120 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald&display=swap');
-@import url('https://fonts.googleapis.com/css?family=Roboto:300');
+@import url(https://cdn.jsdelivr.net/gh/tonsky/FiraCode@5.2/distr/fira_code.css);
 
 body {
-  background: rgb(42, 9, 9);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    background: rgb(42, 9, 9);
 }
 
-.donationFooter {
-  background: rgb(87, 20, 20);
-  margin-left: -10px;
-  margin-top: -10px;
-  margin-right: -5px;
-  color: white;
-  font-family: 'Roboto', sans-serif;
-  padding: 30px;
+.page {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgb(87, 20, 20) 20%, rgb(42, 9, 9) 95%)
 }
 
-.donationButtonsDiv {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  margin-right: -50%;
-  transform: translate(-50%, -50%);
+.menu {
+    background: rgb(87, 20, 20);
+    height: 60px;
+    border-bottom: 2pt solid black;
+    position: relative 
 }
 
-ul.donationButtons {
-  margin: 0;
-  padding: 4px;
+.main-button {
+    margin-left: 10px;
+    border: 0px solid;
+    border-radius: 10px;
+    height: 45px;
+    width: 90px;
+    position: absolute;      
+    top: 50%;                         
+    transform: translate(0, -50%);
+    background: rgb(87, 20, 20);
+    color: white;
+    font-family: 'Fira Code', monospace;
+    font-size: 10pt;
+    transition-duration: 1s;
+}
+.main-button:hover {
+    background: #EF3B3A ;
 }
 
-ul.donationButtons li {
-  display: inline;
-  margin-right: 5px;
-  padding: 3px;
+.donate-button {
+    border: 0px solid;
+    border-radius: 10px;
+    height: 45px;
+    width: 90px;
+    position: absolute;     
+    left: 110px;      
+    top: 50%;                         
+    transform: translate(0, -50%);
+    background: rgb(87, 20, 20);
+    color: white;
+    font-family: 'Fira Code', monospace;
+    font-size: 10pt;
+    transition-duration: 1s;
 }
 
-.donationButton {
-  font-family: "Roboto", sans-serif;
-  text-transform: uppercase;
-  outline: 0;
-  background-color: rgb(87, 20, 20);
-  width: 100px;
-  border: 0;
-  padding: 15px;
-  color: #FFFFFF;
-  font-size: 14px;
-  -webkit-transition: all 0.3 ease;
-  transition: all 0.3 ease;
-  cursor: pointer;
-  transition-duration: 0.5s;
-  border-radius: 5px;
+.donate-button:hover {
+    background: #EF3B3A ;
 }
 
-.toHome {
-  font-family: "Roboto", sans-serif;
-  background: rgb(87, 20, 20);
-  text-transform: uppercase;
-  /* outline: 0; */
-  width: auto;
-  border: 1px solid rgb(42, 9, 9);
-  border-width: 2px;
-  padding: 15px;
-  color: #FFFFFF;
-  font-size: 12px;
-  -webkit-transition: all 0.3 ease;
-  transition: all 0.3 ease;
-  cursor: pointer;
-  transition-duration: 0.5s;
-  border-radius: 5px;
-}
-.toHome:hover,
-.toHome:active,
-.toHome:focus {
-  background: rgb(42, 9, 9);
+.body-user {
+    text-align: center;
+    width: 1050px;
+    left: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%)
 }
 
-.donationData {
-  font-family: "Roboto", sans-serif;
-  background: rgb(87, 20, 20);
-  color: white;
-  border-radius: 5px;
-  padding: 5px;
-  margin-top: 8px;
-  text-align: center;
-  font-size: 11pt;
-  margin-left: 3px;
-  width: 435px;
+.menu-button {
+    border: 0px solid blue;
+    height: 250px;
+    width: 500px;
+    margin-left: 1%;
+    margin-right: 1%;
+    margin-bottom: 1%;
+    border-radius: 15px;
+    color: white;
+    font-family: 'Fira Code', monospace;
+    background: rgb(138, 31, 31);
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.7);
+    transition-duration: 1s;
 }
 
-.errorBody {
-  background: linear-gradient(to right, rgb(42, 9, 9) 5%, rgb(87, 20, 20) 20%, rgb(87, 20, 20) 80%, rgb(42, 9, 9) 95%);
-  color: #DCD9CD;
-  margin-left: -50px;
-  margin-top: 2%;
-  padding-left: 5%;
-  padding-right: 5%;
-  padding-top: 2%;
-  padding-bottom: 2%;
-  border-radius: 15px;
-  font-family: 'Roboto', sans-serif;
-  text-align: center;
+.menu-button h2 {
+    font-size: 20pt;
 }
 
-#errorCode {
-  background: rgb(42, 9, 9);
-  font-family: 'Roboto', sans-serif;
-  font-size: 11pt;
-  color: white;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: center;
+.menu-button .line {
+    height: 2px;
+    width: auto;
+    background: linear-gradient(to right, rgb(138, 31, 31) 0%, #EF3B3A 100%);
+}
+
+.menu-button p {
+    margin-top: 5%;
+    font-size: 10pt;
+}
+
+.menu-button button-footer {
+    height: 5px;
+    width: auto;
+    background: #EF3B3A ;
+}
+
+.menu-button:hover {
+    background: #EF3B3A ;
+    box-shadow: 12px 12px 10px rgba(0,0,0,0.7);
+}
+.menu-button:active {
+    background: #EF3B3A ;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+}
+
+#menu-button-3 {
+    margin-top: 1%;
 }
