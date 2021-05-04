@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --project .",
-    "build www": "tsc --project ./src/modules/www"
+    "build www": "tsc --project ./src/modules/www",
+    "start-test": "node dist/mainTest.js"
   },
   "repository": {
     "type": "git",
