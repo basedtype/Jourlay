@@ -42,7 +42,10 @@ clientDB.connect().then(() => {
 })
 
 export class manager {
-    public static configAddBot(username: string, type:string, oauth: string): boolean {
+
+    /* <=========================== CONFIG ===========================> */
+
+    public static configAddBot(username: string, type: string, oauth: string): boolean {
         if (configCollection == null) return;
         if (username == null) return;
         if (type == null) return;
@@ -76,13 +79,23 @@ export class manager {
 
     public static async configGetGuild(ID: number): Promise<config.guild> {
         if (ID == null) return;
-        const guild: Promise<config.guild> = await configCollection.findOne({ID: ID});
+        const guild: Promise<config.guild> = await configCollection.findOne({ ID: ID });
         return guild;
     }
 
+    /**
+     * Get access array for resource
+     */
+    public static async configGetUser(username: string): Promise<any> { // TOOD: Remove any 
+        const user = await configCollection.findOne({ username: username });
+        return user;
+    }
+
+    /* <=========================== SERVER ===========================> */
+
     public static serverBanIP(IP: string, reason?: string): boolean {
         if (IP == null) return;
-        serverCollection.findOne({IP: IP}).then(address => {
+        serverCollection.findOne({ IP: IP }).then(address => {
             if (address == null) {
                 const docs: server.address = {
                     IP: IP,
@@ -95,7 +108,7 @@ export class manager {
             } else {
                 address.banned = true;
                 if (reason != null || reason != "") address.description = reason;
-                serverCollection.updateOne({IP: IP}, {$set: address});
+                serverCollection.updateOne({ IP: IP }, { $set: address });
             }
         })
         return true;
@@ -103,11 +116,11 @@ export class manager {
 
     public static serverUnbanIP(IP: string): boolean {
         if (IP == null) return;
-        serverCollection.findOne({IP: IP}).then(address => {
+        serverCollection.findOne({ IP: IP }).then(address => {
             if (address == null) return;
             else {
                 address.banned = false;
-                serverCollection.updateOne({IP: IP}, {$set: address});
+                serverCollection.updateOne({ IP: IP }, { $set: address });
             }
         })
         return true;
@@ -115,7 +128,7 @@ export class manager {
 
     public static serverAddWarning(IP: string): boolean {
         if (IP == null) return;
-        serverCollection.findOne({IP: IP}).then(address => {
+        serverCollection.findOne({ IP: IP }).then(address => {
             if (address == null) {
                 const docs: server.address = {
                     IP: IP,
@@ -127,7 +140,7 @@ export class manager {
                 serverCollection.insertOne(docs);
             } else {
                 address.warnings++;
-                serverCollection.updateOne({IP: IP}, {$set: address});
+                serverCollection.updateOne({ IP: IP }, { $set: address });
             }
         })
         return true;
@@ -136,5 +149,31 @@ export class manager {
     public static async serverGetBannedIP(): Promise<server.address[]> {
         const address: Promise<server.address[]> = serverCollection.find().toArray();
         return address;
+    }
+
+    /* <=========================== POOL ===========================> */
+
+    /**
+     * Add block in pool for logging
+     * @param type 
+     * @param owner 
+     * @param text 
+     */
+    public static poolAddBlock(type: string, owner: string, text: string): boolean {
+        let block: pool.logBlock;
+        block.type = type;
+        block.owner = owner;
+        block.text = text;
+        block.logging = true;
+        poolCollection.insertOne(block);
+        return true;
+    }
+
+    /* <=========================== GIVEAWAYS ===========================> */
+
+    public static giveawaysAdd(owner: string, give: giveaways.give): boolean {
+        give.owner = owner;
+        giveawaysCollection.insertOne(give);
+        return true;
     }
 }
