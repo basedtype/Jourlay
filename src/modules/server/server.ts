@@ -101,9 +101,71 @@ function host(app: express.Express): express.Express {
         } else next();
     })
 
+    /* MAIN RESPONSE */
+
+    app.get('/', (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        response.redirect('/index.html');
+    })
+
+    app.get('/user/', (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        response.redirect('/user/index.html');
+    })
+
     app.get('/index.html', (request: express.Request, response: express.Response, next: express.NextFunction) => {
         getPage(request, response);
         return 0;
+    })
+
+    app.get('/user/giveaways.html', (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        getPage(request, response);
+        return 0;
+    })
+
+    app.get('/user/index.html', (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        getPage(request, response);
+        return 0;
+    })
+
+    /* API RESPONSE */
+
+    app.get('/api/', (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        response.redirect('/api/index.html');
+    })
+
+    app.get('/api/index.html', (request: express.Request, response: express.Response, next: express.NextFunction) => {
+        getPage(request, response);
+        return 0;
+    })
+
+    app.get('/api/giveaway/create', function (request, response, next) {
+        const query = request.query;
+        const give = {
+            msgID: '',
+            time: query.time,
+            amount: query.amount,
+            created: query.created,
+            people: [],
+            urlTitle: query.urlTitle,
+            urlImage: query.urlImage,
+            title: query.title,
+            guildID: query.guildID,
+            webUsername: query.webUsername,
+        }
+        discordTools.createGiveaway(give, response);
+    })
+   
+    app.get('/api/config/user', function (request, response, next) {
+        const query = request.query;
+   
+        if (query.type === 'check_access') {
+            database._configGetUser(query.username).then(user => {
+                if (user == null) response.json(`Access denied`);
+                else if (user.giveaways == null) response.json(`Access denied`);
+                else if (user.giveaways.includes(query.guildID) === false) response.json(`Access denied`);
+                else response.json(`Success`);
+                return;
+            })
+        }
     })
 
     return app;
@@ -132,7 +194,7 @@ export class server {
 
     public static run(): void {
         this.preStart();
-        const HOST = '77.66.178.141'
+        const HOST = '192.168.0.103'
         const PORT = 80;
 
         this.app = host(this.app);
