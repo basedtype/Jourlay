@@ -1,8 +1,0 @@
-# What are you forget here, human?
-# What are you want to see, mmmm?
-# Maybe you are hacker?
-# Maybe you are grey hacker?
-# You know, anyway I glad to see you :)
-
-User-agent: *
-Disallow: /

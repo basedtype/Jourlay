@@ -1,4 +1,21 @@
 jQuery(function ($) {
+    $('.main-button').on('click', () => {
+        window.location.replace('/');
+    });
+
+    $('.user-button').on('click', () => {
+        window.location.replace('/user/');
+    });
+
+    $('#donate-button').on('click', () => {
+        window.location.replace('/donate.html');
+    });
+    
+    $('.message a').on('click', () => {
+        $('form').animate({ height: "toggle", opacity: "toggle" }, "slow");
+        $('incorrect').animate({display: "inline"})
+    });
+
     $('#create-form').on('submit', event => {
         var $data = {};
         $('#create-form').find('input, textearea, select').each(function () {
