@@ -1,3 +1,15 @@
-import { server } from "./modules/server/server";
+/* IMPORTS */
+import { color } from "./modules/tools/color";
+import "./modules/discord/main";
+import "./modules/twitch/main";
 
-server.run();
+/* PARAMS */
+const nvyLogo = `     ██╗ █████╗ ██╗   ██╗██████╗ ██╗      █████╗ ██╗   ██╗
+     ██║██╔══██╗██║   ██║██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝
+     ██║██║  ██║██║   ██║██████╔╝██║     ██║  ██║ ╚████╔╝ 
+██╗  ██║██║  ██║██║   ██║██╔══██╗██║     ██║  ██║  ╚██╔╝  
+╚█████╔╝╚█████╔╝╚██████╔╝██║  ██║███████╗╚█████╔╝   ██║   
+ ╚════╝  ╚════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚════╝    ╚═╝   `;
+
+/* CODE */
+console.log(color.box(nvyLogo, `FgRed`, '', ''));
