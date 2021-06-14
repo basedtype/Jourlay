@@ -1,7 +1,6 @@
 package-lock.json
 node_modules
 .DS_Store
-test.js
-.vscode/settings.json
+*test*
+.vscode
 dist
-_www
