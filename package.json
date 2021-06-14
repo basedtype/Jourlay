@@ -1,49 +1,36 @@
 {
-  "name": "wolfbot",
-  "version": "1.0.0",
+  "name": "nidhoggbot",
+  "version": "2.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "build": "tsc --project .",
-    "build-www": "tsc --project ./src/modules/www",
-    "start": "node dist/main.js",
-    "start-test": "node dist/mainTest.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Jourloy/Wolfbot.git"
+    "build": "tsc --project ."
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Jourloy/Wolfbot/issues"
-  },
-  "homepage": "https://github.com/Jourloy/Wolfbot#readme",
+  "author": "Jourloy",
+  "license": "",
   "dependencies": {
     "cookie-parser": "^1.4.5",
     "crypto": "^1.0.1",
+    "date": "^1.0.2",
     "discord.js": "^12.5.3",
-    "dygraphs": "^2.1.0",
     "express": "^4.17.1",
     "express-statsd": "^0.3.0",
     "express-subdomain": "^1.0.5",
-    "fusioncharts": "^3.16.0",
+    "lodash": "^4.17.21",
     "moment": "^2.29.1",
-    "mongodb": "^3.6.6",
+    "mongodb": "^3.6.8",
     "multi-progress": "^4.0.0",
     "node-fetch": "^2.6.1",
-    "prom-client": "^13.1.0",
-    "serve-favicon": "^2.5.0",
-    "smtp-server": "^3.8.0",
-    "spamc-stream": "^1.0.2",
-    "tmi.js": "^1.7.5",
-    "tsc": "^1.20150623.0",
+    "tmi.js": "file:tmi.js",
+    "tsc": "^2.0.3",
     "typescript": "^4.2.4"
   },
   "devDependencies": {
     "@types/express": "^4.17.11",
-    "@types/jquery": "^3.5.5",
-    "@types/mongodb": "^3.6.12"
+    "@types/lodash": "^4.14.170",
+    "@types/mongodb": "^3.6.16",
+    "@types/multi-progress": "^2.0.3",
+    "@types/tmi.js": "^1.7.1"
   }
 }
