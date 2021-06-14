@@ -4,9 +4,9 @@
         "module": "CommonJS",
         "removeComments": true,
         "outDir": "./dist/",
-        "sourceMap": false,
+        "sourceMap": false
     },
     "exclude":[
-        "./src/modules/www",
+        "./src/modules/www"
     ]
 }
