@@ -14,6 +14,12 @@ declare namespace config {
         role: ds.Role;
         guild: ds.Guild;
     }
+
+    interface log {
+        text: string;
+        toDiscord: boolean;
+        error?: boolean;
+    }
 }
 
 declare namespace toolsOptions {
