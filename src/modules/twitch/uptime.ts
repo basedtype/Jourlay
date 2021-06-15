@@ -1,6 +1,8 @@
 /* IMPORTS */
-import { client } from "./main";
 import { twitchFetch } from "./twitchFetch";
+import { manager } from "../database/main";
+import { client } from "./main";
+
 import * as moment from "moment";
 
 /* PARAMS */
@@ -33,6 +35,21 @@ setInterval(function () {
             };
         })
         .catch(() => {});
+
+    if (uptime == null || uptime.stream == null) return;
+    twitchFetch.getCurrentViewers().then(viewers => {
+        const chatters = viewers.chatters;
+        for (let i in chatters) {
+            const group = chatters[i];
+
+            for (let j in group) {
+                if (group[j] === 'jourloy') continue;
+                twitchFetch.getUserID(group[i]).then(id => {
+                    manager.addWatchTime(id);
+                })
+            }
+        }
+    })
 }, 1000)
 
 setInterval(function () {
