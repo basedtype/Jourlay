@@ -49,12 +49,12 @@ setInterval(() => {
         }
     }
     for (let i in warningsID) {
-        if (warningsID[i].count > 3) {
+        if (warningsID[i].count > 3 && banVoiceUsers.includes(i) === false) {
             logs.add(`${i} created too many channels`);
             banVoiceUsers.push(i);
         }
     }
-})
+}, 500)
 
 /**
  * Remove unused and undeleted channels
