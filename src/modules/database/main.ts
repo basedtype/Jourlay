@@ -10,11 +10,6 @@ const clientDB = new mongodb.MongoClient(uri, { useUnifiedTopology: true });
 
 let configCollection: mongodb.Collection = null;
 let logCollection: mongodb.Collection = null;
-let subCollection: mongodb.Collection = null;
-let aucCollection: mongodb.Collection = null;
-let colorsCollection: mongodb.Collection = null;
-let chatersCollection: mongodb.Collection = null;
-let channelsCollection: mongodb.Collection = null;
 let botCollection: mongodb.Collection = null;
 let mainlogCollection: mongodb.Collection = null;
 let serverCollection: mongodb.Collection = null;
@@ -25,11 +20,6 @@ clientDB.connect().then(() => {
     const JRLYdatabase = clientDB.db('JOURLOY');
     configCollection = JRLYdatabase.collection('config');
     logCollection = JRLYdatabase.collection('logs');
-    subCollection = JRLYdatabase.collection('subscribers');
-    aucCollection = JRLYdatabase.collection('auc');
-    chatersCollection = JRLYdatabase.collection('chaters');
-    channelsCollection = JRLYdatabase.collection('channels');
-    colorsCollection = JRLYdatabase.collection('colors');
 
     const botsDatabase = clientDB.db('Nidhoggbot');
     mainlogCollection = botsDatabase.collection('logs');
@@ -72,12 +62,18 @@ export class manager {
         return bot;
     }
 
-    /* <=========================== JRLY ===========================> */
+    /* <=========================== JOURLOY ===========================> */
+
+    /** */
+    public static createLog(log: config.log) {
+        logCollection.insertOne(log);
+    }
 
     /**
      * Add log in log pool
+     * @deprecated
      */
-    public static nvyAddLog(text: string): boolean {
+    public static jrlyAddLog(text: string): boolean {
         logCollection.insertOne({text: text, date: new Date()})
         return true;
     }
@@ -85,7 +81,7 @@ export class manager {
     /**
      * Get log from log pool
      */
-    public static async nvyGetLog() {
+    public static async jrlyGetLog() {
         const log = await logCollection.findOne({});
         return log;
     }
