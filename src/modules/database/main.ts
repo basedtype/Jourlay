@@ -10,8 +10,9 @@ const clientDB = new mongodb.MongoClient(uri, { useUnifiedTopology: true });
 
 let configCollection: mongodb.Collection = null;
 let logCollection: mongodb.Collection = null;
-let botCollection: mongodb.Collection = null;
+let chattersCollection: mongodb.Collection = null;
 let mainlogCollection: mongodb.Collection = null;
+let botCollection: mongodb.Collection = null;
 let serverCollection: mongodb.Collection = null;
 let serverIpCollection: mongodb.Collection = null;
 
@@ -20,6 +21,7 @@ clientDB.connect().then(() => {
     const JRLYdatabase = clientDB.db('JOURLOY');
     configCollection = JRLYdatabase.collection('config');
     logCollection = JRLYdatabase.collection('logs');
+    chattersCollection = JRLYdatabase.collection('chatters');
 
     const botsDatabase = clientDB.db('Nidhoggbot');
     mainlogCollection = botsDatabase.collection('logs');
@@ -64,9 +66,36 @@ export class manager {
 
     /* <=========================== JOURLOY ===========================> */
 
-    /** */
+    /** 
+     * Add log in pool
+     */
     public static createLog(log: config.log) {
         logCollection.insertOne(log);
+    }
+
+    /**
+     * Add watchtime
+     */
+    public static addWatchTime(id: string) {
+        chattersCollection.findOne({id: id}).then(chatter => {
+            if (chatter == null) {
+                const chatter = {
+                    id: id,
+                    watchTime: 1
+                }
+                chattersCollection.insertOne(chatter);
+            } else {
+                chatter.watchTime++;
+                chattersCollection.findOneAndUpdate({id: id}, {$set: chatter});
+            }
+        })
+    }
+
+    /**
+     * Return information about chatter
+     */
+    public static getChatterInfo(id: string) {
+        return chattersCollection.findOne({id: id});
     }
 
     /**
@@ -80,6 +109,7 @@ export class manager {
 
     /**
      * Get log from log pool
+     * @deprecated
      */
     public static async jrlyGetLog() {
         const log = await logCollection.findOne({});
