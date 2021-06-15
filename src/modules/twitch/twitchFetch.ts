@@ -25,4 +25,8 @@ export class twitchFetch {
         if (options == null) options = this.options;
         return await this.getJson(url, options);
     }
+
+    public static async getCurrentViewers() {
+        return await this.getJson('http://tmi.twitch.tv/group/user/jourloy/chatters', this.options);
+    }
 }
