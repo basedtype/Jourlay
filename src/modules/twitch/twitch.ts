@@ -10,6 +10,7 @@ import "../COD/main"
 import "./uptime";
 
 import * as _ from "lodash";
+import { _jourloy } from "../discord/main";
 
 /* PARAM */
 
