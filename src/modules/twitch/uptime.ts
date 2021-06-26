@@ -38,6 +38,10 @@ setInterval(function () {
 
     if (uptime == null || uptime.stream == null) return;
     twitchFetch.getCurrentViewers().then(viewers => {
+        if (viewers == null || viewers.chatters == null) {
+            console.log(viewers);
+            return;
+        }
         const chatters = viewers.chatters;
         for (let i in chatters) {
             const group = chatters[i];
