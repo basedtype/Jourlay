@@ -1,5 +1,6 @@
 /* IMPORTS */
 import { manager } from "../database/main";
+import { loadout } from "../COD/loadouts";
 import { client, _jourloy } from "./main";
 import { logs } from "../tools/logs";
 
@@ -314,20 +315,23 @@ export class discord {
 
 /* REACTIONS */
 client.on('message', msg => {
+    if (msg.author.bot === true) return;
     const channelID = msg.channel.id;
     const authorID = msg.author.id;
     const message = msg.content;
     const messageSplit = message.split(' ');
     const command = messageSplit[0].split('!')[1];
+
+    if (channelID === '816104930443395072') {
+        if (command == null) return;
+        const embed = loadout.getWeapon(command);
+        msg.reply(embed);
+    }
 })
 
-client.on('messageReactionAdd', (msg) => {
+client.on('messageReactionAdd', (msg) => { 
     const channelID = msg.message.channel.id;
     const emoji = msg.emoji.name;
 
     if (msg.me === true) return;
-})
-
-client.on('channelCreate', (data) => {
-    manager.jrlyAddLog('')
 })
