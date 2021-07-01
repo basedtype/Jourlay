@@ -16,8 +16,8 @@ setInterval(function () {
         method: "GET",
         headers: {
             'Accept': 'application/vnd.twitchtv.v5+json',
-            "Client-ID": "q9hc1dfrl80y7eydzbehcp7spj6ga1", // TODO: Remove
-            'Authorization': 'OAuth djzzkk9jr9ppnqucmx1ixsce7kl9ly' // TODO: Remove
+            "Client-ID": "qetz5m3hw8vv6qsid3uobvl8kjotfk", // TODO: Remove
+            'Authorization': 'OAuth g2fg29tk4zfikr5gh6qexxt2nsctda' // TODO: Remove
         }
     }
     twitchFetch.get(`https://api.twitch.tv/kraken/streams/${authorID}`, opt)
