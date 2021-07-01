@@ -15,6 +15,7 @@ let mainlogCollection: mongodb.Collection = null;
 let botCollection: mongodb.Collection = null;
 let serverCollection: mongodb.Collection = null;
 let serverIpCollection: mongodb.Collection = null;
+let informationCollection: mongodb.Collection = null;
 
 /* CODE */
 clientDB.connect().then(() => {
@@ -30,6 +31,7 @@ clientDB.connect().then(() => {
     const serverDatabase = clientDB.db('Server');
     serverCollection = serverDatabase.collection('config');
     serverIpCollection = serverDatabase.collection('IP');
+    informationCollection = serverDatabase.collection('info');
 })
 
 export class manager {
@@ -117,4 +119,23 @@ export class manager {
     }
 
     /* <=========================== SERVER ===========================> */
+
+    /**
+     * Add uptime
+     */
+     public static updateUptime(uptime: number, bot: string): boolean {
+        informationCollection.findOne({type: 'uptime', bot: bot}).then(upt => {
+            if (upt == null) informationCollection.insertOne({type: 'uptime', uptime: uptime, bot: bot});
+            else informationCollection.findOneAndUpdate({type: 'uptime', bot: bot}, {$set: {type: 'uptime', uptime: uptime, bot: bot}});
+        })
+        return true;
+    }
+
+    /**
+     * Get uptime
+     */
+    public static async getUptime(bot: string): Promise<{type: string, uptime: number, bot: string}> {
+        const uptime = await informationCollection.findOne({ type: 'uptime', bot: bot });
+        return uptime;
+    }
 }
