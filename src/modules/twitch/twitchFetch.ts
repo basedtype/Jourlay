@@ -7,7 +7,7 @@ export class twitchFetch {
         method: 'GET',
         headers: {
             'Accept': 'application/vnd.twitchtv.v5+json',
-            'Client-ID': 'q9hc1dfrl80y7eydzbehcp7spj6ga1'
+            'Client-ID': 'qetz5m3hw8vv6qsid3uobvl8kjotfk'
         }
     }
 
@@ -18,6 +18,7 @@ export class twitchFetch {
     public static async getUserID(username: string) {
         const url = `https://api.twitch.tv/kraken/users?login=${username}`;
         const response = await this.getJson(url, this.options);
+        if (response == null || response.users == null || response.users[0] == null) return;
         return response.users[0]._id;
     }
 
