@@ -322,10 +322,41 @@ client.on('message', msg => {
     const messageSplit = message.split(' ');
     const command = messageSplit[0].split('!')[1];
 
-    if (channelID === '816104930443395072') {
-        if (command == null) return;
-        const embed = loadout.getWeapon(command);
-        msg.reply(embed);
+    if (command === 'nvy_photo') {
+        client.guilds.fetch('268082227601080340').then((guild) => {
+            const channels = guild.channels.cache.array();
+            let channelW = null;
+            for (let i in channels) {
+                if (channels[i].id === '587717131941183498') channelW = channels[i];
+            }
+            const channel: ds.TextChannel = channelW;
+            channel.messages.fetch({limit: 100}).then((mess) => {
+                const messages = mess.array();
+                let messagesFiltered = [];
+    
+                for (let i in messages) {
+                    if (messages[i].attachments.array()[0] != null && messages[i].attachments.array()[0].name != null && (messages[i].attachments.array()[0].name.split(".")[1] === 'jpg' || messages[i].attachments.array()[0].name.split(".")[1] === 'png' || messages[i].attachments.array()[0].name.split(".")[1] === 'mp4')) messagesFiltered.push(messages[i]);
+                }
+    
+                for (let i in messagesFiltered) {
+                    msg.author.send(messagesFiltered[i].attachments.array()[0].url).then(mss => {
+                        mss.react('❌');
+                    })
+                }
+
+                msg.author.send('END').then(mss => {
+                    mss.delete({timeout: 5000})
+                })
+            });
+        })
+    } else if (command === 'dm_clear') {
+        msg.channel.messages.fetch().then(mess => {
+            const messages = mess.array();
+            for (let i in messages) {
+                if (messages[i].author.bot === false) continue;
+                messages[i].delete();
+            }
+        })
     }
 })
 
@@ -334,4 +365,10 @@ client.on('messageReactionAdd', (msg) => {
     const emoji = msg.emoji.name;
 
     if (msg.me === true) return;
+
+    if (emoji === '❌') {
+        if (msg.message.guild == null) {
+            msg.message.delete()
+        }
+    }
 })
