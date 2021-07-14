@@ -37,14 +37,14 @@ let banVoiceUsers: string[] = [];
 setInterval(() => {
     voiceUsers = [];
     banVoiceUsers = [];
-}, tools.convertTime({minutes: 2}));
+}, tools.convertTime({ minutes: 2 }));
 
 /** */
 setInterval(() => {
     const warningsID = {};
     for (let i in voiceUsers) {
         if (warningsID[voiceUsers[i]] == null) {
-            warningsID[voiceUsers[i]] = {count: 1};
+            warningsID[voiceUsers[i]] = { count: 1 };
         } else if (warningsID[voiceUsers[i]] != null) {
             warningsID[voiceUsers[i]].count++;
         }
@@ -71,7 +71,7 @@ setInterval(() => {
         if (channels[i].members.array().length === 0) {
             channels[i].delete()
                 .then(() => { logs.add(`Delete created channel via interval`) })
-                .catch(() => {});
+                .catch(() => { });
         }
     }
 }, 10000)
@@ -84,8 +84,8 @@ setInterval(() => {
     const deleteFunction = (channelNew: ds.GuildChannel) => {
         if (channelNew.members.array().length === 0) {
             channelNew.delete()
-            .then(() => { logs.add(`Delete created channel via function`) })
-            .catch(() => {});
+                .then(() => { logs.add(`Delete created channel via function`) })
+                .catch(() => { });
             return true;
         }
         return false;
@@ -322,35 +322,9 @@ client.on('message', msg => {
     const messageSplit = message.split(' ');
     const command = messageSplit[0].split('!')[1];
 
-    if (command === 'nvy_photo') {
-        client.guilds.fetch('268082227601080340').then((guild) => {
-            const channels = guild.channels.cache.array();
-            let channelW = null;
-            for (let i in channels) {
-                if (channels[i].id === '587717131941183498') channelW = channels[i];
-            }
-            const channel: ds.TextChannel = channelW;
-            channel.messages.fetch({limit: 100}).then((mess) => {
-                const messages = mess.array();
-                let messagesFiltered = [];
-    
-                for (let i in messages) {
-                    if (messages[i].attachments.array()[0] != null && messages[i].attachments.array()[0].name != null && (messages[i].attachments.array()[0].name.split(".")[1] === 'jpg' || messages[i].attachments.array()[0].name.split(".")[1] === 'png' || messages[i].attachments.array()[0].name.split(".")[1] === 'mp4')) messagesFiltered.push(messages[i]);
-                }
-    
-                for (let i in messagesFiltered) {
-                    msg.author.send(messagesFiltered[i].attachments.array()[0].url).then(mss => {
-                        mss.react('❌');
-                    })
-                }
-
-                msg.author.send('END').then(mss => {
-                    mss.delete({timeout: 5000})
-                })
-            });
-        })
-    } else if (command === 'dm_clear') {
-        msg.channel.messages.fetch().then(mess => {
+    if (command === 'dm_clear') {
+        const limit = parseInt(messageSplit[1]) || 100;
+        msg.channel.messages.fetch({ limit: limit }).then(mess => {
             const messages = mess.array();
             for (let i in messages) {
                 if (messages[i].author.bot === false) continue;
@@ -358,9 +332,22 @@ client.on('message', msg => {
             }
         })
     }
+
+    if (authorID !== '308924864407011328') return;
+
+    if (command === 'help') {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xff0000)
+            .setTitle(`HELP`)
+            .addFields(
+                {name: 'Help', value: '`!jrly_help`\n`!nvy_help`'}
+            )
+            .setFooter(`With ❤️ by Jourloy`)
+        msg.channel.send(embed);
+    }
 })
 
-client.on('messageReactionAdd', (msg) => { 
+client.on('messageReactionAdd', (msg) => {
     const channelID = msg.message.channel.id;
     const emoji = msg.emoji.name;
 
