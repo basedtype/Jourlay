@@ -10,7 +10,7 @@ export class loadout {
             .setTitle('All weapons')
             .addFields(
                 {name: "Modern Warfare", value: "**Submachine Guns**\n`!mp5_standart`\n`!mp5_respawn`\n**Marksman Rifles**\n`!kar98k_standart`\n`!kar98k_respawn`\n`!spr`", inline: true},
-                {name: "Cold War", value: "**Assault Rifles**\n`!fara`\n**Light Machine Guns**\n`!mg82`\n**Sniper Rifles**\n`!zrg`\n`!k31`", inline: true},
+                {name: "Cold War", value: "**Assault Rifles**\n`!fara`\n**Submachine Guns**\n`!ots9`\n**Light Machine Guns**\n`!mg82`\n**Sniper Rifles**\n`!zrg`\n`!k31`", inline: true},
             )
             .setFooter('With ❤️ by Jourloy')
             .setColor(0xfe645e);
@@ -88,6 +88,24 @@ export class loadout {
             .setFooter('With ❤️ by Jourloy')
             .setColor(0xfe645e)
             .setAuthor("MW · Submachine Guns");
+            return embed;
+        } else if (name === 'ots9' || name === 'ots') {
+            const embed = new ds.MessageEmbed()
+            .setTitle('OTs 9')
+            .addFields(
+                {name: "Muzzle", value: "Sound Suppressor (3)"},
+                {name: "Barrel", value: "8.1\" Task Force (6)"},
+                {name: "Laser", value: "GRU 5mw Laser Sight (4)"},
+                {name: "Optic", value: "-"},
+                {name: "Stock", value: "-"},
+                {name: "Underbarrel", value: "Spetsnaz Grip (5)"},
+                {name: "Ammunition", value: "VDV 40 Rnd Fast Mag (6)"},
+                {name: "Rear Grip", value: "-"},
+            )
+            .setImage('https://cdn.discordapp.com/attachments/865258525760159766/865698850496839680/OTs9.png')
+            .setFooter('16.07.2021 · With ❤️ by Jourloy')
+            .setColor(0xfe645e)
+            .setAuthor("CW · Submachine Guns");
             return embed;
         } else if (name === 'mg82') {
             const embed = new ds.MessageEmbed()
