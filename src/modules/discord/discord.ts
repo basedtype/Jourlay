@@ -11,19 +11,19 @@ import { tools } from "../tools/main";
 /* PARAM */
 const voiceChannels = {
     duo: {
-        id: '798853439610159146',
+        id: '865697645920911371',
         name: 'Game room [2]',
     },
     trio: {
-        id: '799559562909974538',
+        id: '865697670852378684',
         name: 'Game room [3]',
     },
     four: {
-        id: '799559861285158982',
+        id: '865697708676087828',
         name: 'Game room [4]',
     },
     five: {
-        id: '799560553525542922',
+        id: '865697728766803998',
         name: 'Game room [5]',
     },
 }
@@ -70,7 +70,7 @@ setInterval(() => {
     for (let i in channels) {
         if (channels[i].members.array().length === 0) {
             channels[i].delete()
-                .then(() => { logs.add(`Delete created channel via interval`) })
+                .then(() => { logs.add(`Delete created channel (interval)`) })
                 .catch(() => { });
         }
     }
@@ -84,7 +84,7 @@ setInterval(() => {
     const deleteFunction = (channelNew: ds.GuildChannel) => {
         if (channelNew.members.array().length === 0) {
             channelNew.delete()
-                .then(() => { logs.add(`Delete created channel via function`) })
+                .then(() => { logs.add(`Delete created channel (function)`) })
                 .catch(() => { });
             return true;
         }
@@ -343,6 +343,13 @@ client.on('message', msg => {
                 {name: 'Help', value: '`!jrly_help`\n`!nvy_help`'}
             )
             .setFooter(`With ❤️ by Jourloy`)
+        msg.channel.send(embed);
+    }
+
+    if (msg.guild == null || msg.guild.id !== '437601028662231040') return;
+
+    if (channelID === '816104930443395072') {
+        const embed = loadout.getWeapon(command);
         msg.channel.send(embed);
     }
 })
