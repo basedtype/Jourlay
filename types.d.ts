@@ -20,6 +20,16 @@ declare namespace config {
         toDiscord: boolean;
         error?: boolean;
     }
+
+    interface serverConfigs {
+        logChannelID: string;
+        logs: boolean;
+        modChannelID: string;
+        updates: boolean;
+        conf: boolean;
+        creator?: string;
+        pays?: boolean;
+    }
 }
 
 declare namespace toolsOptions {
@@ -30,141 +40,5 @@ declare namespace toolsOptions {
         days?: number;
         weeks?: number;
         mounths?: number;
-    }
-}
-
-declare namespace callOfDuty {
-    interface mwWeapon {
-        muzzle: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        barrel: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        laser: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        optic: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        stock: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        underbarrel: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        ammunition: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        rearGrip: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        perk: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-    }
-
-    interface mwWeaponPistol {
-        muzzle: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        barrel: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        laser: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        optic: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        triggerAction: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        ammunition: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        rearGrip: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        perk: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-    }
-
-    interface mwWeaponSniperRifle {
-        muzzle: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        barrel: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        laser: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        optic: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        stock: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        underbarrel: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        rearGrip: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
-        perk: {
-            exist: boolean;
-            count?: number;
-            name?: string;
-        },
     }
 }
