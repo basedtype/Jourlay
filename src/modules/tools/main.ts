@@ -15,7 +15,7 @@ export class tools {
 
     public static toHHMMSS(second) {
         const sec_num = parseInt(second, 10);
-        const hours   = Math.floor(sec_num / 3600);
+        const hours = Math.floor(sec_num / 3600);
         const minutes = Math.floor((sec_num - (hours * 3600)) / 60);
         const seconds = sec_num - (hours * 3600) - (minutes * 60);
 
@@ -23,13 +23,20 @@ export class tools {
         let formatedMinutes = '';
         let formatedSeconds = '';
 
-        if (hours < 10) formatedHours = '0'+hours;
+        if (hours < 10) formatedHours = '0' + hours;
         else formatedHours = hours.toString();
-        if (minutes < 10) formatedMinutes = '0'+minutes;
+        if (minutes < 10) formatedMinutes = '0' + minutes;
         else formatedMinutes = minutes.toString();
-        if (seconds < 10) formatedSeconds = '0'+seconds;
+        if (seconds < 10) formatedSeconds = '0' + seconds;
         else formatedSeconds = seconds.toString();
 
-        return formatedHours+':'+formatedMinutes+':'+formatedSeconds;
+        return formatedHours + ':' + formatedMinutes + ':' + formatedSeconds;
+    }
+
+    public static random(min: number, max: number): number {
+        return Math.floor(
+            Math.random() * (max - min) + min
+        )
     }
 }
+
