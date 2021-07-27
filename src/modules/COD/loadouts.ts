@@ -1,55 +1,50 @@
 /* IMPORTS */
 import * as ds from 'discord.js';
-import { callOfDuty } from "../../../types";
 
 /* CLASSES */
 export class loadout {
     public static getWeapon(name?: string): ds.MessageEmbed | string {
         if (name == null || name === 'weapons') {
             const embed = new ds.MessageEmbed()
-            .setTitle('All weapons')
+            .setTitle('Все оружия')
             .addFields(
-                {name: "Modern Warfare", value: "**Submachine Guns**\n`!mp5_standart`\n`!mp5_respawn`\n**Marksman Rifles**\n`!kar98k_standart`\n`!kar98k_respawn`\n`!spr`", inline: true},
-                {name: "Cold War", value: "**Assault Rifles**\n`!fara`\n**Submachine Guns**\n`!ots9`\n**Light Machine Guns**\n`!mg82`\n**Sniper Rifles**\n`!zrg`\n`!k31`", inline: true},
+                {name: "Modern Warfare", value: "**Пистолеты-пулеметы**\n`!mp5_standart`\n`!mp5_respawn`\n**Пехотные винтовки**\n`!kar98k_standart`\n`!kar98k_respawn`\n`!spr`", inline: true},
+                {name: "Cold War", value: "**Штурмовые винтовки**\n`!fara`\n**Пистолеты-пулеметы**\n`!ots9`\n**Пулеметы**\n`!mg82`\n**Снайперские винтовки**\n`!zrg`\n`!k31`", inline: true},
             )
             .setFooter('With ❤️ by Jourloy')
             .setColor(0xfe645e);
             return embed;
         } else if (name === 'kar98k_standart' || name === 'kar98k' || name === 'kar') {
             const embed = new ds.MessageEmbed()
-            .setTitle('Kar98k (Standart)')
-            .addFields(
-                {name: "Muzzle", value: "Monolithic Supperssor (5)"},
-                {name: "Barrel", value: "Singuard Customs 27.6\" (3)"},
-                {name: "Laser", value: "Tac Laser (1)"},
-                {name: "Optic", value: "Sniper Scrope (8)"},
-                {name: "Stock", value: "FTAC Sport Comb (3)"},
-                {name: "Underbarrel", value: "-"},
-                {name: "Rear Grip", value: "-"},
-                {name: "Perk", value: "-"},
-            )
+            .setTitle('Kar98k (Обычный)')
+            .setDescription(`**Muzzle:** Monokithic Suppressor (5)
+**Barrel:** Singuard Customs 27.6" (3)
+**Laser:** Tac Laser (1)
+**Optic:** Sniper Scrope (8)
+**Stock:** FTAC Sport Comb (3)
+**Underbarrel:** -
+**Rear Grip:** -
+**Perk:** -`)
             .setImage('https://cdn.discordapp.com/attachments/820292600334516294/855853337466241024/Kar98k_standart.png')
             .setFooter('With ❤️ by Jourloy')
             .setColor(0xfe645e)
-            .setAuthor("MW · Marksman Rifles");
+            .setAuthor("MW · Пехотные винтовки");
             return embed;
         } else if (name === 'kar98k_respawn') {
             const embed = new ds.MessageEmbed()
             .setTitle('Kar98k (Respawn)')
-            .addFields(
-                {name: "Muzzle", value: "Monolithic Supperssor (5)"},
-                {name: "Barrel", value: "-"},
-                {name: "Laser", value: "Tac Laser (1)"},
-                {name: "Optic", value: "Scout Combat Optic (4)"},
-                {name: "Stock", value: "FTAC Sport Comb (3)"},
-                {name: "Underbarrel", value: "-"},
-                {name: "Rear Grip", value: "-"},
-                {name: "Perk", value: "Fully Loaded (5)"},
-            )
+            .setDescription(`**Muzzle:** Monolithic Suppressor (5)
+**Barrel:** -
+**Laser:** Tac Laser (1)
+**Optic:** Sniper Scrope (8)
+**Stock:** FTAC Sport Comb (3)
+**Underbarrel:** -
+**Rear Grip:** -
+**Perk:** Fully Loaded (5)`)
             .setImage('https://cdn.discordapp.com/attachments/820292600334516294/855902178995339304/kar98k_respawn.png')
             .setFooter('With ❤️ by Jourloy')
             .setColor(0xfe645e)
-            .setAuthor("MW · Marksman Rifles");
+            .setAuthor("MW · Пехотные винтовки");
             return embed;
         } else if (name === 'mp5_standart' || name === 'mp5') {
             const embed = new ds.MessageEmbed()
@@ -178,7 +173,7 @@ export class loadout {
             .setImage('https://cdn.discordapp.com/attachments/820292600334516294/857093765176098816/fara.png')
             .setFooter('With ❤️ by Jourloy')
             .setColor(0xfe645e)
-            .setAuthor("MW · Marksman Rifles");
+            .setAuthor("MW · Пехотные винтовки");
             return embed;
         } else if (name === 'k31') {
             const embed = new ds.MessageEmbed()
