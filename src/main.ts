@@ -19,4 +19,4 @@ const nvyLogo = `     ██╗ █████╗ ██╗   ██╗██�
  }, 1000)
  
  /* CODE */
- console.log(color.box(nvyLogo, `FgRed`, '', ''));
+ console.log(color.box(nvyLogo, `FgRed`, '', '') + '\n\n');
