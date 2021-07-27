@@ -14,6 +14,7 @@ const bar = multi.newBar(' getting twitch client [:bar] :percent :etas', {
 });
 export let client: tmi.Client = null;
 let getClient: boolean = false;
+let counter = 0;
 
 /* INTERVALS */
 let clientIntervalID = setInterval(() => {
@@ -25,6 +26,8 @@ let clientIntervalID = setInterval(() => {
 
 let startIntervalID = setInterval(() => {
     bar.tick(1)
+    counter++;
+    if (counter < 5) return;
     if (client == null) return;
     if (client != null) {
         require('./twitch');
