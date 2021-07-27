@@ -9,8 +9,8 @@ import * as upt from "./uptime";
 import "../COD/main"
 import "./uptime";
 
-import * as _ from "lodash";
 import { _jourloy } from "../discord/main";
+import * as _ from "lodash";
 
 /* PARAM */
 
@@ -21,6 +21,7 @@ import { _jourloy } from "../discord/main";
 /* REACTIONS */
 client.on('message', (channel, userstate, message, self) => {
     if (self) return;
+    if (channel !== '#jourloy') return;
     const username = userstate['username'].toLowerCase();
     const messageSplit = message.split(' ');
     const msSplit = messageSplit[0].split('!');
@@ -38,6 +39,14 @@ client.on('message', (channel, userstate, message, self) => {
                 client.say(channel, `@${username}, your watchtime is ${time}`);
             })
         })
+    } else if (command === '8ball') {
+        const array = ['Да!','Нет!','Не знаю','Чутье подсказывает, что стоит','Чутье подсказывает, что не стоит','Хахаха, я лучше промолчу',];
+        client.say(channel, `${_.sample(array)}`);
+    } else if (command === 'roulette') {
+        if (tools.random(1, 10) === 1) {
+            client.timeout(channel, username, 10, 'БАБАХ');
+            client.say(channel, 'БАБАХ! Вот и все');
+        } else { client.say(channel, 'Хм, не заряжен, кажется тебе повезло') }
     }
 
     /* WARZONE */
