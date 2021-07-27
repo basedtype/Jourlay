@@ -11,11 +11,13 @@ const clientDB = new mongodb.MongoClient(uri, { useUnifiedTopology: true });
 let configCollection: mongodb.Collection = null;
 let logCollection: mongodb.Collection = null;
 let chattersCollection: mongodb.Collection = null;
+let discordMembersCollection: mongodb.Collection = null;
 let mainlogCollection: mongodb.Collection = null;
 let botCollection: mongodb.Collection = null;
 let serverCollection: mongodb.Collection = null;
 let serverIpCollection: mongodb.Collection = null;
 let informationCollection: mongodb.Collection = null;
+let nvyConfigCollection: mongodb.Collection = null;
 
 /* CODE */
 clientDB.connect().then(() => {
@@ -23,6 +25,7 @@ clientDB.connect().then(() => {
     configCollection = JRLYdatabase.collection('config');
     logCollection = JRLYdatabase.collection('logs');
     chattersCollection = JRLYdatabase.collection('chatters');
+    discordMembersCollection = JRLYdatabase.collection('members');
 
     const botsDatabase = clientDB.db('Nidhoggbot');
     mainlogCollection = botsDatabase.collection('logs');
@@ -32,9 +35,33 @@ clientDB.connect().then(() => {
     serverCollection = serverDatabase.collection('config');
     serverIpCollection = serverDatabase.collection('IP');
     informationCollection = serverDatabase.collection('info');
+
+    const nvyDatabase = clientDB.db('NAMVSEYASNO');
+    nvyConfigCollection = nvyDatabase.collection('config');
 })
 
 export class manager {
+
+    /* <=========================== NVY ===========================> */
+
+    /**
+     * Retun server configs
+     */
+     public static async nvyGetServerConfig(): Promise<config.serverConfigs> {
+        if (nvyConfigCollection == null) return;
+        let config = await nvyConfigCollection.findOne({conf: true});
+        if (config == null) {
+            const docs: config.serverConfigs = {
+                logChannelID: '',
+                logs: false,
+                modChannelID: '',
+                updates: false,
+                conf: true,
+            }
+            nvyConfigCollection.insertOne(docs);
+            return docs;
+        } else return config;
+    }
 
     /* <=========================== CONFIG ===========================> */
 
@@ -116,6 +143,21 @@ export class manager {
     public static async jrlyGetLog() {
         const log = await logCollection.findOne({});
         return log;
+    }
+
+    public static updateInviterMember(username: string) {
+        discordMembersCollection.findOne({username: username}).then(member => {
+            if (member == null) {
+                member = {
+                    username: username,
+                    inviteUses: 1
+                }
+                discordMembersCollection.insertOne(member);
+            } else {
+                member.inviteUses++;
+                discordMembersCollection.findOneAndUpdate({_id: member._id}, {$set: member});
+            }
+        })
     }
 
     /* <=========================== SERVER ===========================> */
