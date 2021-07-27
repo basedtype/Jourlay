@@ -12,25 +12,82 @@ import { tools } from "../tools/main";
 const voiceChannels = {
     duo: {
         id: '865697645920911371',
-        name: 'Game room [2]',
+        name: 'Игровая комната [2]',
     },
     trio: {
         id: '865697670852378684',
-        name: 'Game room [3]',
+        name: 'Игровая комната [3]',
     },
     four: {
         id: '865697708676087828',
-        name: 'Game room [4]',
+        name: 'Игровая комната [4]',
     },
     five: {
         id: '865697728766803998',
-        name: 'Game room [5]',
+        name: 'Игровая комната [5]',
     },
 }
+const invites = {};
 let voiceUsers: string[] = [];
 let banVoiceUsers: string[] = [];
+let checkRules = false;
+let checkRoles = false;
 
 /* INTERVALS */
+/**
+ * Check rules and roles for emoutes
+ */
+setInterval(() => {
+    client.guilds.cache.forEach(g => {
+        g.fetchInvites().then(guildInvites => {
+            invites[g.id] = guildInvites;
+        });
+    });
+    if (checkRoles === false) {
+        client.channels.fetch('868238068283473952').then((channel: ds.TextChannel) => {
+            if (channel.messages.cache.array().length === 0) {
+                channel.messages.fetch().then(messArray => {
+                    const mess = messArray.array();
+                    for (let i in mess) mess[i].delete();
+
+                    const embed = new ds.MessageEmbed()
+                        .setColor(0xf05656)
+                        .setTitle(`Роли`)
+                        .setDescription(`Роли позволяют видеть каналы, которые скрыты от других, искать напарников для определенный игры и отличаться в общем чате
+
+Для выбора роли - **жми на эмоцию под сообщением**
+Для отмены роли - **жми на эмоцию еще раз**
+_(имей ввиду, что бот сразу уберет твою реакцию. Так и должно быть)_
+
+> **РОЛИ (поставь реакцию ниже)**
+
+**Общее**
+🔔 = Получать уведомление о стримах
+
+**Игровые**
+🔫 = COD: Warzone
+🗡 = New World
+
+> **РОЛИ (нельзя получить просто так)**
+
+**Общее**
+<@&869690641708351498> - по твоим приглашениям (инвайты на сервер) пришел хотя бы 1 человек
+<@&869690527308726303> - по твоим приглашениям (инвайты на сервер) пришло 25 и более людей
+<@&869690267203153981> - по твоим приглашениям (инвайты на сервер) пришло 50 и более людей. Эта роль показывается отдельно и делает ник красного цвета
+`)
+                        .setFooter(`With ❤️ by Jourloy`)
+
+                    channel.send(embed).then(mss => {
+                        mss.react('🔔');
+                        mss.react('🔫');
+                        mss.react('🗡');
+                    })
+                })
+            }
+        })
+    }
+}, 1000)
+
 /**
  * Clear voice users array every 5 minutes
  */
@@ -311,6 +368,36 @@ export class discord {
         }
         return false;
     }
+
+    public static sendPayRemind(tag: string) {
+        if (tag === 'nvy') {
+            manager.nvyGetServerConfig().then(configs => {
+                if (configs.pays != null && configs.pays === true) {
+                    client.users.fetch(configs.creator).then(user => {
+                        const embed = new ds.MessageEmbed()
+                            .setColor(0xf05656)
+                            .setTitle(`Здравствуйте, ${user.username}`)
+                            .setDescription('Теперь я буду помогать Вам не пропустить ни одной важной детали, связанной со мной. Не беспокойтесь насчет спама, я буду писать только 1-2 раза в месяц\n\n**Подписка:**\nИзначально ваша подписка начиналась 17 числа каждого месяца, но теперь подписка будет начинаться 1 числа каждого месяца, так что половина августа Вам в подарок 😁\n\n**Оплата:**\nЕще не поступила\n\n**Не нравится спам в личных сообщениях?**\nЖаль. Отправьте мне `!close_dm` и я буду присылать важную информацию в один из каналов на вашем сервере\nДоступные мне каналы: `server_logs`\n\n**Полезные команды:**')
+                            .addFields(
+                                { name: 'Задать вопрос', value: 'Начните сообщение со знака `?`', inline: true },
+                                { name: 'Очистить переписку', value: '`!clear_dm`', inline: true },
+                                { name: 'Отписаться от уведомлений', value: '`!close_dm`', inline: true },
+                                { name: 'Как оплатить?', value: '`!payment`', inline: true },
+                            )
+                            .setImage('https://cdn.discordapp.com/attachments/867012893157359647/867012929865383956/Payment.png')
+                            .setFooter(`With ❤️ by Jourloy`)
+                        user.send(embed)
+                            .then(() => {
+                                client.channels.fetch('867026068241383424').then((channel: ds.TextChannel) => {
+                                    channel.send('Message for NAMVSEYASNO delivered');
+                                })
+                            })
+                            .catch(err => { console.log(err) });
+                    })
+                }
+            })
+        }
+    }
 }
 
 /* REACTIONS */
@@ -322,7 +409,9 @@ client.on('message', msg => {
     const messageSplit = message.split(' ');
     const command = messageSplit[0].split('!')[1];
 
-    if (command === 'dm_clear') {
+    /* <=========================== DM ===========================> */
+
+    if (command === 'clear_dm' && msg.guild == null) {
         const limit = parseInt(messageSplit[1]) || 100;
         msg.channel.messages.fetch({ limit: limit }).then(mess => {
             const messages = mess.array();
@@ -331,22 +420,73 @@ client.on('message', msg => {
                 messages[i].delete();
             }
         })
+    } else if (command === 'payment' && msg.guild == null) {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setTitle(`Payments`)
+            .addFields(
+                { name: 'Card', value: '4274 3200 4873 8408' },
+            )
+            .setFooter(`With ❤️ by Jourloy`)
+        msg.channel.send(embed);
+    }
+
+    if (msg.content[0] === '?' && msg.guild == null) {
+        client.users.fetch('308924864407011328').then(user => {
+            user.send(`MSG FROM **${msg.author.username} (${msg.author.id})**:\n\n${msg.content}`)
+        })
     }
 
     if (authorID !== '308924864407011328') return;
 
-    if (command === 'help') {
+    /* <=========================== DM FROM ME ===========================> */
+
+    if (command === 'help' && msg.guild == null) {
         const embed = new ds.MessageEmbed()
-            .setColor(0xff0000)
+            .setColor(0xf05656)
             .setTitle(`HELP`)
             .addFields(
-                {name: 'Help', value: '`!jrly_help`\n`!nvy_help`'}
+                { name: 'Help', value: '`!jrly_help`\n`!nvy_help`' }
             )
             .setFooter(`With ❤️ by Jourloy`)
         msg.channel.send(embed);
     }
 
     if (msg.guild == null || msg.guild.id !== '437601028662231040') return;
+
+    /* <=========================== GUILD MESSAGES ===========================> */
+
+    if (command === 'create_embed' && channelID === '815257750879600642') {
+        const splited = message.split(' | ');
+        const chanID = splited[1];
+        const title = splited[2];
+        const description = splited[3];
+
+        client.channels.fetch(chanID).then((channel: ds.TextChannel) => {
+            const embed = new ds.MessageEmbed()
+                .setColor(0xf05656)
+                .setTitle(title)
+                .setDescription(description)
+                .setFooter(`With ❤️ by Jourloy`)
+            channel.send(embed);
+            msg.delete();
+        })
+    } else if (command === 'help' && channelID === '815257750879600642') {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setTitle('ПОМОЩЬ')
+            .addFields(
+                { name: 'Send embed in channel', value: '`!create_embed | ID | Title | Description`' }
+            )
+            .setFooter(`With ❤️ by Jourloy`)
+        msg.channel.send(embed);
+        msg.delete();
+    } else if (command === 'remind' && channelID === '815257750879600642') {
+        msg.delete();
+        const tag = messageSplit[1];
+        discord.sendPayRemind(tag);
+        return;
+    }
 
     if (channelID === '816104930443395072') {
         const embed = loadout.getWeapon(command);
@@ -364,5 +504,139 @@ client.on('messageReactionAdd', (msg) => {
         if (msg.message.guild == null) {
             msg.message.delete()
         }
+    } else if (emoji === '🗡') {
+        if (msg.message.author.bot === true) {
+            msg.message.guild.roles.fetch('868233813183053954').then(role => {
+                const users = msg.users.cache.array();
+                for (let i in users) {
+                    const user = users[i];
+                    const guild = msg.message.guild;
+
+                    if (user.id === '816872036051058698') continue;
+
+                    guild.members.fetch(user.id).then(member => {
+                        const roles = member.roles.cache.array();
+                        let check = false;
+                        for (let j in roles) {
+                            if (roles[j].id === role.id) {
+                                check = true;
+                                member.roles.remove(role);
+                            }
+                        }
+                        if (check === false) {
+                            member.roles.add(role);
+                        }
+
+                        msg.remove();
+                        msg.message.react('🗡')
+                    })
+                }
+            })
+        }
+    } else if (emoji === '🔫') {
+        if (msg.message.author.bot === true) {
+            msg.message.guild.roles.fetch('825341898318151681').then(role => {
+                const users = msg.users.cache.array();
+                for (let i in users) {
+                    const user = users[i];
+                    const guild = msg.message.guild;
+
+                    if (user.id === '816872036051058698') continue;
+
+                    guild.members.fetch(user.id).then(member => {
+                        const roles = member.roles.cache.array();
+                        let check = false;
+                        for (let j in roles) {
+                            if (roles[j].id === role.id) {
+                                check = true;
+                                member.roles.remove(role);
+                            }
+                        }
+                        if (check === false) {
+                            member.roles.add(role);
+                        }
+
+                        msg.remove();
+                        msg.message.react('🔫')
+                    })
+                }
+            })
+        }
+    } else if (emoji === '🔔') {
+        if (msg.message.author.bot === true) {
+            msg.message.guild.roles.fetch('868513502443208704').then(role => {
+                const users = msg.users.cache.array();
+                for (let i in users) {
+                    const user = users[i];
+                    const guild = msg.message.guild;
+
+                    if (user.id === '816872036051058698') continue;
+
+                    guild.members.fetch(user.id).then(member => {
+                        const roles = member.roles.cache.array();
+                        let check = false;
+                        for (let j in roles) {
+                            if (roles[j].id === role.id) {
+                                check = true;
+                                member.roles.remove(role);
+                            }
+                        }
+                        if (check === false) {
+                            member.roles.add(role);
+                        }
+
+                        msg.remove();
+                        msg.message.react('🔔')
+                    })
+                }
+            })
+        }
     }
+})
+
+client.on("guildMemberAdd", (member) => {
+    member.guild.fetchInvites().then(guildInvites => {
+
+        const ei = invites[member.guild.id];
+        invites[member.guild.id] = guildInvites;
+
+        const invite = guildInvites.find(i => ei.get(i.code).uses < i.uses);
+        if (invite == null || invite.inviter == null) {
+            client.channels.fetch('869693463510278245').then((channel: ds.TextChannel) => {
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setTitle('ПРИВЕТ!')
+                    .setDescription(`Рад тебя видеть на моем сервере, уверяю, здесь ты найдешь много интересного
+    
+В <#865580513879261194> есть основная информация, которую следует соблюдать
+Загляни в <#868238068283473952> и выбери себе роли, которые подходят больше всего для тебя
+Передавай всем привет в <#868108110001221632>
+Удачи!`)
+                    .setFooter(`With ❤️ by Jourloy`)
+                channel.send(`<@${member.id}>`, {embed: embed}).then(mss => mss.react('👋'));
+            });
+            return;
+        }
+        const inviter = client.users.cache.get(invite.inviter.id);
+
+        manager.updateInviterMember(inviter.username);
+
+        client.channels.fetch('869693463510278245').then((channel: ds.TextChannel) => {
+            const embed = new ds.MessageEmbed()
+                .setColor(0xf05656)
+                .setTitle('ПРИВЕТ!')
+                .setDescription(`Рад тебя видеть на моем сервере, уверяю, здесь ты найдешь много интересного
+
+В <#865580513879261194> есть основная информация, которую следует соблюдать
+Загляни в <#868238068283473952> и выбери себе роли, которые подходят больше всего для тебя
+Передавай всем привет в <#868108110001221632>
+Удачи!
+
+───────────────
+
+<@${inviter.id}> пригласил этого замечательного участника нашего сообщества`)
+                .setFooter(`With ❤️ by Jourloy`)
+            channel.send(`<@${member.id}>`, {embed: embed}).then(mss => mss.react('👋'));
+        })
+    });
 })
