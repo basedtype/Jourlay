@@ -15,6 +15,7 @@
     "crypto": "^1.0.1",
     "date": "^1.0.2",
     "discord.js": "^12.5.3",
+    "epic-free-games": "^2.1.5",
     "express": "^4.17.1",
     "express-statsd": "^0.3.0",
     "express-subdomain": "^1.0.5",
