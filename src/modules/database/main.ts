@@ -160,6 +160,11 @@ export class manager {
         })
     }
 
+    public static async getInviterMembers() {
+        const members = discordMembersCollection.find({}).toArray();
+        return members;
+    }
+
     /* <=========================== SERVER ===========================> */
 
     /**
