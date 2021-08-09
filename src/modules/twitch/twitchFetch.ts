@@ -15,10 +15,10 @@ export class twitchFetch {
         return await fetch(url, options).then(res => res.json()).catch(() => {});
     }
 
-    public static async getUserID(username: string) {
+    public static async getUserID(username: string): Promise<null | string> {
         const url = `https://api.twitch.tv/kraken/users?login=${username}`;
         const response = await this.getJson(url, this.options);
-        if (response == null || response.users == null || response.users[0] == null) return;
+        if (response == null || response.users == null || response.users[0] == null) return null;
         return response.users[0]._id;
     }
 
