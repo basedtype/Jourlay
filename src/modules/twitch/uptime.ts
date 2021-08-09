@@ -32,11 +32,12 @@ setInterval(function () {
                 for (let i in uptime) {
                     uptime[i] = parseInt(uptime[i]);
                 }
-            };
+            } else { uptime = null };
         })
-        .catch(() => {});
+        .catch(() => { uptime = null });
 
-    if (uptime == null || uptime.stream == null) return;
+    
+    if (uptime == null) return;
     twitchFetch.getCurrentViewers().then(viewers => {
         if (viewers == null || viewers.chatters == null) {
             console.log(viewers);
@@ -45,12 +46,9 @@ setInterval(function () {
         const chatters = viewers.chatters;
         for (let i in chatters) {
             const group = chatters[i];
-
             for (let j in group) {
                 if (group[j] === 'jourloy') continue;
-                twitchFetch.getUserID(group[i]).then(id => {
-                    manager.addWatchTime(id);
-                })
+                twitchFetch.getUserID(group[j]).then(id => manager.addWatchTime(id) )
             }
         }
     })
