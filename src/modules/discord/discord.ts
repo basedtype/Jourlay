@@ -54,49 +54,11 @@ setInterval(() => {
     });
     if (checkRoles === false) {
         client.channels.fetch('868238068283473952').then((channel: ds.TextChannel) => {
-            if (channel.messages.cache.array().length === 0) {
-                channel.messages.fetch().then(messArray => {
-                    const mess = messArray.array();
-                    for (let i in mess) mess[i].delete().catch(() => { });
-
-                    const embed = new ds.MessageEmbed()
-                        .setColor(0xf05656)
-                        .setTitle(`Роли`)
-                        .setDescription(role)
-                        .setFooter(`With ❤️ by Jourloy`)
-
-                    channel.send(embed).then(mss => {
-                        mss.react('🔔');
-                        mss.react('🆓');
-                        mss.react('🚹');
-                        mss.react('🚺');
-                        mss.react('👴');
-                        mss.react('🖥️');
-                        mss.react('📱');
-                        mss.react('🕹️');
-                        mss.react('🏃');
-                        mss.react('🎥');
-                        mss.react('🧸');
-                        mss.react('🎀');
-                        mss.react('<:wz:869756196377219153>');
-                        mss.react('<:nw:869756463994781696>');
-                        mss.react('<:gi:869756482558787684>');
-                        mss.react('<:cs:869946987959689286>');
-                        mss.react('<:gta:871761340837007390>');
-                        mss.react('<:bf:871056821018820609>');
-                        mss.react('<:mc:871056786432589884>');
-                        mss.react('<:sot:871761381660164136>');
-                    })
-
-                    const newEmbed = new ds.MessageEmbed()
-                        .setColor(0xf05656)
-                        .setTitle('Продолжение')
-                    channel.send(newEmbed).then(mss => {
-                        mss.react('<:st:871056855420502016>');
-                        mss.react('<:sf:872816147781799956>');
-                    })
-                })
-            }
+            channel.messages.fetch().then(messArray => {
+                const mess = messArray.array();
+                channel.messages.cache.get(mess[0].id);
+                checkRoles = true;
+            })
         })
     }
 }, 1000)
@@ -226,7 +188,7 @@ setInterval(() => {
                                         .setTitle('Поздравляю и говорю спасибо!')
                                         .setDescription(`По твоим приглашениям пришел как минимум 1 человек! За это держи новую роль :)`)
                                         .setFooter(`With ❤️ by Jourloy`)
-                                    channel.send(`<@${guildMember.id}>`, { embed: embed }).then(mss => mss.react('🎉'));
+                                    channel.send(`${guildMember.displayName}`, { embed: embed }).then(mss => mss.react('🎉'));
                                 })
                             }
                         })
@@ -245,7 +207,7 @@ setInterval(() => {
                                         .setTitle('Поздравляю и говорю спасибо!')
                                         .setDescription(`По твоим приглашениям пришло уже как минимум 25 человек! За это держи новую роль :)`)
                                         .setFooter(`With ❤️ by Jourloy`)
-                                    channel.send(`<@${guildMember.id}>`, { embed: embed }).then(mss => mss.react('🎉'));
+                                    channel.send(`${guildMember.displayName}`, { embed: embed }).then(mss => mss.react('🎉'));
                                 })
                             }
                         })
@@ -264,7 +226,7 @@ setInterval(() => {
                                         .setTitle('Поздравляю и говорю спасибо!')
                                         .setDescription(`По твоим приглашениям пришло уже как минимум 50 человек! За это держи новую роль :)`)
                                         .setFooter(`With ❤️ by Jourloy`)
-                                    channel.send(`<@${guildMember.id}>`, { embed: embed }).then(mss => mss.react('🎉'));
+                                    channel.send(`${guildMember.displayName}`, { embed: embed }).then(mss => mss.react('🎉'));
                                 })
                             }
                         })
@@ -343,7 +305,7 @@ setInterval(() => {
         const options: ds.GuildCreateChannelOptions = {
             type: 'voice',
             userLimit: 2,
-            position: 10,
+            position: parent.position + 10,
             parent: parent,
         }
         const user = channel.members.array()[0].user;
@@ -393,7 +355,7 @@ setInterval(() => {
         const options: ds.GuildCreateChannelOptions = {
             type: 'voice',
             userLimit: 3,
-            position: 10,
+            position: parent.position + 10,
             parent: parent,
         }
         const user = channel.members.array()[0].user;
@@ -443,7 +405,7 @@ setInterval(() => {
         const options: ds.GuildCreateChannelOptions = {
             type: 'voice',
             userLimit: 4,
-            position: 10,
+            position: parent.position + 10,
             parent: parent,
         }
         const user = channel.members.array()[0].user;
@@ -493,7 +455,7 @@ setInterval(() => {
         const options: ds.GuildCreateChannelOptions = {
             type: 'voice',
             userLimit: 5,
-            position: 10,
+            position: parent.position + 10,
             parent: parent,
         }
         const user = channel.members.array()[0].user;
@@ -592,36 +554,6 @@ export class discord {
         return false;
     }
 
-    public static sendPayRemind(tag: string) {
-        if (tag === 'nvy') {
-            manager.nvyGetServerConfig().then(configs => {
-                if (configs.pays != null && configs.pays === true) {
-                    client.users.fetch(configs.creator).then(user => {
-                        const embed = new ds.MessageEmbed()
-                            .setColor(0xf05656)
-                            .setTitle(`Здравствуйте, ${user.username}`)
-                            .setDescription('Теперь я буду помогать Вам не пропустить ни одной важной детали, связанной со мной. Не беспокойтесь насчет спама, я буду писать только 1-2 раза в месяц\n\n**Подписка:**\nИзначально ваша подписка начиналась 17 числа каждого месяца, но теперь подписка будет начинаться 1 числа каждого месяца, так что половина августа Вам в подарок 😁\n\n**Оплата:**\nЕще не поступила\n\n**Не нравится спам в личных сообщениях?**\nЖаль. Отправьте мне `!close_dm` и я буду присылать важную информацию в один из каналов на вашем сервере\nДоступные мне каналы: `server_logs`\n\n**Полезные команды:**')
-                            .addFields(
-                                { name: 'Задать вопрос', value: 'Начните сообщение со знака `?`', inline: true },
-                                { name: 'Очистить переписку', value: '`!clear_dm`', inline: true },
-                                { name: 'Отписаться от уведомлений', value: '`!close_dm`', inline: true },
-                                { name: 'Как оплатить?', value: '`!payment`', inline: true },
-                            )
-                            .setImage('https://cdn.discordapp.com/attachments/867012893157359647/867012929865383956/Payment.png')
-                            .setFooter(`With ❤️ by Jourloy`)
-                        user.send(embed)
-                            .then(() => {
-                                client.channels.fetch('867026068241383424').then((channel: ds.TextChannel) => {
-                                    channel.send('Message for NAMVSEYASNO delivered');
-                                })
-                            })
-                            .catch(err => { console.log(err) });
-                    })
-                }
-            })
-        }
-    }
-
     public static sendNoftification() {
         const embed = new ds.MessageEmbed()
             .setColor(0xf05656)
@@ -631,10 +563,18 @@ export class discord {
             .setFooter(`With ❤️ by Jourloy`);
         client.channels.fetch('868517415787585656').then((channel: ds.TextChannel) => channel.send('<@&868513502443208704>', { embed: embed }));
     }
+
+    public static sendCommercialLog() {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setDescription('Реклама была запущена')
+            .setFooter(`With ❤️ by Jourloy`);
+        client.channels.fetch('874628758504636476').then((channel: ds.TextChannel) => channel.send(embed));
+    }
 }
 
 /* REACTIONS */
-client.on('message', msg => {
+client.on('message', async msg => {
     if (msg.author.bot === true) return;
     const channelID = msg.channel.id;
     const authorID = msg.author.id;
@@ -722,6 +662,54 @@ client.on('message', msg => {
                     msg.channel.send(msgEmbed);
                 }
             });
+        } else if (channelID === '875892575180030012') {
+            if (command === 'help') {
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setDescription(`\`!update_roles\` - обновить сообщение о ролях`)
+                    .setFooter(`With ❤️ by Jourloy`)
+                msg.channel.send(embed);
+            } else if (command === 'update_roles') {
+                client.channels.fetch('868238068283473952').then((channel: ds.TextChannel) => {
+                    channel.messages.fetch().then(messArray => {
+                        const mess = messArray.array();
+                        for (let i in mess) mess[i].delete().catch(() => { });
+
+                        const embed = new ds.MessageEmbed()
+                            .setColor(0xf05656)
+                            .setTitle(`Роли`)
+                            .setDescription(role)
+                            .setFooter(`With ❤️ by Jourloy`)
+
+                        channel.send(embed).then(mss => {
+                            mss.react('🔔');
+                            mss.react('🆓');
+                            mss.react('🚫');
+                            mss.react('👴');
+                            mss.react('🎥');
+                            mss.react('🧸');
+                            mss.react('🎀');
+                            mss.react('<:mods_warzone_logo:873248548316131430>');
+                            mss.react('<:mods_nw_logo:874610034783453225>');
+                            mss.react('<:mods_genshin_logo:873249309435527169>');
+                            mss.react('<:mods_csgo_logo:873248573020573747>');
+                            mss.react('<:mods_gta_logo:873248535112470619>');
+                            mss.react('<:mods_bf_logo:874609931200913448>');
+                            mss.react('<:mods_minecraft_logo:874609992454524928>');
+                            mss.react('<:mods_valorant_logo:873248522688946197>');
+                            mss.react('<:mods_rust_logo:873248505743949844>');
+                            mss.react('<:mods_apex_logo:873248479454060544>');
+                        })
+                    })
+                })
+            }
+        } else if (channelID === '880481554265157642') {
+            const split = message.split(' | ');
+            if (command === 'create') {
+                manager.createRedirect(split[1], split[2]);
+                msg.delete();
+                (await msg.channel.send('DONE')).delete({timeout: 100})
+            }
         }
     }
 
@@ -755,22 +743,17 @@ client.on('message', msg => {
             .setFooter(`With ❤️ by Jourloy`)
         msg.channel.send(embed);
         msg.delete();
-    } else if (command === 'remind' && channelID === '815257750879600642') {
-        msg.delete();
-        const tag = messageSplit[1];
-        discord.sendPayRemind(tag);
-        return;
     } else if (command === 'clear') {
         isModerator(msg.author.id).then(result => {
             if (result === false) return;
             let count = 100;
             if (isNaN(parseInt(messageSplit[1])) === false) count = parseInt(messageSplit[1]);
-            msg.channel.messages.fetch({ limit: count }).then(msgs => {
+            msg.channel.messages.fetch({ limit: count }).then(async msgs => {
                 let counter = 0;
                 const messages = msgs.array();
                 createLog('-', `Модератор <@${msg.author.id}> (ID: ${msg.author.id}) запустил очистку сообщений`)
                 for (let i in messages) {
-                    messages[i].delete();
+                    await messages[i].delete();
                     counter++;
                 }
                 createLog('-', `Было удалено: ${counter}`)
@@ -796,28 +779,25 @@ client.on('messageReactionAdd', (msg) => {
 
     if (msg.message.guild == null) return;
 
-    if (emoji === 'nw' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '868233813183053954', '<:nw:869756463994781696>');
-    else if (emoji === 'wz' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '825341898318151681', '<:wz:869756196377219153>');
-    else if (emoji === 'gi' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '869757372917235742', '<:gi:869756482558787684>');
-    else if (emoji === 'cs' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '869947396816244766', '<:cs:869946987959689286>');
-    else if (emoji === 'gta' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871764416012640337', '<:gta:871761340837007390>');
-    else if (emoji === 'mc' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871764506236301332', '<:mc:871056786432589884>');
-    else if (emoji === 'bf' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871764590717984798', '<:bf:871056821018820609>');
-    else if (emoji === 'sot' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871764760553746472', '<:sot:871761381660164136>');
-    else if (emoji === 'st' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871764870075392011', '<:st:871056855420502016>');
-    else if (emoji === 'sf' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '872824811339005973', '<:sf:872816147781799956>');
-    else if (emoji === '🚹' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871764974102511646', '🚹');
-    else if (emoji === '🚺' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765116524314634', '🚺');
-    else if (emoji === '🖥️' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765246828773417', '🖥️');
-    else if (emoji === '📱' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765341779406898', '📱');
-    else if (emoji === '🕹️' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765470603272212', '🕹️');
-    else if (emoji === '🏃' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765576249376808', '🏃');
-    else if (emoji === '🎥' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765683321589760', '🎥');
-    else if (emoji === '🧸' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765786308526130', '🧸');
-    else if (emoji === '🎀' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '871765898652954634', '🎀');
-    else if (emoji === '🔔' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '868513502443208704', '🔔');
-    else if (emoji === '🆓' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '869960789405098004', '🆓');
-    else if (emoji === '👴' && msg.message.author.bot === true) giveRoleAndPlaceReaction(msg, '870474144813289502', '👴');
+    if (channelID === '868238068283473952') {
+        if (emoji === 'mods_nw_logo') giveRoleAndPlaceReaction(msg, '868233813183053954', '<:mods_nw_logo:874610034783453225>');
+        else if (emoji === 'mods_warzone_logo') giveRoleAndPlaceReaction(msg, '825341898318151681', '<:mods_warzone_logo:873248548316131430>');
+        else if (emoji === 'mods_genshin_logo') giveRoleAndPlaceReaction(msg, '869757372917235742', '<:mods_genshin_logo:873249309435527169>');
+        else if (emoji === 'mods_csgo_logo') giveRoleAndPlaceReaction(msg, '869947396816244766', '<:mods_csgo_logo:873248573020573747>');
+        else if (emoji === 'mods_gta_logo') giveRoleAndPlaceReaction(msg, '871764416012640337', '<:mods_gta_logo:873248535112470619>');
+        else if (emoji === 'mods_minecraft_logo') giveRoleAndPlaceReaction(msg, '871764506236301332', '<:mods_minecraft_logo:874609992454524928>');
+        else if (emoji === 'mods_bf_logo') giveRoleAndPlaceReaction(msg, '871764590717984798', '<:mods_bf_logo:874609931200913448>');
+        else if (emoji === 'mods_apex_logo') giveRoleAndPlaceReaction(msg, '874612514451779604', '<:mods_apex_logo:873248479454060544>');
+        else if (emoji === 'mods_rust_logo') giveRoleAndPlaceReaction(msg, '874612553903382529', '<:mods_rust_logo:873248505743949844>');
+        else if (emoji === 'mods_valorant_logo') giveRoleAndPlaceReaction(msg, '874612578175840286', '<:mods_valorant_logo:873248522688946197>');
+        else if (emoji === '🎥') giveRoleAndPlaceReaction(msg, '871765683321589760', '🎥');
+        else if (emoji === '🧸') giveRoleAndPlaceReaction(msg, '871765786308526130', '🧸');
+        else if (emoji === '🎀') giveRoleAndPlaceReaction(msg, '871765898652954634', '🎀');
+        else if (emoji === '🔔') giveRoleAndPlaceReaction(msg, '868513502443208704', '🔔');
+        else if (emoji === '🆓') giveRoleAndPlaceReaction(msg, '869960789405098004', '🆓');
+        else if (emoji === '👴') giveRoleAndPlaceReaction(msg, '870474144813289502', '👴');
+        else if (emoji === '🚫') giveRoleAndPlaceReaction(msg, '875895580130422824', '🚫');
+    }
 })
 
 client.on("guildMemberAdd", (member) => {
