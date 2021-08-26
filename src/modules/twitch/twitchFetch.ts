@@ -1,5 +1,6 @@
 /* IMPORTS */
 import fetch from "node-fetch";
+import { manager } from "../database/main";
 
 /* CLASSES */
 export class twitchFetch {
@@ -7,7 +8,7 @@ export class twitchFetch {
         method: 'GET',
         headers: {
             'Accept': 'application/vnd.twitchtv.v5+json',
-            'Client-ID': 'qetz5m3hw8vv6qsid3uobvl8kjotfk'
+            'Client-ID': 'qetz5m3hw8vv6qsid3uobvl8kjotfk',
         }
     }
 
@@ -24,6 +25,9 @@ export class twitchFetch {
 
     public static async get(url: string, options?) {
         if (options == null) options = this.options;
+        const id = await this.getUserID('jourloy');
+        const bearer = await manager.getBearer(id);
+        options.headers['Authorization'] = `Bearer ${bearer}`
         return await this.getJson(url, options);
     }
 
