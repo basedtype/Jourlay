@@ -1,5 +1,6 @@
 /* IMPORTS */
 import { twitch } from "../Bots/TwitchBot";
+import { twitchAdmin } from "../Bots/MainTwitchChannel";
 
 import * as Multiprogress from 'multi-progress';
 import * as tmi from 'tmi.js';
@@ -13,7 +14,9 @@ const bar = multi.newBar(' getting twitch client [:bar] :percent :etas', {
     total: 10
 });
 export let client: tmi.Client = null;
-let getClient: boolean = false;
+export let admin: tmi.Client = null;
+let getClient = false;
+let getAdmin = false
 let counter = 0;
 
 /* INTERVALS */
@@ -24,6 +27,13 @@ let clientIntervalID = setInterval(() => {
     getClient = true;
 }, 1000)
 
+let adminIntervalID = setInterval(() => {
+    if (admin != null) clearInterval(clientIntervalID);
+    if (getAdmin === false) twitchAdmin.connect('jourloy');
+    admin = twitchAdmin.update();
+    getAdmin = true;
+}, 1000)
+
 let startIntervalID = setInterval(() => {
     bar.tick(1)
     counter++;
@@ -32,5 +42,6 @@ let startIntervalID = setInterval(() => {
     if (client != null) {
         require('./twitch');
         clearInterval(startIntervalID);
+        clearInterval(adminIntervalID);
     }
 }, 1000)
