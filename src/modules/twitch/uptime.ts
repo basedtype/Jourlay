@@ -6,8 +6,9 @@ import { client } from "./main";
 import * as moment from "moment";
 
 /* PARAMS */
-let authorID = null
 export let uptime = null;
+export let game = null;
+let authorID = null
 
 /* INTERVALS */
 setInterval(function () {
@@ -32,11 +33,12 @@ setInterval(function () {
                 for (let i in uptime) {
                     uptime[i] = parseInt(uptime[i]);
                 }
-            } else { uptime = null };
+                game = data.stream.game;
+            } else { uptime = null; game = null };
         })
-        .catch(() => { uptime = null });
+        .catch(() => { uptime = null; game = null });
 
-    
+
     if (uptime == null) return;
     twitchFetch.getCurrentViewers().then(viewers => {
         if (viewers == null || viewers.chatters == null) {
@@ -48,7 +50,7 @@ setInterval(function () {
             const group = chatters[i];
             for (let j in group) {
                 if (group[j] === 'jourloy') continue;
-                twitchFetch.getUserID(group[j]).then(id => manager.addWatchTime(id) )
+                twitchFetch.getUserID(group[j]).then(id => manager.addWatchTime(id))
             }
         }
     })
