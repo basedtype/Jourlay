@@ -19,7 +19,8 @@ let botCollection: mongodb.Collection = null;
 let serverCollection: mongodb.Collection = null;
 let serverIpCollection: mongodb.Collection = null;
 let informationCollection: mongodb.Collection = null;
-let nvyConfigCollection: mongodb.Collection = null;
+let redirectCollection: mongodb.Collection = null;
+let twitchUserCollection: mongodb.Collection = null;
 
 /* CODE */
 clientDB.connect().then(() => {
@@ -34,39 +35,16 @@ clientDB.connect().then(() => {
     const botsDatabase = clientDB.db('Nidhoggbot');
     mainlogCollection = botsDatabase.collection('logs');
     botCollection = botsDatabase.collection('config')
+    twitchUserCollection = botsDatabase.collection('twitch');
 
     const serverDatabase = clientDB.db('Server');
     serverCollection = serverDatabase.collection('config');
     serverIpCollection = serverDatabase.collection('IP');
     informationCollection = serverDatabase.collection('info');
-
-    const nvyDatabase = clientDB.db('NAMVSEYASNO');
-    nvyConfigCollection = nvyDatabase.collection('config');
+    redirectCollection = serverDatabase.collection('redirect');
 })
 
 export class manager {
-
-    /* <=========================== NVY ===========================> */
-
-    /**
-     * Retun server configs
-     */
-    public static async nvyGetServerConfig(): Promise<config.serverConfigs> {
-        if (nvyConfigCollection == null) return;
-        let config = await nvyConfigCollection.findOne({ conf: true });
-        if (config == null) {
-            const docs: config.serverConfigs = {
-                logChannelID: '',
-                logs: false,
-                modChannelID: '',
-                updates: false,
-                conf: true,
-            }
-            nvyConfigCollection.insertOne(docs);
-            return docs;
-        } else return config;
-    }
-
     /* <=========================== CONFIG ===========================> */
 
     /**
@@ -193,6 +171,12 @@ export class manager {
         else return words.array;
     }
 
+    public static async defenceGetBots(): Promise<string[]> {
+        const words = await defenceCollection.findOne({ type: 'bots' });
+        if (words == null || words.array == null) return [];
+        else return words.array;
+    }
+
     public static async defenceAddWord(word: string): Promise<boolean> {
         const words = await defenceCollection.findOne({ type: 'words' });
         if (words == null) {
@@ -232,5 +216,42 @@ export class manager {
     public static async getUptime(bot: string): Promise<{ type: string, uptime: number, bot: string }> {
         const uptime = await informationCollection.findOne({ type: 'uptime', bot: bot });
         return uptime;
+    }
+
+    /**
+     * Create redirect
+     */
+    public static async createRedirect(redirectURL: string, URL: string): Promise<boolean> {
+        const state = await redirectCollection.findOne({ URL: URL })
+            .then(redirect => {
+                if (redirect != null) return false;
+                const docs = { redirectURL: redirectURL, URL: URL };
+                redirectCollection.insertOne(docs)
+                    .then(() => { return true })
+                    .catch((err) => { return false })
+            })
+            .catch((err) => { return false })
+        return state;
+    }
+
+    /**
+     * Remove redirect
+     */
+    public static async removeRedirect(opt: { redirectURL?: string, URL?: string }): Promise<boolean> {
+        let state = false;
+        if (opt.redirectURL != null) redirectCollection.findOne({ redirectURL: opt.redirectURL }).then(redirect => { if (redirect != null) redirectCollection.findOneAndDelete({ redirectURL: opt.redirectURL }) });
+        else if (opt.URL != null) redirectCollection.findOne({ URL: opt.URL }).then(redirect => { if (redirect != null) redirectCollection.findOneAndDelete({ URL: opt.URL }) });
+        return state;
+    }
+
+    /**
+     * Get bearer oauth
+     */
+    public static async getBearer(id: string): Promise<string> {
+        const bearer = await twitchUserCollection.findOne({id: id}).then(user => {
+            if (user == null) return '';
+            return user.accessToken;
+        })
+        return bearer;
     }
 }
