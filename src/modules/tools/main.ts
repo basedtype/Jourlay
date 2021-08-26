@@ -33,6 +33,32 @@ export class tools {
         return formatedHours + ':' + formatedMinutes + ':' + formatedSeconds;
     }
 
+    public static toDDHHMMSS(second) {
+
+        const sec_num = parseInt(second, 10);
+
+        const days = Math.floor(sec_num / (3600*24));
+        const hours = Math.floor(sec_num % (3600*24) / 3600);
+        const minutes = Math.floor(sec_num % 3600 / 60);
+        const seconds = Math.floor(sec_num % 60);
+
+        let formatedDays = '';
+        let formatedHours = '';
+        let formatedMinutes = '';
+        let formatedSeconds = '';
+
+        if (days < 10) formatedDays = '0' + days;
+        else formatedDays = days.toString();
+        if (hours < 10) formatedDays = '0' + hours;
+        else formatedHours = hours.toString();
+        if (minutes < 10) formatedMinutes = '0' + minutes;
+        else formatedMinutes = minutes.toString();
+        if (seconds < 10) formatedSeconds = '0' + seconds;
+        else formatedSeconds = seconds.toString();
+
+        return formatedDays + " дней " + formatedHours + ':' + formatedMinutes + ':' + formatedSeconds;
+    }
+
     public static random(min: number, max: number): number {
         return Math.floor(
             Math.random() * (max - min) + min
