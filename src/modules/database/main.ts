@@ -3,6 +3,7 @@ import { config } from "../../../types";
 import { color } from "../tools/color";
 
 import * as mongodb from "mongodb";
+import * as _ from "lodash";
 
 /* PARAMS */
 const uri = "mongodb://192.168.0.3:10000/";
@@ -14,13 +15,17 @@ let chattersCollection: mongodb.Collection = null;
 let discordMembersCollection: mongodb.Collection = null;
 let expeditionCollection: mongodb.Collection = null;
 let defenceCollection: mongodb.Collection = null;
+let musicCollection: mongodb.Collection = null;
 let mainlogCollection: mongodb.Collection = null;
 let botCollection: mongodb.Collection = null;
+let twitchUserCollection: mongodb.Collection = null;
+let twitchScoutCollection: mongodb.Collection = null;
 let serverCollection: mongodb.Collection = null;
 let serverIpCollection: mongodb.Collection = null;
 let informationCollection: mongodb.Collection = null;
 let redirectCollection: mongodb.Collection = null;
-let twitchUserCollection: mongodb.Collection = null;
+let nsfwCollection: mongodb.Collection = null;
+let guildsCollection: mongodb.Collection = null;
 
 /* CODE */
 clientDB.connect().then(() => {
@@ -31,11 +36,15 @@ clientDB.connect().then(() => {
     discordMembersCollection = JRLYdatabase.collection('members');
     expeditionCollection = JRLYdatabase.collection('expedition');
     defenceCollection = JRLYdatabase.collection('defence');
+    musicCollection = JRLYdatabase.collection('music');
 
     const botsDatabase = clientDB.db('Nidhoggbot');
     mainlogCollection = botsDatabase.collection('logs');
     botCollection = botsDatabase.collection('config')
     twitchUserCollection = botsDatabase.collection('twitch');
+    twitchScoutCollection = botsDatabase.collection('scout');
+    nsfwCollection = botsDatabase.collection('nsfw');
+    guildsCollection = botsDatabase.collection('guilds');
 
     const serverDatabase = clientDB.db('Server');
     serverCollection = serverDatabase.collection('config');
@@ -197,6 +206,144 @@ export class manager {
         }
     }
 
+    /**
+     * Add music in library
+     * @false exist
+     */
+    public static async musicAdd(url: string, type: string): Promise<boolean> {
+        const state = await musicCollection.findOne({ url: url }).then(async data => {
+            if (data != null) return false;
+            const docs = {
+                url: url,
+                type: type,
+            }
+            await musicCollection.insertOne(docs);
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Get music from library
+     */
+    public static async musicGet(type: string, oldUrl: string): Promise<string> {
+        const array = await musicCollection.find({ type: type }).toArray();
+        const filteredArray = [];
+        for (let i in array) if (array[i].url !== oldUrl) filteredArray.push(array[i].url);
+        const url = _.sample(filteredArray);
+        return url;
+    }
+
+    /**
+     * Delete music from library
+     * @false alredy deleted 
+     * @true successfuly deleted
+     */
+    public static async musicDelete(url: string): Promise<boolean> {
+        const state = await musicCollection.findOne({ url: url }).then(async data => {
+            if (data == null) return false;
+            await musicCollection.findOneAndDelete({ url: url });
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Add user in scout
+     */
+    public static async scoutAdd(username: string): Promise<boolean> {
+        const state = await twitchScoutCollection.findOne({ username: username }).then(async data => {
+            if (data != null) return true;
+            await twitchScoutCollection.insertOne({ username: username });
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Get all users
+     */
+    public static async scoutGetAll(): Promise<any[]> {
+        const array = await twitchScoutCollection.find({}).toArray();
+        return array;
+    }
+
+    /**
+     * Remove user from scout
+     */
+    public static async scoutRemove(username: string): Promise<boolean> {
+        const state = await twitchScoutCollection.findOneAndDelete({ username: username });
+        return true;
+    }
+
+    /**
+     * Add NSFW photo in database
+     */
+    public static async nsfwAdd(url: string): Promise<boolean> {
+        const state = await nsfwCollection.findOne({ url: url }).then(async data => {
+            if (data != null) return false;
+            await nsfwCollection.insertOne({ url: url });
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Add guild
+     */
+    public static async guildAdd(id: string): Promise<boolean> {
+        const state = await guildsCollection.insertOne({id: id})
+            .then(() => {return true })
+            .catch(() => {return false})
+        return state;
+    }
+
+    /**
+     * Add sales channel
+     */
+    public static async guildSalesAdd(guildID: string, salesID: string): Promise<boolean> {
+        const state = await guildsCollection.findOne({id: guildID}).then(data => {
+            if (data == null) return false;
+            data.salesID = salesID;
+            data.sended = false;
+            guildsCollection.findOneAndUpdate({id: guildID}, {$set: data});
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Switch sended info
+     */
+    public static async guildSalesSendedSwitch(id: string): Promise<boolean> {
+        const state = await guildsCollection.findOne({id: id}).then(data => {
+            if (data == null || data.sended == null) return false;
+            let state = false;
+            if (data.sended === false) state = true;
+            guildsCollection.findOneAndUpdate({id: id}, {$set: {id: id, salesID: data.salesID, sended: state}});
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Get all guilds
+     */
+    public static async guildGetAll(): Promise<{_id: string, id: string, salesID?: string, sended?: boolean}[]> {
+        const state = await guildsCollection.find({}).toArray();
+        return state;
+    }
+
+    /**
+     * Remove guild
+     */
+    public static async guildRemove(id: string): Promise<boolean> {
+        const state = await guildsCollection.findOneAndDelete({id: id})
+            .then(() => {return true })
+            .catch(() => {return false})
+        return state;
+    }
+
     /* <=========================== SERVER ===========================> */
 
     /**
@@ -245,13 +392,37 @@ export class manager {
     }
 
     /**
-     * Get bearer oauth
+     * Get access token
      */
     public static async getBearer(id: string): Promise<string> {
-        const bearer = await twitchUserCollection.findOne({id: id}).then(user => {
+        const bearer = await twitchUserCollection.findOne({ id: id }).then(user => {
             if (user == null) return '';
             return user.accessToken;
         })
         return bearer;
+    }
+
+    /**
+     * Get refresh token
+     */
+    public static async getRefresh(id: string): Promise<string> {
+        const refresh = await twitchUserCollection.findOne({ id: id }).then(user => {
+            if (user == null) return '';
+            return user.refreshToken;
+        })
+        return refresh;
+    }
+
+    /**
+     * Update tokens
+     */
+    public static async updateTokens(id: string, refreshToken: string, accessToken: string): Promise<boolean> {
+        twitchUserCollection.findOne({ id: id }).then(user => {
+            if (user == null) return;
+            user.accessToken = accessToken;
+            user.refreshToken = refreshToken;
+            twitchUserCollection.findOneAndUpdate({ _id: user._id }, { $set: user });
+        })
+        return true;
     }
 }
