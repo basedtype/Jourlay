@@ -8,6 +8,8 @@ declare namespace config {
         type: string;
         oauth: string;
         roleID?: string;
+        secret?: string;
+        _oauth?: string;
     }
 
     interface discordOptions {
