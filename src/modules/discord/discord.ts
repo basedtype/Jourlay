@@ -1,15 +1,21 @@
 /* IMPORTS */
+import { twitchClient } from "../twitch/main";
 import { manager } from "../database/main";
 import { loadout } from "../COD/loadouts";
 import { client, _jourloy } from "./main";
+import { defence } from "../defence/main";
+import { game } from "../twitch/uptime";
 import { tools } from "../tools/main";
 import { steam } from "../Steam/main";
 import { role } from "./description";
 import { logs } from "../tools/logs";
 
+import { HowLongToBeatService, HowLongToBeatEntry } from 'howlongtobeat';
 import { getGames } from "epic-free-games";
+import * as ytdl from 'ytdl-core';
 import * as ds from 'discord.js';
 import * as _ from "lodash";
+import { gog } from "../GOG/main";
 
 /* PARAM */
 const voiceChannels = {
@@ -30,34 +36,43 @@ const voiceChannels = {
         name: 'Игровая комната [5]',
     },
 }
+const hltbService = new HowLongToBeatService();
 const checkVoiceChannels = {};
 const checkMessages = {};
-const invites = {};
 let banVoiceUsers: string[] = [];
 let voiceUsers: string[] = [];
+let musicType = 'lofi';
 let checkRules = false;
 let checkRoles = false;
+let checkNSFW = false;
 let sendSales = {
     steam: false,
     egs: false,
+    gog: false,
 }
+let oldUrl = '';
 
 /* INTERVALS */
 /**
  * Check rules and roles for emoutes
  */
-setInterval(() => {
-    client.guilds.cache.forEach(g => {
-        g.fetchInvites().then(guildInvites => {
-            invites[g.id] = guildInvites;
-        });
-    });
+setInterval(async () => {
     if (checkRoles === false) {
         client.channels.fetch('868238068283473952').then((channel: ds.TextChannel) => {
             channel.messages.fetch().then(messArray => {
                 const mess = messArray.array();
                 channel.messages.cache.get(mess[0].id);
                 checkRoles = true;
+            })
+        })
+    }
+
+    if (checkNSFW === false) {
+        client.channels.fetch('887612221272784916').then((channel: ds.TextChannel) => {
+            channel.messages.fetch().then(messArray => {
+                const mess = messArray.array();
+                for (let i in mess) channel.messages.cache.get(mess[i].id);
+                checkNSFW = true;
             })
         })
     }
@@ -71,10 +86,9 @@ setInterval(() => {
     const hour = time.getHours();
     const minutes = time.getMinutes();
 
-    if (hour === 21 && minutes > 0 && sendSales.steam === false) {
-        steam.getFeatured().then(data => {
+    if (hour === 21 && minutes >= 0 && minutes < 15 && sendSales.steam === false) {
+        steam.getFeatured().then(async data => {
             const sales = data.specials.items;
-            if (sales[0].currency !== 'RUB') return;
             const embed = new ds.MessageEmbed()
                 .setTitle('Steam')
                 .setColor(0xf05656)
@@ -87,26 +101,77 @@ setInterval(() => {
                 const percent = product.discount_percent;
                 embed.addField(product.name, `**Скидка:** ${percent}%\n**Стоимость:** __${price}__\n**Старая цена:** ${oldPrice}\n[В магазин](https://store.steampowered.com/app/${product.id}/)\n`, true);
             }
-            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send(`<@&869960789405098004>`, { embed: embed }) })
-            sendSales.steam = true;
-            setTimeout(() => { sendSales.steam = false }, tools.convertTime({ hours: 2 }));
+            const guildSales = await manager.guildGetAll();
+            for (let i in guildSales) {
+                if (guildSales[i].salesID == null || guildSales[i].sended == null) {
+                    //createLog(`Гильдия не объявила канал`, `guildID: ${guildSales[i].id}`);
+                    manager.guildSalesSendedSwitch(guildSales[i].id);
+                    continue;
+                };
+                if (guildSales[i].sended === true) continue;
+                client.channels.fetch(guildSales[i].salesID).then((channel: ds.TextChannel) => {
+                    if (channel == null) {
+                        createLog(`Гильдия удалила канал`, `ID: ${guildSales[i].id}`);
+                        manager.guildSalesSendedSwitch(guildSales[i].id);
+                    } else {
+                        channel.send(embed);
+                        manager.guildSalesSendedSwitch(guildSales[i].id);
+                    }
+                })
+                .catch(() => {
+                    createLog(`Гильдия запретила писать`, `guildID: ${guildSales[i].id}`);
+                    manager.guildSalesSendedSwitch(guildSales[i].id);
+                })
+            }
+            setTimeout(async () => { 
+                const guildSales = await manager.guildGetAll();
+                for (let i in guildSales) {
+                    if (guildSales[i].sended != null) manager.guildSalesSendedSwitch(guildSales[i].id);
+                }
+            }, tools.convertTime({ hours: 2 }));
         })
-    } else if (hour === 21 && minutes > 30 && sendSales.egs === false) {
+    } else if (hour === 21 && minutes >= 15 && minutes < 20 && sendSales.egs === false) {
         getGames('RU')
             .then(games => {
                 const embed = new ds.MessageEmbed()
                     .setTitle('Epic Games Store')
                     .setColor(0xf05656)
                     .setFooter(`With ❤️ by Jourloy`)
-                for (let i in games.currents) embed.addField(games.currents[i].title, `Раздается __на этой неделе__`);
-                for (let i in games.nexts) {
-                    embed.addField(games.nexts[i].title, `Раздается __на следующей неделе__`);
-                }
-                client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send(`<@&869960789405098004>`, { embed: embed }) })
+                const url = 'https://www.epicgames.com/store/ru/p/';
+                let thisWeek = '';
+                let nextWeek = '';
+
+                for (let i in games.currents) if (games.currents[i].price.totalPrice.discountPrice === 0) thisWeek += `${games.currents[i].title} ([В магазин](${url}${games.currents[i].productSlug}))\n`;
+                for (let i in games.nexts) nextWeek += `${games.nexts[i].title} ([В магазин](${url}${tools.removeSpaces(games.nexts[i].title, '-')}))\n`
+                embed.addField(`Раздается на этой неделе`, thisWeek);
+                embed.addField(`Раздается на следующей неделе`, nextWeek);
+                client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send(embed) });
+                client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send(embed) });
                 sendSales.egs = true;
                 setTimeout(() => { sendSales.egs = false }, tools.convertTime({ hours: 2 }));
             })
             .catch(err => console.log(err))
+    } else if (hour === 21 && minutes >= 10 && minutes < 15 && sendSales.gog === false) {
+        gog.getSales().then(sales => {
+            const embed = new ds.MessageEmbed()
+                .setTitle('GOG')
+                .setColor(0xf05656)
+                .setFooter(`With ❤️ by Jourloy`)
+
+            for (let i in sales) {
+                const name = sales[i].title;
+                const percent = sales[i].price.discount;
+                const price = sales[i].price.amount;
+                const oldPrice = sales[i].price.baseAmount;
+                const slug = sales[i].slug;
+
+                embed.addField(name, `**Скидка:** ${percent}%\n**Стоимость:** __${price}__\n**Старая цена:** ${oldPrice}\n[В магазин](https://www.gog.com/game/${slug})\n`, true);
+            }
+            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send(embed) });
+            client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send(embed) });
+            sendSales.gog = true;
+            setTimeout(() => { sendSales.steam = false }, tools.convertTime({ hours: 2 }));
+        })
     }
 }, 1000)
 
@@ -166,76 +231,10 @@ setInterval(() => {
 
 
 /**
- * Give inviter role
+ * Kick member from voice
  */
 setInterval(() => {
     if (_jourloy.guild == null) return;
-
-    manager.getInviterMembers().then(members => {
-        for (let i in members) {
-            const member = members[i];
-
-            if (member.inviteUses >= 1 && member.inviteUses < 25) {
-                _jourloy.guild.roles.fetch('869690641708351498').then(role => {
-                    _jourloy.guild.members.fetch(member.username)
-                        .then(guildMember => {
-                            const memberRoles = guildMember.roles.cache.array();
-                            if (memberRoles.includes(role) !== true) {
-                                guildMember.roles.add(role);
-                                client.channels.fetch('868108110001221632').then((channel: ds.TextChannel) => {
-                                    const embed = new ds.MessageEmbed()
-                                        .setColor(0xf05656)
-                                        .setTitle('Поздравляю и говорю спасибо!')
-                                        .setDescription(`По твоим приглашениям пришел как минимум 1 человек! За это держи новую роль :)`)
-                                        .setFooter(`With ❤️ by Jourloy`)
-                                    channel.send(`${guildMember.displayName}`, { embed: embed }).then(mss => mss.react('🎉'));
-                                })
-                            }
-                        })
-                        .catch(err => { createLog(`ВНИМАНИЕ`, `Пользователь (ID: ${member.username}) есть в базе данных, но отсутствует на сервере`) })
-                })
-            } else if (member.inviteUses >= 25 && member.inviteUses < 50) {
-                _jourloy.guild.roles.fetch('869690527308726303').then(role => {
-                    _jourloy.guild.members.fetch(member.username)
-                        .then(guildMember => {
-                            const memberRoles = guildMember.roles.cache.array();
-                            if (memberRoles.includes(role) !== true) {
-                                guildMember.roles.add(role);
-                                client.channels.fetch('868108110001221632').then((channel: ds.TextChannel) => {
-                                    const embed = new ds.MessageEmbed()
-                                        .setColor(0xf05656)
-                                        .setTitle('Поздравляю и говорю спасибо!')
-                                        .setDescription(`По твоим приглашениям пришло уже как минимум 25 человек! За это держи новую роль :)`)
-                                        .setFooter(`With ❤️ by Jourloy`)
-                                    channel.send(`${guildMember.displayName}`, { embed: embed }).then(mss => mss.react('🎉'));
-                                })
-                            }
-                        })
-                        .catch(err => { createLog(`ВНИМАНИЕ`, `Пользователь (ID: ${member.username}) есть в базе данных, но отсутствует на сервере`) })
-                })
-            } else if (member.inviteUses >= 50) {
-                _jourloy.guild.roles.fetch('869690267203153981').then(role => {
-                    _jourloy.guild.members.fetch(member.username)
-                        .then(guildMember => {
-                            const memberRoles = guildMember.roles.cache.array();
-                            if (memberRoles.includes(role) !== true) {
-                                guildMember.roles.add(role);
-                                client.channels.fetch('868108110001221632').then((channel: ds.TextChannel) => {
-                                    const embed = new ds.MessageEmbed()
-                                        .setColor(0xf05656)
-                                        .setTitle('Поздравляю и говорю спасибо!')
-                                        .setDescription(`По твоим приглашениям пришло уже как минимум 50 человек! За это держи новую роль :)`)
-                                        .setFooter(`With ❤️ by Jourloy`)
-                                    channel.send(`${guildMember.displayName}`, { embed: embed }).then(mss => mss.react('🎉'));
-                                })
-                            }
-                        })
-                        .catch(err => { createLog(`ВНИМАНИЕ`, `Пользователь (ID: ${member.username}) есть в базе данных, но отсутствует на сервере`) })
-                })
-            }
-        }
-    })
-
     const channelsArray = _jourloy.guild.channels.cache.array();
     const channels: ds.GuildChannel[] = [];
     for (let i in channelsArray) {
@@ -256,7 +255,7 @@ setInterval(() => {
                             }
                             const chan = _jourloy.guild.channels.cache.array();
                             for (let j in chan) {
-                                if (chan[j].id === '406560230454067211') {
+                                if (chan[j].id === '885328250157535264') {
                                     userVoiceState.setChannel(chan[j], `<@${channels[i].members.array()[0].id}> (${channels[i].members.array()[0].id}) sited down in channel more than 10 minutes`);
                                     return;
                                 }
@@ -496,6 +495,9 @@ setInterval(() => {
 }, 1000)
 
 /* FUNCTIONS */
+/**
+ * Create log in log channel
+ */
 function createLog(title: string, description: string) {
     client.channels.fetch('818566531486187611').then((channel: ds.TextChannel) => {
         const embed = new ds.MessageEmbed()
@@ -564,6 +566,16 @@ export class discord {
         client.channels.fetch('868517415787585656').then((channel: ds.TextChannel) => channel.send('<@&868513502443208704>', { embed: embed }));
     }
 
+    public static sendNoftificationInGuild(channelID: string, username: string) {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setTitle(`СТРИМ НАЧАЛСЯ`)
+            .setDescription(`Всем привет! А стрим то уже начался и в полном разгаре. Заходите скорей, чтобы не пропустить\n**[Перейти на твич](https://www.twitch.tv/${username})**`)
+            .setImage('https://cdn.discordapp.com/attachments/867012893157359647/870472217400598548/240de9630b7799f5.png')
+            .setFooter(`With ❤️ by Jourloy`);
+        client.channels.fetch(channelID).then((channel: ds.TextChannel) => channel.send('<@&868513502443208704>', { embed: embed }));
+    }
+
     public static sendCommercialLog() {
         const embed = new ds.MessageEmbed()
             .setColor(0xf05656)
@@ -574,6 +586,14 @@ export class discord {
 }
 
 /* REACTIONS */
+client.on('guildCreate', guild => {
+    manager.guildAdd(guild.id);
+})
+
+client.on('guildDelete', guild => {
+    manager.guildRemove(guild.id);
+})
+
 client.on('message', async msg => {
     if (msg.author.bot === true) return;
     const channelID = msg.channel.id;
@@ -582,52 +602,124 @@ client.on('message', async msg => {
     const messageSplit = message.split(' ');
     const command = messageSplit[0].split('!')[1];
 
-    /* <=========================== DM ===========================> */
+    if (msg.guild != null && msg.guild.id === '437601028662231040') {
+        const defenceCheck = await defence.check(message.toLowerCase());
+        if (defenceCheck.bool === false) {
+            msg.delete();
+            createLog('ВНИМАНИЕ', `<@${authorID}> использовал запретное слово`);
+            return;
+        }
+    }
 
-    if (command === 'clear_dm' && msg.guild == null) {
+    /* <=========================== GLOBAL ===========================> */
+
+    if (command === 'game') {
+        let game = '';
+        for (let i in messageSplit) {
+            if (messageSplit.indexOf(messageSplit[i]) < 1) continue;
+            else if (messageSplit.indexOf(messageSplit[i]) === 1) game += messageSplit[i];
+            else if (messageSplit.indexOf(messageSplit[i]) > 1) game += ` ${messageSplit[i]}`;
+        }
+        if (game === '' || game.length < 3) return;
+        hltbService.search(game).then(async result => {
+            const games = [];
+            const array = result;
+            for (let i in array) {
+                const gameResult = array[i];
+                let match = gameResult.similarity;
+                match = Math.floor(match * 100)
+                if (match > 5) games.push({ match: match, result: gameResult });
+            }
+            let maxMatch = 0;
+            let gameResult = null;
+            for (let i in games) {
+                if (games[i].match > maxMatch) {
+                    maxMatch = games[i].match;
+                    gameResult = games[i].result;
+                }
+            }
+            if (gameResult == null) {
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setTitle(`Игра не найдена`)
+                    .setFooter(`With ❤️ by Jourloy`)
+                msg.channel.send(embed);
+                return;
+            }
+            const embed = new ds.MessageEmbed()
+                .setColor(0xf05656)
+                .setTitle(`${gameResult.name}`)
+                .setDescription(`Сходство: ${maxMatch}%\n\n**Только сюжет:** ${gameResult.gameplayMain} часов\n**Сюжет и побочки:** ${gameResult.gameplayMainExtra} часов\n**100% прохождение:** ${gameResult.gameplayCompletionist} часов`)
+                .setFooter(`With ❤️ by Jourloy`)
+                .setImage('https://howlongtobeat.com' + gameResult.imageUrl)
+            const appid = await steam.getAppID(gameResult.name);
+            if (appid != null) {
+                const appdetails = await steam.getAppDetails(appid);
+                const data = appdetails[appid].data
+
+                if (data.price_overview != null) {
+                    let price = '';
+                    if (data.is_free === true) price = 'Стоимость: Бесплатно'
+                    else if (data.price_overview.final == null) price = `Стоимость: ${data.price_overview.initial_formatted}`;
+                    else if (data.price_overview.final < data.price_overview.initial) price = `Стоимость: ${data.price_overview.final_formatted} (~~${data.price_overview.initial_formatted}~~)`;
+                    else price = `Стоимость: ${data.price_overview.final_formatted}`;
+
+                    let platforms = 'Платформы: ';
+                    if (data.platforms.windows === true) platforms += '<:mods_windows:886933929221824572>';
+                    if (data.platforms.mac === true) platforms += ' <:mods_mac:886933931331579925>';
+                    if (data.platforms.linux === true) platforms += ' <:mods_linux:886934566437257267>';
+
+                    const inStore = `[В магазин](https://store.steampowered.com/app/${appid}/)`;
+
+                    embed.description += `\n\n> **STEAM** (${inStore})\n\n${price}\n${platforms}`;
+                }
+
+            }
+
+            msg.channel.send(embed);
+        });
+    }
+
+    /* if (command === 'clear') {
         const limit = parseInt(messageSplit[1]) || 100;
         msg.channel.messages.fetch({ limit: limit }).then(mess => {
             const messages = mess.array();
             for (let i in messages) {
-                if (messages[i].author.bot === false) continue;
+                if (msg.guild == null && messages[i].author.bot === false) continue;
                 messages[i].delete();
             }
         })
-    } else if (command === 'payment' && msg.guild == null) {
-        const embed = new ds.MessageEmbed()
-            .setColor(0xf05656)
-            .setTitle(`Payments`)
-            .addFields(
-                { name: 'Card', value: '4274 3200 4873 8408' },
-            )
-            .setFooter(`With ❤️ by Jourloy`)
-        msg.channel.send(embed);
+    } */
+
+    /* <=========================== DM ===========================> */
+
+    if (msg.guild == null) {
+        if (command === 'help') {
+            const embed = new ds.MessageEmbed()
+                .setColor(0xf05656)
+                .setTitle(`КОМАНДЫ`)
+                .setDescription(`Параметры в [] __не обязательно__ указывать\nПараметры в <> __обязательно__ указывать\n\n**Удалить сообщения (максимум 100): \`!clear [число]\`\n_По умолчанию удаляет 100 сообщений_`)
+                .setFooter(`With ❤️ by Jourloy`)
+            msg.channel.send(embed);
+        }
+
+        return;
     }
 
-    if (msg.content[0] === '?' && msg.guild == null) {
-        client.users.fetch('308924864407011328').then(user => {
-            user.send(`MSG FROM **${msg.author.username} (${msg.author.id})**:\n\n${msg.content}`)
+    if (msg.guild == null) return;
+
+    /* <=========================== ALL GUILDS MESSAGES ===========================> */
+
+    if (command === 'sales_enable') {
+        manager.guildSalesAdd(msg.guild.id, msg.channel.id).then(state => {
+            if (state === true) msg.channel.send('Готово, канал добавлен в рассылку **скидок и раздач**. Каждый день в 9 вечера ждите сообщения');
+            else msg.channel.send('Произошла ошибка, сообщите пожалуйста разработчику ||_КОД ОШИБКИ: GIANT-WHITE-DUCK_||');
         })
-    }
-
-    if (authorID !== '308924864407011328') return;
-
-    /* <=========================== DM FROM ME ===========================> */
-
-    if (command === 'help' && msg.guild == null) {
-        const embed = new ds.MessageEmbed()
-            .setColor(0xf05656)
-            .setTitle(`HELP`)
-            .addFields(
-                { name: 'Help', value: '`!jrly_help`\n`!nvy_help`' }
-            )
-            .setFooter(`With ❤️ by Jourloy`)
-        msg.channel.send(embed);
     }
 
     /* <=========================== TECH GUILD MESSAGES ===========================> */
 
-    if (msg.guild != null && msg.guild.id === '823463145963913236') {
+    if (msg.guild.id === '823463145963913236') {
         if (channelID === '871701756650868766') {
             msg.delete();
             const embed = new ds.MessageEmbed()
@@ -683,9 +775,9 @@ client.on('message', async msg => {
 
                         channel.send(embed).then(mss => {
                             mss.react('🔔');
+                            mss.react('🖼️');
                             mss.react('🆓');
                             mss.react('🚫');
-                            mss.react('👴');
                             mss.react('🎥');
                             mss.react('🧸');
                             mss.react('🎀');
@@ -693,7 +785,6 @@ client.on('message', async msg => {
                             mss.react('<:mods_nw_logo:874610034783453225>');
                             mss.react('<:mods_genshin_logo:873249309435527169>');
                             mss.react('<:mods_csgo_logo:873248573020573747>');
-                            mss.react('<:mods_gta_logo:873248535112470619>');
                             mss.react('<:mods_bf_logo:874609931200913448>');
                             mss.react('<:mods_minecraft_logo:874609992454524928>');
                             mss.react('<:mods_valorant_logo:873248522688946197>');
@@ -707,16 +798,63 @@ client.on('message', async msg => {
             const split = message.split(' | ');
             if (command === 'create') {
                 manager.createRedirect(split[1], split[2]);
-                msg.delete();
-                (await msg.channel.send('DONE')).delete({timeout: 100})
+                (await msg.channel.send('DONE')).delete({ timeout: 100 })
             }
+            msg.delete();
+        } else if (channelID === '885319115705823253') {
+            if (command === 'add') {
+                const url = messageSplit[1];
+                const type = messageSplit[2];
+                const state = await manager.musicAdd(url, type);
+                if (state === true) {
+                    const embed = new ds.MessageEmbed()
+                        .setColor(0xf05656)
+                        .setTitle(`DONE`)
+                        .setFooter(`With ❤️ by Jourloy`);
+                    (await msg.channel.send(embed)).delete({ timeout: tools.convertTime({ seconds: 10 }) });
+                } else if (state === false) {
+                    const embed = new ds.MessageEmbed()
+                        .setColor(0xf05656)
+                        .setTitle(`ALREADY EXIST`)
+                        .setFooter(`With ❤️ by Jourloy`);
+                    (await msg.channel.send(embed)).delete({ timeout: tools.convertTime({ seconds: 10 }) });
+                }
+            } else if (command === 'remove') {
+                const url = messageSplit[1];
+                const state = await manager.musicDelete(url);
+                if (state === true) {
+                    const embed = new ds.MessageEmbed()
+                        .setColor(0xf05656)
+                        .setTitle(`DONE`)
+                        .setFooter(`With ❤️ by Jourloy`);
+                    (await msg.channel.send(embed)).delete({ timeout: tools.convertTime({ seconds: 10 }) });
+                } else if (state === false) {
+                    const embed = new ds.MessageEmbed()
+                        .setColor(0xf05656)
+                        .setTitle(`ALREADY DELETED`)
+                        .setFooter(`With ❤️ by Jourloy`);
+                    (await msg.channel.send(embed)).delete({ timeout: tools.convertTime({ seconds: 10 }) });
+                }
+            } else if (command === 'help') {
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setTitle(`HELP`)
+                    .setDescription(`\`!add <url> <type>\` - add music\n\`!remove <url>\` - delete music`)
+                    .setFooter(`With ❤️ by Jourloy`);
+                (await msg.channel.send(embed)).delete({ timeout: tools.convertTime({ seconds: 10 }) });
+            }
+            msg.delete();
+        } else if (channelID === '887612221272784916') {
+            if (msg.attachments.array().length !== 1) return;
+            msg.react('<:JR_Check:860041751971889162>');
+            msg.react('<:JR_Cross:860041692605841408>');
         }
     }
 
 
-    if (msg.guild == null || msg.guild.id !== '437601028662231040') return;
+    if (msg.guild == null || msg.guild.id == null || msg.guild.id !== '437601028662231040') return;
 
-    /* <=========================== GUILD MESSAGES ===========================> */
+    /* <=========================== JOURLOY GUILD MESSAGES ===========================> */
 
     if (command === 'create_embed' && channelID === '815257750879600642') {
         const splited = message.split(' | ');
@@ -759,12 +897,22 @@ client.on('message', async msg => {
                 createLog('-', `Было удалено: ${counter}`)
             })
         })
+    } else if (command === 'test') {
+        gog.getSales();
     }
 
-    if (channelID === '816104930443395072') {
-        const embed = loadout.getWeapon(command);
-        msg.channel.send(embed);
-    }
+    if (channelID === '886915478923128833') {
+        if (command === 'connect') {
+            msg.delete();
+            const channelName = messageSplit[1];
+            manager.scoutAdd(channelName).then(async (state) => {
+                if (state === true) msg.channel.send(`Готово, твич канал [ ${channelName} ] добавлен в базу данных`)
+                else msg.channel.send('Ошибка')
+            });
+        }
+    } else if (channelID === '825341850175930368') msg.crosspost();
+    else if (channelID === '869957685326524456') msg.crosspost();
+    else if (channelID === '872384571386261524') msg.crosspost();
 })
 
 client.on('messageReactionAdd', (msg) => {
@@ -784,7 +932,6 @@ client.on('messageReactionAdd', (msg) => {
         else if (emoji === 'mods_warzone_logo') giveRoleAndPlaceReaction(msg, '825341898318151681', '<:mods_warzone_logo:873248548316131430>');
         else if (emoji === 'mods_genshin_logo') giveRoleAndPlaceReaction(msg, '869757372917235742', '<:mods_genshin_logo:873249309435527169>');
         else if (emoji === 'mods_csgo_logo') giveRoleAndPlaceReaction(msg, '869947396816244766', '<:mods_csgo_logo:873248573020573747>');
-        else if (emoji === 'mods_gta_logo') giveRoleAndPlaceReaction(msg, '871764416012640337', '<:mods_gta_logo:873248535112470619>');
         else if (emoji === 'mods_minecraft_logo') giveRoleAndPlaceReaction(msg, '871764506236301332', '<:mods_minecraft_logo:874609992454524928>');
         else if (emoji === 'mods_bf_logo') giveRoleAndPlaceReaction(msg, '871764590717984798', '<:mods_bf_logo:874609931200913448>');
         else if (emoji === 'mods_apex_logo') giveRoleAndPlaceReaction(msg, '874612514451779604', '<:mods_apex_logo:873248479454060544>');
@@ -794,58 +941,34 @@ client.on('messageReactionAdd', (msg) => {
         else if (emoji === '🧸') giveRoleAndPlaceReaction(msg, '871765786308526130', '🧸');
         else if (emoji === '🎀') giveRoleAndPlaceReaction(msg, '871765898652954634', '🎀');
         else if (emoji === '🔔') giveRoleAndPlaceReaction(msg, '868513502443208704', '🔔');
+        else if (emoji === '🖼️') giveRoleAndPlaceReaction(msg, '884444310483902475', '🖼️');
         else if (emoji === '🆓') giveRoleAndPlaceReaction(msg, '869960789405098004', '🆓');
-        else if (emoji === '👴') giveRoleAndPlaceReaction(msg, '870474144813289502', '👴');
         else if (emoji === '🚫') giveRoleAndPlaceReaction(msg, '875895580130422824', '🚫');
+    } else if (channelID === '887612221272784916') {
+        if (emoji === 'JR_Check') {
+            const mss = msg.message;
+            const attachment = mss.attachments.array()[0];
+            client.channels.fetch('887612236275789824').then((channel: ds.TextChannel) => channel.send(attachment)).then(ms => manager.nsfwAdd(ms.attachments.array()[0].url));
+            mss.delete();
+        } else if (emoji === 'JR_Cross') msg.message.delete();
     }
 })
 
 client.on("guildMemberAdd", (member) => {
     if (member.guild.id !== '437601028662231040') return;
 
-    member.guild.fetchInvites().then(guildInvites => {
+    client.channels.fetch('869693463510278245').then((channel: ds.TextChannel) => {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setTitle('ПРИВЕТ!')
+            .setDescription(`Рад тебя видеть на моем сервере, уверяю, здесь ты найдешь много интересного
 
-        const ei = invites[member.guild.id];
-        invites[member.guild.id] = guildInvites;
-
-        const invite = guildInvites.find(i => ei.get(i.code).uses < i.uses);
-        if (invite == null || invite.inviter == null || invite.inviter.username.toLowerCase() === 'jourloy') {
-            client.channels.fetch('869693463510278245').then((channel: ds.TextChannel) => {
-                const embed = new ds.MessageEmbed()
-                    .setColor(0xf05656)
-                    .setTitle('ПРИВЕТ!')
-                    .setDescription(`Рад тебя видеть на моем сервере, уверяю, здесь ты найдешь много интересного
-    
 В <#865580513879261194> есть основная информация, которую можешь прочитать
 Загляни в <#868238068283473952> и выбери себе роли, которые подходят больше всего для тебя
 Передавай всем привет в <#868108110001221632>
 Удачи!`)
-                    .setFooter(`With ❤️ by Jourloy`)
-                channel.send(`<@${member.id}>`, { embed: embed }).then(mss => mss.react('👋'));
-            });
-            return;
-        }
-        const inviter = client.users.cache.get(invite.inviter.id);
-
-        manager.updateInviterMember(inviter.id);
-
-        client.channels.fetch('869693463510278245').then((channel: ds.TextChannel) => {
-            const embed = new ds.MessageEmbed()
-                .setColor(0xf05656)
-                .setTitle('ПРИВЕТ!')
-                .setDescription(`Рад тебя видеть на моем сервере, уверяю, здесь ты найдешь много интересного
-
-В <#865580513879261194> есть основная информация, которую можешь прочитать
-Загляни в <#868238068283473952> и выбери себе роли, которые подходят больше всего для тебя
-Передавай всем привет в <#868108110001221632>
-Удачи!
-
-───────────────
-
-<@${inviter.id}> пригласил этого замечательного участника нашего сообщества`)
-                .setFooter(`With ❤️ by Jourloy`)
-            channel.send(`<@${member.id}>`, { embed: embed }).then(mss => mss.react('👋'));
-        })
+            .setFooter(`With ❤️ by Jourloy`)
+        channel.send(`<@${member.id}>`, { embed: embed }).then(mss => mss.react('👋'));
     });
 })
 
@@ -865,6 +988,7 @@ client.on('guildMemberRemove', (member) => {
 })
 
 client.on('messageDelete', (message) => {
+    if (message.guild == null) return;
     if (message.guild.id !== '437601028662231040') return;
     if (message.channel.id === '818566531486187611' || message.channel.id === '799562265304891392' || message.channel.id === '868238068283473952') return;
     if (message.author.id === '308924864407011328' || message.author.id === '816872036051058698') return;
