@@ -292,9 +292,9 @@ export class manager {
      * Add guild
      */
     public static async guildAdd(id: string): Promise<boolean> {
-        const state = await guildsCollection.insertOne({id: id})
-            .then(() => {return true })
-            .catch(() => {return false})
+        const state = await guildsCollection.insertOne({ id: id })
+            .then(() => { return true })
+            .catch(() => { return false })
         return state;
     }
 
@@ -302,11 +302,16 @@ export class manager {
      * Add sales channel
      */
     public static async guildSalesAdd(guildID: string, salesID: string): Promise<boolean> {
-        const state = await guildsCollection.findOne({id: guildID}).then(data => {
-            if (data == null) return false;
+        const state = await guildsCollection.findOne({ id: guildID }).then(data => {
+            if (data == null) {
+                guildsCollection.insertOne({id: guildID, salesID: salesID, sendedSteam: false, sendedGOG: false, sendedEGS: false});
+                return true;
+            };
             data.salesID = salesID;
-            data.sended = false;
-            guildsCollection.findOneAndUpdate({id: guildID}, {$set: data});
+            data.sendedSteam = false;
+            data.sendedGOG = false;
+            data.sendedEGS = false;
+            guildsCollection.findOneAndUpdate({ id: guildID }, { $set: data });
             return true;
         })
         return state;
@@ -315,12 +320,40 @@ export class manager {
     /**
      * Switch sended info
      */
-    public static async guildSalesSendedSwitch(id: string): Promise<boolean> {
-        const state = await guildsCollection.findOne({id: id}).then(data => {
-            if (data == null || data.sended == null) return false;
-            let state = false;
-            if (data.sended === false) state = true;
-            guildsCollection.findOneAndUpdate({id: id}, {$set: {id: id, salesID: data.salesID, sended: state}});
+    public static async guildSalesSendedSteamSwitch(id: string): Promise<boolean> {
+        const state = await guildsCollection.findOne({ id: id }).then(data => {
+            if (data == null || data.sendedSteam == null) return false;
+            if (data.sendedSteam === false) data.sendedSteam = true;
+            else if (data.sendedSteam === true) data.sendedSteam = false;
+            guildsCollection.findOneAndUpdate({ id: id }, { $set: data });
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Switch sended info
+     */
+    public static async guildSalesSendedGOGSwitch(id: string): Promise<boolean> {
+        const state = await guildsCollection.findOne({ id: id }).then(data => {
+            if (data == null || data.sendedEGS == null) return false;
+            if (data.sendedEGS === false) data.sendedEGS = true;
+            else if (data.sendedEGS === true) data.sendedEGS = false;
+            guildsCollection.findOneAndUpdate({ id: id }, { $set: data });
+            return true;
+        })
+        return state;
+    }
+
+    /**
+     * Switch sended info
+     */
+    public static async guildSalesSendedEGSSwitch(id: string): Promise<boolean> {
+        const state = await guildsCollection.findOne({ id: id }).then(data => {
+            if (data == null || data.sendedGOG == null) return false;
+            if (data.sendedGOG === false) data.sendedGOG = true;
+            else if (data.sendedGOG === true) data.sendedGOG = false;
+            guildsCollection.findOneAndUpdate({ id: id }, { $set: data });
             return true;
         })
         return state;
@@ -329,7 +362,7 @@ export class manager {
     /**
      * Get all guilds
      */
-    public static async guildGetAll(): Promise<{_id: string, id: string, salesID?: string, sended?: boolean}[]> {
+    public static async guildGetAll(): Promise<{ _id: string, id: string, salesID?: string, sended?: boolean }[]> {
         const state = await guildsCollection.find({}).toArray();
         return state;
     }
@@ -338,9 +371,9 @@ export class manager {
      * Remove guild
      */
     public static async guildRemove(id: string): Promise<boolean> {
-        const state = await guildsCollection.findOneAndDelete({id: id})
-            .then(() => {return true })
-            .catch(() => {return false})
+        const state = await guildsCollection.findOneAndDelete({ id: id })
+            .then(() => { return true })
+            .catch(() => { return false })
         return state;
     }
 
