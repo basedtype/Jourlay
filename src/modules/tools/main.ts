@@ -64,5 +64,9 @@ export class tools {
             Math.random() * (max - min) + min
         )
     }
+
+    public static removeSpaces(str: string, char: string): string {
+        return str.split(' ').join(char);
+    }
 }
 
