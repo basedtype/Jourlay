@@ -11,7 +11,7 @@ const opt = {
     }
 }
 
-setInterval(async () => {
+/* setInterval(async () => {
     const users = await manager.scoutGetAll();
 
     for (let i in users) {
@@ -30,4 +30,4 @@ setInterval(async () => {
             })
             .catch(() => { ; });
     }
-}, 1000 * 60)
+}, 1000 * 60) */
