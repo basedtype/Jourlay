@@ -9,11 +9,12 @@ import { tools } from "../tools/main";
 import { steam } from "../Steam/main";
 import { role } from "./description";
 import { logs } from "../tools/logs";
+import { buttons } from "./buttons";
 
 import { HowLongToBeatService, HowLongToBeatEntry } from 'howlongtobeat';
 import { getGames } from "epic-free-games";
 import * as ytdl from 'ytdl-core';
-import * as ds from 'discord.js';
+import * as ds from '../../../discord.js';
 import * as _ from "lodash";
 import { gog } from "../GOG/main";
 
@@ -60,8 +61,8 @@ setInterval(async () => {
     if (checkRoles === false) {
         client.channels.fetch('868238068283473952').then((channel: ds.TextChannel) => {
             channel.messages.fetch().then(messArray => {
-                const mess = messArray.array();
-                channel.messages.cache.get(mess[0].id);
+                const mess = messArray.first();
+                channel.messages.cache.get(mess.id);
                 checkRoles = true;
             })
         })
@@ -70,8 +71,8 @@ setInterval(async () => {
     if (checkNSFW === false) {
         client.channels.fetch('887612221272784916').then((channel: ds.TextChannel) => {
             channel.messages.fetch().then(messArray => {
-                const mess = messArray.array();
-                for (let i in mess) channel.messages.cache.get(mess[i].id);
+                const mess = messArray.first();
+                channel.messages.cache.get(mess.id);
                 checkNSFW = true;
             })
         })
@@ -105,34 +106,34 @@ setInterval(() => {
             for (let i in guildSales) {
                 if (guildSales[i].salesID == null || guildSales[i].sended == null) {
                     //createLog(`Гильдия не объявила канал`, `guildID: ${guildSales[i].id}`);
-                    manager.guildSalesSendedSwitch(guildSales[i].id);
+                    manager.guildSalesSendedSteamSwitch(guildSales[i].id);
                     continue;
                 };
                 if (guildSales[i].sended === true) continue;
                 client.channels.fetch(guildSales[i].salesID).then((channel: ds.TextChannel) => {
                     if (channel == null) {
                         createLog(`Гильдия удалила канал`, `ID: ${guildSales[i].id}`);
-                        manager.guildSalesSendedSwitch(guildSales[i].id);
+                        manager.guildSalesSendedSteamSwitch(guildSales[i].id);
                     } else {
-                        channel.send(embed);
-                        manager.guildSalesSendedSwitch(guildSales[i].id);
+                        channel.send({embeds: [embed]});
+                        manager.guildSalesSendedSteamSwitch(guildSales[i].id);
                     }
                 })
-                .catch(() => {
-                    createLog(`Гильдия запретила писать`, `guildID: ${guildSales[i].id}`);
-                    manager.guildSalesSendedSwitch(guildSales[i].id);
-                })
+                    .catch(() => {
+                        createLog(`Гильдия запретила писать`, `guildID: ${guildSales[i].id}`);
+                        manager.guildSalesSendedSteamSwitch(guildSales[i].id);
+                    })
             }
-            setTimeout(async () => { 
+            setTimeout(async () => {
                 const guildSales = await manager.guildGetAll();
                 for (let i in guildSales) {
-                    if (guildSales[i].sended != null) manager.guildSalesSendedSwitch(guildSales[i].id);
+                    if (guildSales[i].sended != null) manager.guildSalesSendedSteamSwitch(guildSales[i].id);
                 }
             }, tools.convertTime({ hours: 2 }));
         })
     } else if (hour === 21 && minutes >= 15 && minutes < 20 && sendSales.egs === false) {
         getGames('RU')
-            .then(games => {
+            .then(async games => {
                 const embed = new ds.MessageEmbed()
                     .setTitle('Epic Games Store')
                     .setColor(0xf05656)
@@ -145,14 +146,38 @@ setInterval(() => {
                 for (let i in games.nexts) nextWeek += `${games.nexts[i].title} ([В магазин](${url}${tools.removeSpaces(games.nexts[i].title, '-')}))\n`
                 embed.addField(`Раздается на этой неделе`, thisWeek);
                 embed.addField(`Раздается на следующей неделе`, nextWeek);
-                client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send(embed) });
-                client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send(embed) });
-                sendSales.egs = true;
-                setTimeout(() => { sendSales.egs = false }, tools.convertTime({ hours: 2 }));
+                const guildSales = await manager.guildGetAll();
+                for (let i in guildSales) {
+                    if (guildSales[i].salesID == null || guildSales[i].sended == null) {
+                        //createLog(`Гильдия не объявила канал`, `guildID: ${guildSales[i].id}`);
+                        manager.guildSalesSendedEGSSwitch(guildSales[i].id);
+                        continue;
+                    };
+                    if (guildSales[i].sended === true) continue;
+                    client.channels.fetch(guildSales[i].salesID).then((channel: ds.TextChannel) => {
+                        if (channel == null) {
+                            createLog(`Гильдия удалила канал`, `ID: ${guildSales[i].id}`);
+                            manager.guildSalesSendedEGSSwitch(guildSales[i].id);
+                        } else {
+                            channel.send({embeds: [embed]});
+                            manager.guildSalesSendedEGSSwitch(guildSales[i].id);
+                        }
+                    })
+                        .catch(() => {
+                            createLog(`Гильдия запретила писать`, `guildID: ${guildSales[i].id}`);
+                            manager.guildSalesSendedEGSSwitch(guildSales[i].id);
+                        })
+                }
+                setTimeout(async () => {
+                    const guildSales = await manager.guildGetAll();
+                    for (let i in guildSales) {
+                        if (guildSales[i].sended != null) manager.guildSalesSendedEGSSwitch(guildSales[i].id);
+                    }
+                }, tools.convertTime({ hours: 2 }));
             })
             .catch(err => console.log(err))
     } else if (hour === 21 && minutes >= 10 && minutes < 15 && sendSales.gog === false) {
-        gog.getSales().then(sales => {
+        gog.getSales().then(async sales => {
             const embed = new ds.MessageEmbed()
                 .setTitle('GOG')
                 .setColor(0xf05656)
@@ -167,10 +192,34 @@ setInterval(() => {
 
                 embed.addField(name, `**Скидка:** ${percent}%\n**Стоимость:** __${price}__\n**Старая цена:** ${oldPrice}\n[В магазин](https://www.gog.com/game/${slug})\n`, true);
             }
-            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send(embed) });
-            client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send(embed) });
-            sendSales.gog = true;
-            setTimeout(() => { sendSales.steam = false }, tools.convertTime({ hours: 2 }));
+            const guildSales = await manager.guildGetAll();
+            for (let i in guildSales) {
+                if (guildSales[i].salesID == null || guildSales[i].sended == null) {
+                    //createLog(`Гильдия не объявила канал`, `guildID: ${guildSales[i].id}`);
+                    manager.guildSalesSendedGOGSwitch(guildSales[i].id);
+                    continue;
+                };
+                if (guildSales[i].sended === true) continue;
+                client.channels.fetch(guildSales[i].salesID).then((channel: ds.TextChannel) => {
+                    if (channel == null) {
+                        createLog(`Гильдия удалила канал`, `ID: ${guildSales[i].id}`);
+                        manager.guildSalesSendedGOGSwitch(guildSales[i].id);
+                    } else {
+                        channel.send({embeds: [embed]});
+                        manager.guildSalesSendedGOGSwitch(guildSales[i].id);
+                    }
+                })
+                    .catch(() => {
+                        createLog(`Гильдия запретила писать`, `guildID: ${guildSales[i].id}`);
+                        manager.guildSalesSendedGOGSwitch(guildSales[i].id);
+                    })
+            }
+            setTimeout(async () => {
+                const guildSales = await manager.guildGetAll();
+                for (let i in guildSales) {
+                    if (guildSales[i].sended != null) manager.guildSalesSendedGOGSwitch(guildSales[i].id);
+                }
+            }, tools.convertTime({ hours: 2 }));
         })
     }
 }, 1000)
@@ -215,13 +264,13 @@ setInterval(() => {
         if (parseInt(channelName[1]) != memberCount) channel.setName(`Участников: ${memberCount}`)
     })
 
-    const channelsArray = _jourloy.guild.channels.cache.array();
+    const channelsArray = Array.prototype.slice.call(_jourloy.guild.channels.cache, 0);
     const channels: ds.GuildChannel[] = [];
     for (let i in channelsArray) {
         if (channelsArray[i].type === 'voice' && (channelsArray[i].name === voiceChannels.duo.name || channelsArray[i].name === voiceChannels.trio.name || channelsArray[i].name === voiceChannels.four.name || channelsArray[i].name === voiceChannels.five.name)) channels.push(channelsArray[i]);
     }
     for (let i in channels) {
-        if (channels[i].members.array().length === 0) {
+        if (channels[i].members.values.length === 0) {
             channels[i].delete()
                 .then(() => { logs.add(`Delete created channel (interval)`) })
                 .catch(() => { });
@@ -235,28 +284,28 @@ setInterval(() => {
  */
 setInterval(() => {
     if (_jourloy.guild == null) return;
-    const channelsArray = _jourloy.guild.channels.cache.array();
+    const channelsArray = Array.prototype.slice.call(_jourloy.guild.channels.cache, 0);
     const channels: ds.GuildChannel[] = [];
     for (let i in channelsArray) {
         if (channelsArray[i].type === 'voice' && (channelsArray[i].name === voiceChannels.duo.name || channelsArray[i].name === voiceChannels.trio.name || channelsArray[i].name === voiceChannels.four.name)) channels.push(channelsArray[i]);
     }
     for (let i in channels) {
-        if (channels[i].members.array().length !== 1) continue;
+        if (channels[i].members.values.length !== 1) continue;
         else {
             if (checkVoiceChannels[channels[i].id] == null || checkVoiceChannels[channels[i].id] != null && checkVoiceChannels[channels[i].id].check === false) {
                 checkVoiceChannels[channels[i].id] = { check: true };
                 setTimeout(() => {
                     checkVoiceChannels[channels[i].id].check = false;
-                    if (channels[i].members.array().length === 1) {
-                        _jourloy.guild.members.fetch(channels[i].members.array()[0].id).then(member => {
+                    if (channels[i].members.values.length === 1) {
+                        _jourloy.guild.members.fetch(Array.prototype.slice.call(channels[i].members, 0)[0].id).then(member => {
                             let userVoiceState: ds.VoiceState = null;
-                            for (let j in member.guild.voiceStates.cache.array()) {
-                                if (channels[i].members.array()[0].id === member.guild.voiceStates.cache.array()[j].id) userVoiceState = member.guild.voiceStates.cache.array()[j];
+                            for (let j in Array.prototype.slice.call(member.guild.voiceStates.cache, 0)) {
+                                if (Array.prototype.slice.call(channels[i].members, 0)[0].id === Array.prototype.slice.call(member.guild.voiceStates.cache, 0)[j].id) userVoiceState = Array.prototype.slice.call(member.guild.voiceStates.cache, 0)[j];
                             }
-                            const chan = _jourloy.guild.channels.cache.array();
+                            const chan = Array.prototype.slice.call(_jourloy.guild.channels.cache, 0);
                             for (let j in chan) {
                                 if (chan[j].id === '885328250157535264') {
-                                    userVoiceState.setChannel(chan[j], `<@${channels[i].members.array()[0].id}> (${channels[i].members.array()[0].id}) sited down in channel more than 10 minutes`);
+                                    userVoiceState.setChannel(chan[j], `<@${Array.prototype.slice.call(channels[i].members, 0)[0].id}> (${Array.prototype.slice.call(channels[i].members, 0)[0].id}) sited down in channel more than 10 minutes`);
                                     return;
                                 }
                             }
@@ -275,7 +324,7 @@ setInterval(() => {
 setInterval(() => {
     if (_jourloy.guild == null) return;
     const deleteFunction = (channelNew: ds.GuildChannel) => {
-        if (channelNew.members.array().length === 0) {
+        if (Array.prototype.slice.call(channelNew.members, 0).length === 0) {
             channelNew.delete()
                 .then(() => { logs.add(`Delete created channel (function)`) })
                 .catch(() => { });
@@ -898,7 +947,7 @@ client.on('message', async msg => {
             })
         })
     } else if (command === 'test') {
-        gog.getSales();
+        msg.channel.send('Тестовая кнопка');
     }
 
     if (channelID === '886915478923128833') {
