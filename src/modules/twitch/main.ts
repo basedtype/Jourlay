@@ -13,6 +13,7 @@ const bar = multi.newBar(' getting twitch client [:bar] :percent :etas', {
     width: 30,
     total: 10
 });
+export let twitchClient: tmi.Client = null;
 export let client: tmi.Client = null;
 export let admin: tmi.Client = null;
 let getClient = false;
@@ -24,6 +25,7 @@ let clientIntervalID = setInterval(() => {
     if (client != null) clearInterval(clientIntervalID);
     if (getClient === false) twitch.connect('jourloy');
     client = twitch.update();
+    twitchClient = client
     getClient = true;
 }, 1000)
 
@@ -41,6 +43,8 @@ let startIntervalID = setInterval(() => {
     if (client == null) return;
     if (client != null) {
         require('./twitch');
+        require('./scout');
+        require('./twitchGate');
         clearInterval(startIntervalID);
         clearInterval(adminIntervalID);
     }
