@@ -1,4 +1,5 @@
 import { toolsOptions } from "../../../types";
+import { color } from './color';
 
 /* CLASSES */
 export class tools {
@@ -37,8 +38,8 @@ export class tools {
 
         const sec_num = parseInt(second, 10);
 
-        const days = Math.floor(sec_num / (3600*24));
-        const hours = Math.floor(sec_num % (3600*24) / 3600);
+        const days = Math.floor(sec_num / (3600 * 24));
+        const hours = Math.floor(sec_num % (3600 * 24) / 3600);
         const minutes = Math.floor(sec_num % 3600 / 60);
         const seconds = Math.floor(sec_num % 60);
 
@@ -67,6 +68,11 @@ export class tools {
 
     public static removeSpaces(str: string, char: string): string {
         return str.split(' ').join(char);
+    }
+
+    public static createError(text: string) {
+        color.box(text, 'FgRed', '', '');
+        throw text;
     }
 }
 
