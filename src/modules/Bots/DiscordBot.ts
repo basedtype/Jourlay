@@ -1,37 +1,24 @@
 /* IMPORTS */
 import { manager } from "../database/main";
 import { config } from '../../../types';
+import { tools } from "../tools/main";
 
 import * as ds from 'discord.js';
 
 /* CLASSES */
 export class discord {
     public static client: ds.Client = null;
-    public static _jourloy: config.discordOptions = {role: null, guild: null};
+    public static _guild: ds.Guild = null;
 
-    private static create() {
-        manager.configGetBot('Nidhoggbot', 'Discord').then(bot => {
-            this.client = new ds.Client();
-            this.client.login(bot.oauth);
-        })
+    public static async init() {
+        const bot: config.bot = await manager.configGetBot('Nidhoggbot', 'Discord');
+        this.client = new ds.Client({ intents: [ds.Intents.FLAGS.GUILDS, ds.Intents.FLAGS.GUILD_BANS, ds.Intents.FLAGS.GUILD_MESSAGES, ds.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, ds.Intents.FLAGS.GUILD_PRESENCES, ds.Intents.FLAGS.GUILD_VOICE_STATES, ds.Intents.FLAGS.GUILD_INVITES, ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, ds.Intents.FLAGS.DIRECT_MESSAGES, ds.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS] });
+        await this.client.login(bot.oauth);
+        this.getInformation();
     }
-    
-    public static connect(channel: string) {
-        this.create();
 
-        const updateInterval = setInterval(() => {
-            if (this._jourloy.guild != null) {
-                if (this._jourloy.role == null) {
-                    const roles = this._jourloy.guild.roles.cache.array();
-                    manager.configGetBot('Nidhoggbot', 'Discord').then((bot: config.bot) => {
-                        for (let i in roles) if (roles[i].id === bot.roleID) this._jourloy.role = roles[i];
-                    })
-                } else clearInterval(updateInterval);
-            } else {
-                if (this.client == null) return;
-                const guilds = this.client.guilds.cache.array();
-                for (let i in guilds) if (guilds[i].id === channel) this._jourloy.guild = guilds[i];
-            }
-        })
+    private static async getInformation() {
+        if (this.client == null) tools.createError('Client doesn\'n exist');
+        this._guild = this.client.guilds.cache.find(guild => guild.id === '437601028662231040');
     }
 }
