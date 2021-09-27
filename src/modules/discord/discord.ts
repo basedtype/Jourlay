@@ -426,8 +426,8 @@ async function createLog(title?: string, text?: string) {
     const embed = new ds.MessageEmbed()
         .setColor(0xf05656)
         .setFooter(`With ❤️ by Jourloy`);
-    if (title != null) embed.title === title;
-    if (text != null) embed.description === text;
+    if (title != null) embed.setTitle(title);
+    if (text != null) embed.setDescription(text);
     if (text == null && title == null) return;
 
     _guild.channels.fetch('818566531486187611').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
@@ -462,14 +462,19 @@ client.on('messageCreate', async msg => {
             const count = (isNaN(parseInt(info.splited[1])) === false) ? 100 : parseInt(info.splited[1]);
             info.channel.messages.fetch({ limit: count }).then(async messages => {
                 createLog('ВНИМАНИЕ', `Модератор (<@${info.authorID}>) запустил очистку ${count} сообщений`);
-                messages.forEach(ms => ms.delete());
+                let counter = 0;
+                messages.forEach(ms => {
+                    counter++;
+                    ms.delete()
+                    if (counter === count) return;
+                });
             })
         }
     }
 
     /* <=========================== MY GUILD ===========================> */
 
-    if (info.isGuild === true && msg.guild.id === '437601028662231040') {
+    if (info.isGuild === true) {
         if (info.command === 'game') {
             const components = [];
             let game = '';
