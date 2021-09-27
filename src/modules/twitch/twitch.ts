@@ -2,7 +2,6 @@
 import { discord } from "../discord/discord";
 import { twitchFetch } from "./twitchFetch";
 import { manager } from "../database/main";
-import { _jourloy } from "../discord/main";
 import { defence } from "../defence/main";
 import { client, admin } from "./main";
 import { tools } from "../tools/main";
@@ -40,7 +39,7 @@ setInterval(() => {
         const hours = uptime[0];
         const minutes = uptime[1];
         if (hours === 0 && minutes > 1 && streamNoftification === false) {
-            discord.sendNoftification();
+            //discord.sendNoftification();
             streamNoftification = true;
             setTimeout(() => { streamNoftification = false }, tools.convertTime({ hours: 5 }));
         }
