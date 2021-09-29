@@ -7,7 +7,7 @@ import * as tmi from 'tmi.js';
 
 /* PARAMS */
 const multi = new Multiprogress(process.stderr);
-const bar = multi.newBar(' getting twitch client [:bar] :percent :etas', {
+const bar = multi.newBar('Launch twitch client [:bar] :percent :etas', {
     complete: '+',
     incomplete: '-',
     width: 30,
@@ -45,6 +45,7 @@ let startIntervalID = setInterval(() => {
         require('./twitch');
         require('./scout');
         require('./twitchGate');
+        bar.update(1);
         clearInterval(startIntervalID);
         clearInterval(adminIntervalID);
     }
