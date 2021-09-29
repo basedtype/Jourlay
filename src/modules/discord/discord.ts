@@ -43,14 +43,14 @@ let voiceUsers: string[] = [];
 /**
  * Send information about sales
  */
- setInterval(() => {
+setInterval(() => {
     const time = new Date();
     const hour = time.getHours();
     const minutes = time.getMinutes();
 
     if (hour === 15 && minutes >= 5 && minutes < 10 && sendSales.steam === false) {
         steam.getFeatured().then(async data => {
-            if (data.specials.items[0].currency !==  'RUB') return;
+            if (data.specials.items[0].currency !== 'RUB') return;
             const sales = data.specials.items;
             const embed = new ds.MessageEmbed()
                 .setTitle('Steam')
@@ -64,11 +64,12 @@ let voiceUsers: string[] = [];
                 const percent = product.discount_percent;
                 embed.addField(product.name, `**Скидка:** ${percent}%\n**Стоимость:** __${price}__\n**Старая цена:** ${oldPrice}\n[В магазин](https://store.steampowered.com/app/${product.id}/)\n`, true);
             }
-            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { 
-                channel.send({embeds: [embed]});
+            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => {
+                channel.send({ embeds: [embed] });
                 sendSales.steam = true;
-                setTimeout(() => {sendSales.steam}, tools.convertTime({hours: 2}));
+                setTimeout(() => { sendSales.steam }, tools.convertTime({ hours: 2 }));
             });
+            client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
         })
     } else if (hour === 15 && minutes >= 10 && minutes < 15 && sendSales.egs === false) {
         getGames('RU')
@@ -85,11 +86,12 @@ let voiceUsers: string[] = [];
                 for (let i in games.nexts) nextWeek += `${games.nexts[i].title} ([В магазин](${url}${tools.removeSpaces(games.nexts[i].title, '-')}))\n`
                 embed.addField(`Раздается на этой неделе`, thisWeek);
                 embed.addField(`Раздается на следующей неделе`, nextWeek);
-                client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { 
-                    channel.send({embeds: [embed]});
+                client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => {
+                    channel.send({ embeds: [embed] });
                     sendSales.egs = true;
-                    setTimeout(() => {sendSales.egs}, tools.convertTime({hours: 2}));
+                    setTimeout(() => { sendSales.egs }, tools.convertTime({ hours: 2 }));
                 });
+                client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
             })
             .catch(err => console.log(err))
     } else if (hour === 15 && minutes >= 0 && minutes < 5 && sendSales.gog === false) {
@@ -108,11 +110,12 @@ let voiceUsers: string[] = [];
 
                 embed.addField(name, `**Скидка:** ${percent}%\n**Стоимость:** __${price}__\n**Старая цена:** ${oldPrice}\n[В магазин](https://www.gog.com/game/${slug})\n`, true);
             }
-            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { 
-                channel.send({embeds: [embed]});
+            client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => {
+                channel.send({ embeds: [embed] });
                 sendSales.gog = true;
-                setTimeout(() => {sendSales.gog}, tools.convertTime({hours: 2}));
+                setTimeout(() => { sendSales.gog }, tools.convertTime({ hours: 2 }));
             });
+            client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
         })
     }
 }, 1000)
@@ -155,12 +158,11 @@ setInterval(() => {
     client.channels.fetch('871750394211090452').then((channel: ds.VoiceChannel) => {
         const memberCount = _guild.memberCount;
         const channelName = channel.name.split(' ');
-
         if (parseInt(channelName[1]) != memberCount) channel.setName(`Участников: ${memberCount}`)
     })
 
     const channels: ds.GuildChannel[] = [];
-    _guild.channels.cache.forEach((channel) => { if (channel.type === 'GUILD_VOICE' && (channel.name === voiceChannels.duo.name || channel.name === voiceChannels.trio.name || channel.name === voiceChannels.four.name || channel.name === voiceChannels.five.name)) channels.push(channel)});
+    _guild.channels.cache.forEach((channel) => { if (channel.type === 'GUILD_VOICE' && (channel.name === voiceChannels.duo.name || channel.name === voiceChannels.trio.name || channel.name === voiceChannels.four.name || channel.name === voiceChannels.five.name)) channels.push(channel) });
     for (let i in channels) {
         if (channels[i].members.first() == null) {
             channels[i].delete()
@@ -177,8 +179,8 @@ setInterval(() => {
     if (_guild == null) return;
 
     const channels: ds.GuildChannel[] = [];
-    _guild.channels.cache.forEach((channel) => { if (channel.type === 'GUILD_VOICE' && (channel.name === voiceChannels.duo.name || channel.name === voiceChannels.trio.name || channel.name === voiceChannels.four.name || channel.name === voiceChannels.five.name)) channels.push(channel)});
-    
+    _guild.channels.cache.forEach((channel) => { if (channel.type === 'GUILD_VOICE' && (channel.name === voiceChannels.duo.name || channel.name === voiceChannels.trio.name || channel.name === voiceChannels.four.name || channel.name === voiceChannels.five.name)) channels.push(channel) });
+
     for (let i in channels) {
         const channel = channels[i];
 
@@ -194,7 +196,7 @@ setInterval(() => {
                             userVoiceState.disconnect('Sited in channel 15 minutes');
                         })
                     };
-                }, tools.convertTime({minutes: 15}));
+                }, tools.convertTime({ minutes: 15 }));
             }
         }
     }
@@ -272,7 +274,7 @@ setInterval(() => {
     /**
      * Create channel with limit is 3
      */
-     client.channels.fetch(voiceChannels.trio.id).then((channel: ds.VoiceChannel | null) => {
+    client.channels.fetch(voiceChannels.trio.id).then((channel: ds.VoiceChannel | null) => {
         if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
@@ -317,7 +319,7 @@ setInterval(() => {
     /**
      * Create channel with limit is 4
      */
-     client.channels.fetch(voiceChannels.four.id).then((channel: ds.VoiceChannel | null) => {
+    client.channels.fetch(voiceChannels.four.id).then((channel: ds.VoiceChannel | null) => {
         if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
@@ -362,7 +364,7 @@ setInterval(() => {
     /**
      * Create channel with limit is 5
      */
-     client.channels.fetch(voiceChannels.five.id).then((channel: ds.VoiceChannel | null) => {
+    client.channels.fetch(voiceChannels.five.id).then((channel: ds.VoiceChannel | null) => {
         if (channel == null || channel.full == null || channel.full === false) return;
 
         const parent = channel.parent;
@@ -407,7 +409,19 @@ setInterval(() => {
 
 /* CLASSES */
 export class discord {
-
+    /**
+     * Send noftification about starting stream
+     */
+    public static sendNoftification() {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setTitle('СТРИМ ЗАПУЩЕН')
+            .setDescription('Мы сидим на стриме и ждем когда ты уже прийдешь и напишешь в чат. Где ты?')
+            .setImage('https://cdn.discordapp.com/attachments/867012893157359647/870472217400598548/240de9630b7799f5.png')
+            .setFooter(`With ❤️ by Jourloy`);
+        const button = buttons.createURLButton('ПЕРЕЙТИ НА ТРАНСЛЯЦИЮ', 'LINK', 'https://www.twitch.tv/jourloy');
+        client.channels.fetch('868517415787585656').then((channel: ds.TextChannel) => channel.send({ content: '<@&868513502443208704>', components: [button], embeds: [embed] }));
+    }
 }
 
 /* FUNCTIONS */
@@ -459,7 +473,7 @@ client.on('messageCreate', async msg => {
         }
 
         if (info.command === 'clear') {
-            const count = (isNaN(parseInt(info.splited[1])) === false) ? 100 : parseInt(info.splited[1]);
+            const count = (isNaN(parseInt(info.splited[1])) === false) ? parseInt(info.splited[1]) + 1 : 100;
             info.channel.messages.fetch({ limit: count }).then(async messages => {
                 createLog('ВНИМАНИЕ', `Модератор (<@${info.authorID}>) запустил очистку ${count} сообщений`);
                 let counter = 0;
@@ -472,7 +486,7 @@ client.on('messageCreate', async msg => {
         }
     }
 
-    /* <=========================== MY GUILD ===========================> */
+    /* <=========================== GLOBAL ===========================> */
 
     if (info.isGuild === true) {
         if (info.command === 'game') {
@@ -542,4 +556,62 @@ client.on('messageCreate', async msg => {
             });
         }
     }
+
+
+    /* <=========================== TECH GUILD ===========================> */
+})
+
+client.on('messageDelete', msg => {
+    if (msg.guild == null || msg.guild.id !== '437601028662231040') return;
+    if (msg.channel.id === '818566531486187611') return;
+    client.channels.fetch('818566531486187611').then((channel: ds.TextChannel) => {
+        let embeds = [];
+        let attachments = []
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setDescription(`Содержание:\n\`\`\`${msg.content}\`\`\``)
+            .setFooter(`With ❤️ by Jourloy`)
+        embeds.push(embed)
+        if (msg.attachments.toJSON().length > 0) for (let i in msg.attachments.toJSON()) attachments.push(msg.attachments.toJSON()[i]);
+        if (msg.embeds.length > 0) for (let i in msg.embeds) embeds.push(msg.embeds[i]);
+        channel.send({ content: `<@${msg.author.id}> удалил свое сообщение`, embeds: [embed], files: attachments });
+    });
+})
+
+client.on("guildMemberAdd", (member) => {
+    if (member.guild.id !== '437601028662231040') return;
+
+    client.channels.fetch('869693463510278245').then((channel: ds.TextChannel) => {
+        const embed = new ds.MessageEmbed()
+            .setColor(0xf05656)
+            .setTitle('ПРИВЕТ!')
+            .setDescription(`Рад тебя видеть на моем сервере, уверяю, здесь ты найдешь много интересного
+
+В <#865580513879261194> есть основная информация, которую можешь прочитать
+Загляни в <#868238068283473952> и выбери себе роли, которые подходят больше всего для тебя
+Передавай всем привет в <#868108110001221632>
+Удачи!`)
+            .setFooter(`With ❤️ by Jourloy`)
+        channel.send({ content: `<@${member.id}>`, embeds: [embed] }).then(mss => mss.react('👋'));
+    });
+})
+
+client.on('guildMemberRemove', (member) => {
+    if (member.guild.id !== '437601028662231040') return;
+    createLog('-', `Пользователь ${member.displayName} (ID: ${member.id}) покинул сервер`)
+})
+
+client.on('guildBanAdd', ban => {
+    const guild = ban.guild;
+    const user = ban.user;
+    const reason = (ban.reason != null) ? ban.reason : '';
+    if (guild.id !== '437601028662231040') return;
+    createLog('-', `Пользователь ${user.username} (ID: ${user.id}) был __забанен__ на сервере.\nПричина: \`${reason}\``)
+})
+
+client.on('guildBanRemove', unban => {
+    const guild = unban.guild;
+    const user = unban.user;
+    if (guild.id !== '437601028662231040') return;
+    createLog('-', `Пользователь ${user.username} (ID: ${user.id}) был __разбанен__ на сервере`)
 })
