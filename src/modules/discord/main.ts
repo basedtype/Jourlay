@@ -6,7 +6,7 @@ import * as ds from 'discord.js';
 
 /* PARAMS */
 const multi = new Multiprogress(process.stderr);
-const bar = multi.newBar(' launch discord client [:bar] :percent :etas', {
+const bar = multi.newBar('Launch discord client [:bar] :percent :etas', {
     complete: '+',
     incomplete: '-',
     width: 30,
