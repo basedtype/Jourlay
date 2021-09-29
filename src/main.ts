@@ -2,7 +2,7 @@
 import { manager } from "./modules/database/main";
 import { color } from "./modules/tools/color";
 import "./modules/discord/main";
-//import "./modules/twitch/main";
+import "./modules/twitch/main";
 
 /* PARAMS */
 const nvyLogo = `     ██╗ █████╗ ██╗   ██╗██████╗ ██╗      █████╗ ██╗   ██╗
