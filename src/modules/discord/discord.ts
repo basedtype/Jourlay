@@ -1,4 +1,5 @@
 /* IMPORTS */
+import { binance } from "../Binance/binance";
 import { manager } from "../database/main";
 import { client, _guild } from "./main";
 import { tools } from "../tools/main";
@@ -7,6 +8,7 @@ import { buttons } from "./buttons";
 import { gog } from "../GOG/main";
 
 import { HowLongToBeatService, HowLongToBeatEntry } from 'howlongtobeat';
+const Binance = require('node-binance-api');
 import { getGames } from "epic-free-games";
 import * as ds from "discord.js";
 
@@ -34,6 +36,9 @@ const sendSales = {
     egs: false,
     gog: false,
 }
+const sended = {
+    crypto: false,
+}
 const hltbService = new HowLongToBeatService();
 const checkVoiceChannels = {};
 let banVoiceUsers: string[] = [];
@@ -42,8 +47,9 @@ let voiceUsers: string[] = [];
 /* INTERVALS */
 /**
  * Send information about sales
+ * Send information about cryptocurrency
  */
-setInterval(() => {
+setInterval(async () => {
     const time = new Date();
     const hour = time.getHours();
     const minutes = time.getMinutes();
@@ -67,7 +73,7 @@ setInterval(() => {
             client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => {
                 channel.send({ embeds: [embed] });
                 sendSales.steam = true;
-                setTimeout(() => { sendSales.steam }, tools.convertTime({ hours: 2 }));
+                setTimeout(() => { sendSales.steam = false }, tools.convertTime({ hours: 2 }));
             });
             client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
         })
@@ -89,7 +95,7 @@ setInterval(() => {
                 client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => {
                     channel.send({ embeds: [embed] });
                     sendSales.egs = true;
-                    setTimeout(() => { sendSales.egs }, tools.convertTime({ hours: 2 }));
+                    setTimeout(() => { sendSales.egs = false }, tools.convertTime({ hours: 2 }));
                 });
                 client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
             })
@@ -113,9 +119,42 @@ setInterval(() => {
             client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => {
                 channel.send({ embeds: [embed] });
                 sendSales.gog = true;
-                setTimeout(() => { sendSales.gog }, tools.convertTime({ hours: 2 }));
+                setTimeout(() => { sendSales.gog = false }, tools.convertTime({ hours: 2 }));
             });
             client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
+        })
+    }
+
+    if (hour === 15 && minutes >= 0 && minutes < 10 && sended.crypto === false) {
+
+        const bot: any = await manager.configGetBot('Nidhoggbot', 'Binance');
+
+        const binanceClient = new Binance().options({
+            APIKEY: bot.api_key,
+            APISECRET: bot.oauth
+        })
+
+        await binanceClient.prices(async (err, prices) => {
+            if (!err) {
+                const information = {
+                    BTCtoUSD: Math.round(parseFloat(prices.BTCUSDT)),
+                    BTCtoRUB: Math.round(parseFloat(prices.BTCRUB)),
+                    ETHtoUSD: Math.round(parseFloat(prices.ETHUSDT)),
+                    ETHtoRUB: Math.round(parseFloat(prices.ETHRUB)),
+                }
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setFooter(`With ❤️ by Jourloy`)
+                    .addFields(
+                        { name: `BTC`, value: `**USD:** ${information.BTCtoUSD}$\n**RUB:** ${information.BTCtoRUB}₽`, inline: true },
+                        { name: `ETH`, value: `**USD:** ${information.ETHtoUSD}$\n**RUB:** ${information.ETHtoRUB}₽`, inline: true },
+                    )
+                client.channels.fetch('892576972650209311').then((channel: ds.TextChannel) => {
+                    channel.send({ embeds: [embed] });
+                    sended.crypto = true;
+                    setTimeout(() => { sended.crypto = false; }, tools.convertTime({ hours: 2 }));
+                });
+            } else console.log(err);
         })
     }
 }, 1000)
@@ -449,8 +488,6 @@ async function createLog(title?: string, text?: string) {
 
 /* REACTIONS */
 client.on('messageCreate', async msg => {
-    if (msg.author.bot === true) return;
-
     const info = {
         isGuild: (msg.guild == null) ? false : true,
         channelID: msg.channel.id,
@@ -461,6 +498,14 @@ client.on('messageCreate', async msg => {
         splited: msg.content.split(' '),
         command: msg.content.split(' ')[0].split('!')[1],
     }
+
+    /* <=========================== CROSSPOST ===========================> */
+
+    if (info.channelID === '868517415787585656') msg.crosspost();
+    if (info.channelID === '869957685326524456') msg.crosspost();
+    if (info.channelID === '892576972650209311') msg.crosspost();
+
+    if (msg.author.bot === true) return;
 
     /* <=========================== MODERATOR COMMANDS ===========================> */
 
@@ -535,18 +580,21 @@ client.on('messageCreate', async msg => {
                     const data = appdetails[appid].data;
 
                     if (data != null && data.price_overview != null) {
+                        console.log(data)
                         let price = '';
                         if (data.is_free === true) price = 'Стоимость: Бесплатно'
                         else if (data.price_overview.final == null) price = `Стоимость: ${data.price_overview.initial_formatted}`;
                         else if (data.price_overview.final < data.price_overview.initial) price = `Стоимость: ${data.price_overview.final_formatted} (~~${data.price_overview.initial_formatted}~~)`;
                         else price = `Стоимость: ${data.price_overview.final_formatted}`;
 
+                        const achiv = `Количество достижений: ${data.achievements.total}`;
+
                         let platforms = 'Платформы: ';
                         if (data.platforms.windows === true) platforms += '<:mods_windows:886933929221824572>';
                         if (data.platforms.mac === true) platforms += ' <:mods_mac:886933931331579925>';
                         if (data.platforms.linux === true) platforms += ' <:mods_linux:886934566437257267>';
 
-                        embed.description += `\n\n> **STEAM**\n\n${price}\n${platforms}`;
+                        embed.description += `\n\n> **STEAM**\n\n${price}\n${achiv}\n${platforms}`;
 
                         const button = buttons.createURLButton('STEAM', 'LINK', `https://store.steampowered.com/app/${appid}/`);
                         components.push(button);
@@ -557,8 +605,67 @@ client.on('messageCreate', async msg => {
         }
     }
 
-
     /* <=========================== TECH GUILD ===========================> */
+
+    /* <=========================== MY GUILD ===========================> */
+
+    if (info.isGuild === true && msg.guildId === '437601028662231040') {
+        if (info.command === 'чего') {
+            const alphabet = {
+                'q': 'й',
+                'w': 'ц',
+                'e': 'у',
+                'r': 'к',
+                't': 'е',
+                'y': 'н',
+                'u': 'г',
+                'i': 'ш',
+                'o': 'щ',
+                'p': 'з',
+                '[': 'х',
+                ']': 'ъ',
+                'a': 'ф',
+                's': 'ы',
+                'd': 'в',
+                'f': 'а',
+                'g': 'п',
+                'h': 'р',
+                'j': 'о',
+                'k': 'л',
+                'l': 'д',
+                ';': 'ж',
+                '\'': 'э',
+                '\\': 'ё',
+                'z': 'я',
+                'x': 'ч',
+                'c': 'с',
+                'v': 'м',
+                'b': 'и',
+                'n': 'т',
+                'm': 'ь',
+                ',': 'б',
+                '.': 'ю',
+            }
+            let ms = '';
+            for (let i in info.splited) {
+                if (info.splited.indexOf(info.splited[i]) < 1) continue;
+                else if (info.splited.indexOf(info.splited[i].toLocaleLowerCase()) === 1) ms += info.splited[i];
+                else if (info.splited.indexOf(info.splited[i].toLocaleLowerCase()) > 1) ms += ` ${info.splited[i]}`;
+            }
+            const newMs = ms.split('');
+            let formated = '';
+            for (let i in newMs) {
+                if (alphabet[newMs[i]] == null) formated += newMs[i];
+                else if (alphabet[newMs[i]] != null) formated += alphabet[newMs[i]];
+            }
+            const embed = new ds.MessageEmbed()
+                .setColor(0xf05656)
+                .setDescription(`Было: \`${ms}\`\nСтало: \`${formated}\``)
+                .setFooter(`With ❤️ by Jourloy`)
+            info.channel.send({embeds: [embed]});
+        }
+    }
+
 })
 
 client.on('messageDelete', msg => {
