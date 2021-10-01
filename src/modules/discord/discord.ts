@@ -521,12 +521,7 @@ client.on('messageCreate', async msg => {
             const count = (isNaN(parseInt(info.splited[1])) === false) ? parseInt(info.splited[1]) + 1 : 100;
             info.channel.messages.fetch({ limit: count }).then(async messages => {
                 createLog('ВНИМАНИЕ', `Модератор (<@${info.authorID}>) запустил очистку ${count} сообщений`);
-                let counter = 0;
-                messages.forEach(ms => {
-                    counter++;
-                    ms.delete()
-                    if (counter === count) return;
-                });
+                messages.forEach(ms => { ms.delete() });
             })
         }
     }
