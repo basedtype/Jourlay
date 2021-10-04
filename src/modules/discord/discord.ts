@@ -446,6 +446,22 @@ setInterval(() => {
     });
 }, 1000)
 
+setInterval(() => {
+    manager.getAllNewWorldFishing().then(data => {
+        for (let i in data) {
+            const username = data[i].username;
+            const times = data[i].times;
+
+            const embed = new ds.MessageEmbed()
+                .setColor(0xf05656)
+                .setDescription(`${username} поймал рыбу\n\`\`\`Ожидание рыбы: ${times.wait}с\nЛовля: ${times.fish}с\nОбщее время: ${times.total}с\`\`\``)
+                .setFooter(`With ❤️ by Jourloy`);
+            client.channels.fetch('894522943881744384').then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
+            manager.addFishToUserNewWorld(username);
+        }
+    })
+}, 1000)
+
 /* CLASSES */
 export class discord {
     /**
@@ -658,6 +674,17 @@ client.on('messageCreate', async msg => {
                 .setDescription(`Было: \`${ms}\`\nСтало: \`${formated}\``)
                 .setFooter(`With ❤️ by Jourloy`)
             info.channel.send({embeds: [embed]});
+        } else if (info.command === 'nw') {
+            const nickname = info.splited[1];
+            manager.getUserNewWorld(nickname).then(user => {
+                if (user == null) return;
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setTitle(user.username)
+                    .setDescription(`Наловил рыбы: ${user.fishCount}`)
+                    .setFooter(`With ❤️ by Jourloy`)
+                info.channel.send({embeds: [embed]})
+            })
         }
     }
 
