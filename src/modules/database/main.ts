@@ -26,6 +26,8 @@ let informationCollection: mongodb.Collection = null;
 let redirectCollection: mongodb.Collection = null;
 let nsfwCollection: mongodb.Collection = null;
 let guildsCollection: mongodb.Collection = null;
+let NewWorldFishingCollection: mongodb.Collection = null;
+let NewWorldCollection: mongodb.Collection = null;
 
 /* CODE */
 clientDB.connect().then(() => {
@@ -45,6 +47,8 @@ clientDB.connect().then(() => {
     twitchScoutCollection = botsDatabase.collection('scout');
     nsfwCollection = botsDatabase.collection('nsfw');
     guildsCollection = botsDatabase.collection('guilds');
+    NewWorldFishingCollection = botsDatabase.collection('NewWorldFishing');
+    NewWorldCollection = botsDatabase.collection('NewWorld');
 
     const serverDatabase = clientDB.db('Server');
     serverCollection = serverDatabase.collection('config');
@@ -375,6 +379,33 @@ export class manager {
             .then(() => { return true })
             .catch(() => { return false })
         return state;
+    }
+
+    public static async getAllNewWorldFishing() {
+        const arr = await NewWorldFishingCollection.find({}).toArray();
+        for (let i in arr) await NewWorldFishingCollection.findOneAndDelete({_id: arr[i]._id});
+        return arr;
+    }
+
+    public static async addUserNewWorld(username: string) {
+        await NewWorldCollection.insertOne({username: username})
+        return true;
+    }
+
+    public static async addFishToUserNewWorld(username: string) {
+        NewWorldCollection.findOne({username: username}).then(user => {
+            if (user == null) NewWorldCollection.insertOne({username: username, fishCount: 1});
+            else {
+                user.fishCount++;
+                NewWorldCollection.findOneAndUpdate({username: username}, {$set: user});
+            }
+        })
+        return true;
+    }
+
+    public static async getUserNewWorld(username: string) {
+        const user = await NewWorldCollection.findOne({username: username});
+        return user;
     }
 
     /* <=========================== SERVER ===========================> */
