@@ -525,7 +525,7 @@ client.on('messageCreate', async msg => {
 
     /* <=========================== MODERATOR COMMANDS ===========================> */
 
-    if (info.isGuild === true && await isMod(info.authorID) === true) {
+    if (info.isGuild === true && msg.guild.id === '437601028662231040' && await isMod(info.authorID) === true) {
         if (info.command === 'ping') info.channel.send('Pong');
 
         if (info.command === 'test') {
