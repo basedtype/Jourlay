@@ -11,6 +11,7 @@ import { HowLongToBeatService, HowLongToBeatEntry } from 'howlongtobeat';
 const Binance = require('node-binance-api');
 import { getGames } from "epic-free-games";
 import * as ds from "discord.js";
+import { req } from "../flats/req";
 
 /* PARAMS */
 const voiceChannels = {
@@ -456,7 +457,7 @@ setInterval(() => {
                 .setColor(0xf05656)
                 .setDescription(`${username} поймал рыбу\n\`\`\`Ожидание рыбы: ${times.wait}с\nЛовля: ${times.fish}с\nОбщее время: ${times.total}с\`\`\``)
                 .setFooter(`With ❤️ by Jourloy`);
-            client.channels.fetch('894522943881744384').then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
+            client.channels.fetch('894522943881744384').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
             manager.addFishToUserNewWorld(username);
         }
     })
@@ -673,7 +674,7 @@ client.on('messageCreate', async msg => {
                 .setColor(0xf05656)
                 .setDescription(`Было: \`${ms}\`\nСтало: \`${formated}\``)
                 .setFooter(`With ❤️ by Jourloy`)
-            info.channel.send({embeds: [embed]});
+            info.channel.send({ embeds: [embed] });
         } else if (info.command === 'nw') {
             const nickname = info.splited[1];
             manager.getUserNewWorld(nickname).then(user => {
@@ -683,8 +684,23 @@ client.on('messageCreate', async msg => {
                     .setTitle(user.username)
                     .setDescription(`Наловил рыбы: ${user.fishCount}`)
                     .setFooter(`With ❤️ by Jourloy`)
-                info.channel.send({embeds: [embed]})
+                info.channel.send({ embeds: [embed] })
             })
+        } else if (info.command === 'flats') {
+            const count = (isNaN(parseInt(info.splited[1])) === false) ? parseInt(info.splited[1]) : 5;
+            if (count > 10) return;
+            const flats = await req.get(count);
+            for (let i in flats) {
+                const flat = flats[i];
+                let attachments = []
+                const embed = new ds.MessageEmbed()
+                    .setColor(0xf05656)
+                    .setTitle(flat.title)
+                    .setDescription(`Цена: ${flat.price}\nДо метро: ${flat.metro}\nОписание от продавца:\n\`\`\`${flat.description}\`\`\``)
+                    .setFooter(`With ❤️ by Jourloy`)
+                for (let i in flat.pictures) attachments.push({attachment: flat.pictures[i], name: `Photo_${i}.jpg`});
+                await info.channel.send({ embeds: [embed], files: attachments })
+            }
         }
     }
 
