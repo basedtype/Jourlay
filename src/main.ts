@@ -1,23 +1,8 @@
-/* IMPORTS */
-import { manager } from "./modules/database/main";
-import { color } from "./modules/tools/color";
-import "./modules/discord/main";
-import "./modules/twitch/main";
-//import "./modules/Binance/main";
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './server/app.module';
 
-/* PARAMS */
-const nvyLogo = `     ██╗ █████╗ ██╗   ██╗██████╗ ██╗      █████╗ ██╗   ██╗
-     ██║██╔══██╗██║   ██║██╔══██╗██║     ██╔══██╗╚██╗ ██╔╝
-     ██║██║  ██║██║   ██║██████╔╝██║     ██║  ██║ ╚████╔╝ 
-██╗  ██║██║  ██║██║   ██║██╔══██╗██║     ██║  ██║  ╚██╔╝  
-╚█████╔╝╚█████╔╝╚██████╔╝██║  ██║███████╗╚█████╔╝   ██║   
- ╚════╝  ╚════╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝ ╚════╝    ╚═╝   `;
-const startTime = Date.now();
-
-/* INTERVALS */
-setInterval(() => {
-     manager.updateUptime(Date.now() - startTime, 'jrly');
-}, 1000)
-
-/* CODE */
-console.log(color.box(nvyLogo, `FgRed`, '', '') + '\n\n');
+async function bootstrap() {
+	const app = await NestFactory.create(AppModule);
+	await app.listen(3000);
+}
+bootstrap();
