@@ -1,8 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
 export class AppService {
-	getHello(text: string): string {
-		return 'Hello World!\nThis is ' + text;
+
+	constructor(private readonly databaseService: DatabaseService) {}
+
+	async addAuth(login: string, password: string, role: string): Promise<string> {
+		const result = await this.databaseService.addUser(login.toLocaleLowerCase(), password, role);
+		return result;
 	}
 }
