@@ -1,14 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './server/app.module';
-import * as cookieParser from 'cookie-parser';
+import { ConfigurationService } from './configuration/configuration.service';
 import { DiscordService } from './modules/discord/discord.service';
+import { AppModule } from './server/app.module';
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
-	app.use(cookieParser());
 
 	app.get(DiscordService).init();
 
-	await app.listen(80);
+	await app.listen(3000);
 }
 bootstrap();
