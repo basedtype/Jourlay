@@ -39,10 +39,10 @@ export class DiscordService {
         return data;
     }
 
-    @Cron('*/1 * * * * *')
+    @Cron('0 30 21 * * *')
     private async sales() {
-        console.log('@')
-        /* const embed = new ds.MessageEmbed()
+        if (this.client == null) return;
+        const embed = new ds.MessageEmbed()
             .setTitle('Epic Games Store')
             .setColor(0xf05656)
             .setFooter(`With ❤️ by Jourloy`)
@@ -54,7 +54,7 @@ export class DiscordService {
         embed.addField(`Раздается на этой неделе`, thisWeek);
         embed.addField(`Раздается на следующей неделе`, nextWeek);
 
-        this.client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) }); */
+        this.client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
     }
 
     /**
