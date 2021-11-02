@@ -4,11 +4,17 @@ import { ToolsModule } from '../tools/tools.module';
 import { DiscordService } from './discord.service';
 import { ScheduleModule } from '@nestjs/schedule'
 import { DatabaseModule } from 'src/database/database.module';
+import { SteamModule } from '../steam/steam.module';
+import { GogModule } from '../gog/gog.module';
+import { HtlbModule } from '../htlb/htlb.module';
 
 @Module({
 	imports: [
 		DatabaseModule, 
-		EgsModule, 
+		EgsModule,
+		SteamModule,
+		GogModule,
+		HtlbModule,
 		ToolsModule,
 	],
 	providers: [DiscordService],
