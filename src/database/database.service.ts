@@ -5,7 +5,7 @@ import * as mongodb from "mongodb"
 
 /* PARAMS */
 const uri = "mongodb://127.0.0.1:27017/";
-const mongo = new mongodb.MongoClient(uri);
+const mongo = new mongodb.MongoClient(uri, { useUnifiedTopology: true });
 
 @Injectable()
 export class DatabaseService {
