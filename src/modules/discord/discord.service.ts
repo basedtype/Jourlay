@@ -5,6 +5,8 @@ import { Config } from 'types';
 import { EgsService } from '../egs/egs.service';
 import { ToolsService } from '../tools/tools.service';
 import { Cron } from '@nestjs/schedule'
+import { SteamService } from '../steam/steam.service';
+import { GogService } from '../gog/gog.service';
 
 @Injectable()
 export class DiscordService {
@@ -12,13 +14,39 @@ export class DiscordService {
     constructor(
         private readonly databaseService: DatabaseService,
         private readonly egsService: EgsService,
+        private readonly steamService: SteamService,
+        private readonly gogService: GogService,
         private readonly toolsService: ToolsService,
     ) { }
     private readonly logger = new Logger(DiscordService.name);
 
     private client: ds.Client = null;
     private _guild: ds.Guild = null;
+    private voiceChannels = {
+        duo: {
+            id: '865697645920911371',
+            name: 'Игровая комната [2]',
+        },
+        trio: {
+            id: '865697670852378684',
+            name: 'Игровая комната [3]',
+        },
+        four: {
+            id: '865697708676087828',
+            name: 'Игровая комната [4]',
+        },
+        five: {
+            id: '865697728766803998',
+            name: 'Игровая комната [5]',
+        },
+    }
+    private checkVoiceChannels = {};
+    private banVoiceUsers: string[] = [];
+    private voiceUsers: string[] = [];
 
+    /**
+     * Init discord module
+     */
     async init() {
         const config: Config.Service = await this.databaseService.getConfig('Discord', 'Nidhoggbot');
 
@@ -33,14 +61,21 @@ export class DiscordService {
         this.run();
     }
 
+    /**
+     * Get all important info
+     * @param client discord client
+     */
     private async getInformation(client: ds.Client) {
         const data = { client: client, guild: null };
         data.guild = client.guilds.cache.find(guild => guild.id === '437601028662231040');
         return data;
     }
 
+    /**
+     * Send information about sales in EGS
+     */
     @Cron('0 30 21 * * *')
-    private async sales() {
+    private async EGSsales() {
         if (this.client == null) return;
         const embed = new ds.MessageEmbed()
             .setTitle('Epic Games Store')
@@ -55,6 +90,315 @@ export class DiscordService {
         embed.addField(`Раздается на следующей неделе`, nextWeek);
 
         this.client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
+        this.client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => { channel.send({ embeds: [embed] }) });
+    }
+
+    /**
+     * Send information about sales in STEAM
+     */
+    @Cron('0 31 21 * * *')
+    private async STEAMsales() {
+        let embed = new ds.MessageEmbed()
+            .setTitle('Steam')
+            .setColor(0xf05656)
+            .setFooter(`With ❤️ by Jourloy`)
+
+        embed = await this.steamService.getSales(embed);
+
+        this.client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
+        this.client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
+    }
+
+    /**
+     * Send information about sales in GOG
+     */
+    @Cron('0 32 21 * * *')
+    private async GOGsales() {
+        if (this.client == null) return;
+        const embed = new ds.MessageEmbed()
+            .setTitle('GOG')
+            .setColor(0xf05656)
+            .setFooter(`With ❤️ by Jourloy`)
+
+        const sales = await this.gogService.getSales();
+
+        for (let i in sales) {
+            const name = sales[i].title;
+            const percent = sales[i].price.discount;
+            const price = sales[i].price.amount;
+            const oldPrice = sales[i].price.baseAmount;
+            const slug = sales[i].slug;
+
+            embed.addField(name, `**Скидка:** ${percent}%\n**Стоимость:** __${price}__\n**Старая цена:** ${oldPrice}\n[В магазин](https://www.gog.com/game/${slug})\n`, true);
+        }
+        this.client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
+        this.client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
+    }
+
+    /**
+     * Set member count in name of voice channel
+     */
+    @Cron('* */1 * * * *')
+    private async memberCount() {
+        if (this.client == null) return;
+        if (this._guild == null) return;
+
+        this.client.channels.fetch('871750394211090452').then((channel: ds.VoiceChannel) => {
+            const memberCount = this._guild.memberCount;
+            const channelName = channel.name.split(' ');
+            if (parseInt(channelName[1]) != memberCount) channel.setName(`Участников: ${memberCount}`)
+        })
+    }
+
+    /**
+     * Remove unused rooms
+     */
+    @Cron('*/20 * * * * *')
+    private async cleaner() {
+        if (this._guild == null) return;
+
+        const channels: ds.GuildChannel[] = [];
+        this._guild.channels.cache.forEach((channel) => { if (channel.type === 'GUILD_VOICE' && (channel.name === this.voiceChannels.duo.name || channel.name === this.voiceChannels.trio.name || channel.name === this.voiceChannels.four.name || channel.name === this.voiceChannels.five.name)) channels.push(channel) });
+        for (let i in channels) {
+            if (channels[i].members.first() == null) {
+                channels[i].delete()
+                    .then(() => { ; })
+                    .catch(() => { ; });
+            }
+        }
+    }
+
+    /**
+     * Add user in ban list if he created too many channels
+     */
+    @Cron('*/5 * * * * *')
+    private async addUsersInVoiceBan() {
+        const warningsID = {};
+        for (let i in this.voiceUsers) {
+            if (warningsID[this.voiceUsers[i]] == null) {
+                warningsID[this.voiceUsers[i]] = { count: 1 };
+            } else if (warningsID[this.voiceUsers[i]] != null) {
+                warningsID[this.voiceUsers[i]].count++;
+            }
+        }
+        for (let i in warningsID) {
+            if (warningsID[i].count > 3 && this.banVoiceUsers.includes(i) === false) {
+                this.createLog(null, `User <@${i}> created too many channels`)
+                this.banVoiceUsers.push(i);
+            }
+        }
+    }
+
+    /**
+     * Remove user from ban list if his ban expired
+     */
+    @Cron('0 */15 * * * *')
+    private async clearBanLists() {
+        this.banVoiceUsers = [];
+        this.voiceUsers = [];
+    }
+
+    @Cron('*/1 * * * * *')
+    private async createVoiceChannel() {
+        if (this._guild == null) return;
+
+        const deleteFunction = (channelNew: ds.GuildChannel) => {
+            if (channelNew.members.first() == null) {
+                channelNew.delete()
+                    .then(() => { ; })
+                    .catch(() => { ; });
+                return true;
+            }
+            return false;
+        }
+
+        const repeatCheck = (channelNew: ds.GuildChannel) => {
+            setTimeout(() => { deleteChannel(channelNew) }, 1000)
+        }
+
+        const deleteChannel = (channelNew: ds.GuildChannel) => {
+            if (deleteFunction(channelNew) === false) repeatCheck(channelNew);
+        }
+
+        /**
+         * Create channel with limit is 2
+         */
+         this.client.channels.fetch(this.voiceChannels.duo.id).then((channel: ds.VoiceChannel | null) => {
+            if (channel == null || channel.full == null || channel.full === false) return;
+
+            const parent = channel.parent;
+            const guild = channel.guild;
+            const name = this.voiceChannels.duo.name;
+            const options: ds.GuildChannelCreateOptions = {
+                type: 'GUILD_VOICE',
+                userLimit: 2,
+                position: parent.position + 10,
+                parent: parent,
+                reason: `Created channel for `,
+            }
+            const user = channel.members.first();
+            options.reason += `${user.user.username}`;
+            this.voiceUsers.push(user.id);
+            if (this.banVoiceUsers.includes(user.id) === true) {
+                let userVoiceState: ds.VoiceState = null;
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+                    userVoiceState.disconnect('User created too many channels');
+                    return;
+                });
+            } else {
+                let userVoiceState: ds.VoiceState = null;
+                let idNew: string = null;
+
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+
+                    guild.channels.create(name, options).then(async data => {
+                        idNew = data.id;
+                        const channelNew: ds.VoiceChannel = await guild.channels.fetch(idNew).then((ch: ds.VoiceChannel) => { return ch })
+                        userVoiceState.setChannel(channelNew)
+                            .then(res => { ; })
+                            .catch(err => { ; });
+                        repeatCheck(channelNew);
+                    });
+                });
+            }
+        });
+
+        /**
+         * Create channel with limit is 3
+         */
+         this.client.channels.fetch(this.voiceChannels.trio.id).then((channel: ds.VoiceChannel | null) => {
+            if (channel == null || channel.full == null || channel.full === false) return;
+
+            const parent = channel.parent;
+            const guild = channel.guild;
+            const name = this.voiceChannels.trio.name;
+            const options: ds.GuildChannelCreateOptions = {
+                type: 'GUILD_VOICE',
+                userLimit: 3,
+                position: parent.position + 10,
+                parent: parent,
+                reason: `Created channel for `,
+            }
+            const user = channel.members.first();
+            options.reason += `${user.user.username}`;
+            this.voiceUsers.push(user.id);
+            if (this.banVoiceUsers.includes(user.id) === true) {
+                let userVoiceState: ds.VoiceState = null;
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+                    userVoiceState.disconnect('User created too many channels');
+                    return;
+                });
+            } else {
+                let userVoiceState: ds.VoiceState = null;
+                let idNew: string = null;
+
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+
+                    guild.channels.create(name, options).then(async data => {
+                        idNew = data.id;
+                        const channelNew: ds.VoiceChannel = await guild.channels.fetch(idNew).then((ch: ds.VoiceChannel) => { return ch })
+                        userVoiceState.setChannel(channelNew)
+                            .then(res => { ; })
+                            .catch(err => { ; });
+                        repeatCheck(channelNew);
+                    });
+                });
+            }
+        });
+
+        /**
+         * Create channel with limit is 4
+         */
+         this.client.channels.fetch(this.voiceChannels.four.id).then((channel: ds.VoiceChannel | null) => {
+            if (channel == null || channel.full == null || channel.full === false) return;
+
+            const parent = channel.parent;
+            const guild = channel.guild;
+            const name = this.voiceChannels.four.name;
+            const options: ds.GuildChannelCreateOptions = {
+                type: 'GUILD_VOICE',
+                userLimit: 4,
+                position: parent.position + 10,
+                parent: parent,
+                reason: `Created channel for `,
+            }
+            const user = channel.members.first();
+            options.reason += `${user.user.username}`;
+            this.voiceUsers.push(user.id);
+            if (this.banVoiceUsers.includes(user.id) === true) {
+                let userVoiceState: ds.VoiceState = null;
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+                    userVoiceState.disconnect('User created too many channels');
+                    return;
+                });
+            } else {
+                let userVoiceState: ds.VoiceState = null;
+                let idNew: string = null;
+
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+
+                    guild.channels.create(name, options).then(async data => {
+                        idNew = data.id;
+                        const channelNew: ds.VoiceChannel = await guild.channels.fetch(idNew).then((ch: ds.VoiceChannel) => { return ch })
+                        userVoiceState.setChannel(channelNew)
+                            .then(res => { ; })
+                            .catch(err => { ; });
+                        repeatCheck(channelNew);
+                    });
+                });
+            }
+        });
+
+        /**
+         * Create channel with limit is 5
+         */
+         this.client.channels.fetch(this.voiceChannels.five.id).then((channel: ds.VoiceChannel | null) => {
+            if (channel == null || channel.full == null || channel.full === false) return;
+
+            const parent = channel.parent;
+            const guild = channel.guild;
+            const name = this.voiceChannels.five.name;
+            const options: ds.GuildChannelCreateOptions = {
+                type: 'GUILD_VOICE',
+                userLimit: 5,
+                position: parent.position + 10,
+                parent: parent,
+                reason: `Created channel for `,
+            }
+            const user = channel.members.first();
+            options.reason += `${user.user.username}`;
+            this.voiceUsers.push(user.id);
+            if (this.banVoiceUsers.includes(user.id) === true) {
+                let userVoiceState: ds.VoiceState = null;
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+                    userVoiceState.disconnect('User created too many channels');
+                    return;
+                });
+            } else {
+                let userVoiceState: ds.VoiceState = null;
+                let idNew: string = null;
+
+                guild.members.fetch(user.id).then(member => {
+                    userVoiceState = member.guild.voiceStates.cache.find(userFind => userFind.id === user.id);
+
+                    guild.channels.create(name, options).then(async data => {
+                        idNew = data.id;
+                        const channelNew: ds.VoiceChannel = await guild.channels.fetch(idNew).then((ch: ds.VoiceChannel) => { return ch })
+                        userVoiceState.setChannel(channelNew)
+                            .then(res => { ; })
+                            .catch(err => { ; });
+                        repeatCheck(channelNew);
+                    });
+                });
+            }
+        });
     }
 
     /**
@@ -82,8 +426,6 @@ export class DiscordService {
     private async run() {
         this.logger.log('Discord are ready');
 
-        this.sales()
-
         this.client.on('messageCreate', async msg => {
             const info = {
                 isGuild: (msg.guild == null) ? false : true,
@@ -98,9 +440,9 @@ export class DiscordService {
 
             /* <=========================== CROSSPOST ===========================> */
 
-            if (info.channelID === '868517415787585656') msg.crosspost();
-            if (info.channelID === '869957685326524456') msg.crosspost();
-            if (info.channelID === '892576972650209311') msg.crosspost();
+            //if (info.channelID === '868517415787585656') msg.crosspost();
+            //if (info.channelID === '869957685326524456') msg.crosspost();
+            //if (info.channelID === '892576972650209311') msg.crosspost();
 
             if (msg.author.bot === true) return;
 
