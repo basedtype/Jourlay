@@ -7,11 +7,12 @@ import { AppService } from './app.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
 import { BullModule } from '@nestjs/bull';
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import configuration from 'src/configuration/configuration';
 import { AuthModule } from 'src/auth/auth.module';
 import { ProfileModule } from 'src/profile/profile.module';
 import { DiscordModule } from 'src/modules/discord/discord.module';
+import { LoadFileMiddleware } from 'src/middleware/loadfiles.middleware';
 
 @Module({
 	imports: [
@@ -31,4 +32,10 @@ import { DiscordModule } from 'src/modules/discord/discord.module';
 	controllers: [AppController],
 	providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {
+	configure(consumer: MiddlewareConsumer) {
+		consumer
+			.apply(LoadFileMiddleware)
+			.forRoutes('www');
+	}
+}
