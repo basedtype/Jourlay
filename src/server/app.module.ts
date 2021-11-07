@@ -1,6 +1,6 @@
 /* IMPORT */
 import { ConfigurationModule } from '../configuration/configuration.module';
-import { DatabaseModule } from '../database/_database.module';
+import { DatabaseModule } from '../database/database.module';
 import { AppController } from './app.controller';
 import { TaskModule } from '../task/task.module';
 import { AppService } from './app.service';
@@ -16,7 +16,7 @@ import { LoadFileMiddleware } from 'src/middleware/loadfiles.middleware';
 
 @Module({
 	imports: [
-		TaskModule,
+		//TaskModule,
 		ConfigurationModule,
 		DatabaseModule,
 		ConfigModule,
