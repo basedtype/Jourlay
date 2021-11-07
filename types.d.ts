@@ -48,3 +48,45 @@ interface Time {
     weeks?: number;
     mounths?: number;
 }
+
+export namespace Binance {
+    interface CurrentPeriod {
+        bid: {
+            startPrice: string;
+            prices: PeriodPrice[];
+            avgDirection: 'up' | 'down' | 'none';
+        },
+        ask: {
+            startPrice: string;
+            prices: PeriodPrice[];
+            avgDirection: 'up' | 'down' | 'none';
+        }
+        amount: number;
+        id: number;
+    }
+
+    interface PeriodPrice {
+        lastPrice: string;
+        direction: 'up' | 'down' | 'none';
+    }
+
+    interface BookTicker {
+        symbol: string;
+        /**
+         * Float as string
+         */
+        bidPrice: string;
+        /**
+         * Float as string
+         */
+        bidQty: string;
+        /**
+         * Float as string
+         */
+        askPrice: string;
+        /**
+         * Float as string
+         */
+        askQty: string;
+    }
+}
