@@ -12,7 +12,7 @@ export class GogService {
         return JSON.parse(await fetch(url, options))
     }
 
-    public async getSales() {
+    async getSales() {
         const url = 'https://www.gog.com/games/ajax/filtered?mediaType=game&page=1&price=discounted&sort=popularity';
         const response = await this.getJson(url, this.options);
         const products = response.products;
