@@ -8,7 +8,7 @@ export class ProfileService {
     constructor(private readonly binanceService: BinanceService) { }
 
     loadPage(path: string) {
-        this.binanceService.getBalance('ETH');
+        //this.binanceService.getBalance('ETH');
         if (path !== '/') return fs.readFileSync(`./www/profile${path}/index.html`, 'utf8');
         return fs.readFileSync('./www/profile/index.html', 'utf8');
     }
