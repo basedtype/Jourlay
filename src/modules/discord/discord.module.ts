@@ -7,6 +7,9 @@ import { DatabaseModule } from 'src/database/database.module';
 import { SteamModule } from '../steam/steam.module';
 import { GogModule } from '../gog/gog.module';
 import { HtlbModule } from '../htlb/htlb.module';
+import { AnimeModule } from '../anime/anime.module';
+import { AmethystModule } from '../amethyst/amethyst.module';
+import { WallhavenModule } from '../wallhaven/wallhaven.module';
 
 @Module({
 	imports: [
@@ -16,6 +19,9 @@ import { HtlbModule } from '../htlb/htlb.module';
 		GogModule,
 		HtlbModule,
 		ToolsModule,
+		AnimeModule,
+		AmethystModule,
+		WallhavenModule,
 	],
 	providers: [DiscordService],
 	exports: [DiscordService]
