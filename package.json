@@ -25,6 +25,7 @@
     "migration:run": "ts-node --transpile-only ./node_modules/typeorm/cli.js -f \"./ormconfig.json\" migration:run"
   },
   "dependencies": {
+    "@binance/connector": "^1.5.0",
     "@nestjs/bull": "^0.4.2",
     "@nestjs/common": "^8.0.0",
     "@nestjs/config": "^1.0.3",
@@ -36,9 +37,13 @@
     "@nestjs/swagger": "^5.1.4",
     "@nestjs/typeorm": "^8.0.2",
     "argon2": "^0.28.2",
+    "axios": "^0.24.0",
     "bull": "^3.29.3",
     "class-validator": "^0.13.1",
     "cookie-parser": "^1.4.5",
+    "discord.js": "^13.3.1",
+    "epic-free-games": "^2.1.5",
+    "lodash": "^4.17.21",
     "mongodb": "^3.7.3",
     "node-fetch": "^3.0.0",
     "passport": "^0.4.1",
@@ -50,6 +55,7 @@
     "request-promise": "^4.2.6",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0",
+    "tmp-promise": "^3.0.3",
     "typeorm": "^0.2.38"
   },
   "devDependencies": {
