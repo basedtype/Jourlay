@@ -7,6 +7,9 @@ import { ToolsService } from '../tools/tools.service';
 import { Cron } from '@nestjs/schedule'
 import { SteamService } from '../steam/steam.service';
 import { GogService } from '../gog/gog.service';
+import { AnimeService } from '../anime/anime.service';
+import { AmethystService } from '../amethyst/amethyst.service';
+import { WallhavenService } from '../wallhaven/wallhaven.service';
 
 @Injectable()
 export class DiscordService {
@@ -17,6 +20,9 @@ export class DiscordService {
         private readonly steamService: SteamService,
         private readonly gogService: GogService,
         private readonly toolsService: ToolsService,
+        private readonly animeService: AnimeService,
+        private readonly amethystService: AmethystService,
+        private readonly wallhavenService: WallhavenService,
     ) { }
     private readonly logger = new Logger(DiscordService.name);
 
@@ -133,6 +139,25 @@ export class DiscordService {
         }
         this.client.channels.fetch('869957685326524456').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
         this.client.channels.fetch('881988459437359135').then((channel: ds.TextChannel) => channel.send({ embeds: [embed] }));
+    }
+
+    /**
+     * Send random anime photo in channel ^-^
+     */
+    @Cron('0 0 */4 * * *')
+    private async animePhotos() {
+        if (this.client == null) return;
+        const url = await this.animeService.getRandomPhoto();
+        this.client.channels.fetch('898741828717789184').then((channel: ds.TextChannel) => channel.send({ files: [url] }));
+    }
+
+    @Cron('0 0 */4 * * *')
+    private async animeWallpaper() {
+        const sfwWallpaper = await this.wallhavenService.search();
+        const nsfwWallpaper = await this.wallhavenService.searchNSFW();
+
+        this.client.channels.fetch('898741499028725760').then((channel: ds.TextChannel) => channel.send({ files: [sfwWallpaper.path] }));
+        this.client.channels.fetch('905487815066939422').then((channel: ds.TextChannel) => channel.send({ files: [nsfwWallpaper.path] }));
     }
 
     /**
@@ -445,6 +470,17 @@ export class DiscordService {
             //if (info.channelID === '892576972650209311') msg.crosspost();
 
             if (msg.author.bot === true) return;
+
+            /* <=========================== GLOBAL ===========================> */
+
+            if (info.isGuild === true) {
+                if (info.command === 'triggered') {
+                    const buff = await this.amethystService.triggered(msg.author.avatarURL({format: 'png'}));
+                    const attachment = new ds.MessageAttachment(buff, 'trig.gif')
+                    await info.channel.send({files: [attachment]});
+                    return;
+                }
+            }
 
             /* <=========================== MODERATOR COMMANDS ===========================> */
 
