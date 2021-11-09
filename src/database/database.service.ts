@@ -2,6 +2,12 @@ import { Injectable } from '@nestjs/common';
 import * as crypto from "crypto";
 import { Config } from 'types';
 import * as mongodb from "mongodb"
+import { Log } from 'src/entity/log.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BinanceLog } from 'src/entity/binance.entity';
+import { DiscordUser } from 'src/entity/discordUser.entity';
+import { Service } from 'src/entity/services.entity';
 
 /* PARAMS */
 const uri = "mongodb://127.0.0.1:27017/";
@@ -10,55 +16,44 @@ mongo.connect();
 
 @Injectable()
 export class DatabaseService {
-    private userCol(mongoDB) {
-        const configDatabase = mongoDB.db('config');
-        return configDatabase.collection('users');
+    constructor(
+		@InjectRepository(Log)
+		private logRepository: Repository<Log>,
+
+		@InjectRepository(BinanceLog)
+		private binanceLogRepository: Repository<BinanceLog>,
+
+		@InjectRepository(DiscordUser)
+		private discordUserRepository: Repository<DiscordUser>,
+
+		@InjectRepository(Service)
+		private serviceRepository: Repository<Service>,
+	) { }
+
+    async logFindAll(): Promise<Log[]> {
+        return this.logRepository.find();
     }
 
-    private configCol(mongoDB) {
-        const configDatabase = mongoDB.db('config');
-        return configDatabase.collection('config');
+    async binanceLogFindAll(): Promise<BinanceLog[]> {
+        return this.binanceLogRepository.find();
     }
 
-    async addUser(login: string, password: string, role: string): Promise<'err' | 'done'> {
-        
-        const userCollection = this.userCol(mongo);
-        const pass = crypto.createHmac('sha256', password);
-        await userCollection.findOneAndDelete({ login: login.toLocaleLowerCase() })
-        const res = await userCollection.insertOne({ login: login, password: pass, role: [role] }).then((doc) => { if (!doc) return 'err'; else return 'done' });
-        
-        return res;
+    async discordUserFindAll(): Promise<DiscordUser[]> {
+        return this.discordUserRepository.find();
     }
 
-    async checkUser(login: string, password: string): Promise<boolean> {
-        
-        const userCollection = this.userCol(mongo);
-        const pass = crypto.createHmac('sha256', password);
-        const res = await userCollection.findOne({ login: login }).then(user => { if (!user || user.password !== pass) return false; else return true });
-        
-        return res;
+    async discordUserFindOneByUserID(id: string): Promise<DiscordUser> {
+        return this.discordUserRepository.findOne({userID: id});
     }
 
-    async addConfig(data: Config.Service): Promise<'err' | 'done'> {
-        const configCollection = this.configCol(mongo);
-        await configCollection.findOne({service: data.service}).then(async result => { if (result) await configCollection.findOneAndDelete({service: data.service, target: data.target})})
-        const res = await configCollection.insertOne(data).then((doc) => { if (!doc) return 'err'; else return 'done' });
-        return res;
+    async discordUserInsert(user: DiscordUser) {
+        if (await this.discordUserFindOneByUserID(user.userID)) {
+            return {err: true, message: 'This user alredy exist'};
+        }
+        await this.discordUserRepository.insert(user);
     }
 
-    async getConfig(service: string, target?: string): Promise<any> {
-        
-        const configCollection = this.configCol(mongo);
-        const res = await configCollection.findOne({service: service}).then(async (data: Config.Service) => {
-            if (!data) return {};
-            else if (target != null) {
-                if (data.target === target) return data;
-                else {
-                    return await configCollection.findOne({service: service, target: target}).then((_data: Config.Service) => { if (!_data) return {}; else return _data});
-                }
-            } else return data;
-        })
-        
-        return res;
+    async serviceFindAll(): Promise<Service[]> {
+        return this.serviceRepository.find();
     }
 }
