@@ -1,6 +1,16 @@
 /* IMPORTS */
 
 /* TYPES */
+
+interface Time {
+    seconds?: number;
+    minutes?: number;
+    hours?: number;
+    days?: number;
+    weeks?: number;
+    mounths?: number;
+}
+
 export namespace Config {
     interface Service {
         /**
@@ -38,15 +48,6 @@ export namespace Config {
         password: string,
         roles: string[],
     }
-}
-
-interface Time {
-    seconds?: number;
-    minutes?: number;
-    hours?: number;
-    days?: number;
-    weeks?: number;
-    mounths?: number;
 }
 
 export namespace Binance {
@@ -88,5 +89,22 @@ export namespace Binance {
          * Float as string
          */
         askQty: string;
+    }
+}
+
+export namespace Discord {
+    interface Warning {
+        /**
+         * ID of moderator which send a warning
+         */
+        moderator: string,
+        /**
+         * Time of warning is seconds. It's automatic param
+         */
+        expires: number,
+        /**
+         * Reason of warning
+         */
+        reason?: string,
     }
 }
