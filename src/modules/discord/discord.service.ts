@@ -46,7 +46,6 @@ export class DiscordService {
             name: 'Игровая комната [5]',
         },
     }
-    private checkVoiceChannels = {};
     private banVoiceUsers: string[] = [];
     private voiceUsers: string[] = [];
 
@@ -154,10 +153,7 @@ export class DiscordService {
     @Cron('0 0 */4 * * *')
     private async animeWallpaper() {
         const sfwWallpaper = await this.wallhavenService.search();
-        const nsfwWallpaper = await this.wallhavenService.searchNSFW();
-
         this.client.channels.fetch('898741499028725760').then((channel: ds.TextChannel) => channel.send({ files: [sfwWallpaper.path] }));
-        this.client.channels.fetch('905487815066939422').then((channel: ds.TextChannel) => channel.send({ files: [nsfwWallpaper.path] }));
     }
 
     /**
