@@ -36,5 +36,6 @@ export default registerAs('app', () => ({
 			login: postgresConfig.username,
 			password: postgresConfig.password,
 		},
+		synchronize: postgresConfig.synchronize,
 	},
 }));
