@@ -108,3 +108,10 @@ export namespace Discord {
         reason?: string,
     }
 }
+
+export namespace Database {
+    interface Result {
+        err: boolean,
+        message?: string,
+    }
+}
