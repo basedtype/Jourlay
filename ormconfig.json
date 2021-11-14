@@ -1,16 +1,20 @@
 {
     "type": "postgres",
     "host": "localhost",
-    "port": 10000,
-    "username": "jourloy",
-    "password": "Th1sPassW0rd",
-    "database": "Nidhoggbot",
-    "entities": ["src/**/*.entity{.ts,.js}"],
+    "port": 5432,
+    "database": "coolDB",
+    "username": "coolUser",
+    "password": "coolPass",
     "synchronize": false,
+    "entities": [
+        "../**/*.entity{.ts,.js}"
+    ],
     "migrationsRun": false,
     "logging": true,
     "logger": "file",
-    "migrations": ["src/database/migrations/**/*{.ts,.js}"],
+    "migrations": [
+        "src/database/migrations/**/*{.ts,.js}"
+    ],
     "cli": {
         "migrationsDir": "src/database/migrations"
     }

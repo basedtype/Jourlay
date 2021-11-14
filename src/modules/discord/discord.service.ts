@@ -8,8 +8,9 @@ import { Cron } from '@nestjs/schedule'
 import { SteamService } from '../steam/steam.service';
 import { GogService } from '../gog/gog.service';
 import { AnimeService } from '../anime/anime.service';
-import { AmethystService } from '../amethyst/amethyst.service';
+//import { AmethystService } from '../amethyst/amethyst.service';
 import { WallhavenService } from '../wallhaven/wallhaven.service';
+import { Service } from 'src/entity/services.entity';
 
 @Injectable()
 export class DiscordService {
@@ -21,9 +22,10 @@ export class DiscordService {
         private readonly gogService: GogService,
         private readonly toolsService: ToolsService,
         private readonly animeService: AnimeService,
-        private readonly amethystService: AmethystService,
+        //private readonly amethystService: AmethystService,
         private readonly wallhavenService: WallhavenService,
     ) { }
+
     private readonly logger = new Logger(DiscordService.name);
 
     private client: ds.Client = null;
@@ -52,18 +54,21 @@ export class DiscordService {
     /**
      * Init discord module
      */
+    @Cron('*/30 * * * * *')
     async init() {
-        const config: Config.Service = await this.databaseService.getConfig('Discord', 'Nidhoggbot');
-
-        const client = new ds.Client({ intents: [ds.Intents.FLAGS.GUILDS, ds.Intents.FLAGS.GUILD_BANS, ds.Intents.FLAGS.GUILD_MESSAGES, ds.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, ds.Intents.FLAGS.GUILD_PRESENCES, ds.Intents.FLAGS.GUILD_VOICE_STATES, ds.Intents.FLAGS.GUILD_INVITES, ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, ds.Intents.FLAGS.DIRECT_MESSAGES, ds.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS] });
-
-        await client.login(config.auth.api);
-
-        const discord = await this.getInformation(client);
-        this.client = discord.client;
-        this._guild = discord.guild;
-
-        this.run();
+        if (this.client == null) {
+            const config: Service = await this.databaseService.serviceFindOne('Discord', 'Nidhoggbot');
+            if (config == null) {
+                this.logger.error(`Database can't find sevice with 'Discord' name and 'Nidhoggbot' target`);
+                return;
+            }
+            const client = new ds.Client({ intents: [ds.Intents.FLAGS.GUILDS, ds.Intents.FLAGS.GUILD_BANS, ds.Intents.FLAGS.GUILD_MESSAGES, ds.Intents.FLAGS.GUILD_MESSAGE_REACTIONS, ds.Intents.FLAGS.GUILD_PRESENCES, ds.Intents.FLAGS.GUILD_VOICE_STATES, ds.Intents.FLAGS.GUILD_INVITES, ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, ds.Intents.FLAGS.DIRECT_MESSAGES, ds.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS] });
+            await client.login(config.api);
+            const discord = await this.getInformation(client);
+            this.client = discord.client;
+            this._guild = discord.guild;
+            this.run();
+        }
     }
 
     /**
@@ -471,9 +476,9 @@ export class DiscordService {
 
             if (info.isGuild === true) {
                 if (info.command === 'triggered') {
-                    const buff = await this.amethystService.triggered(msg.author.avatarURL({format: 'png'}));
+                    /* const buff = await this.amethystService.triggered(msg.author.avatarURL({format: 'png'}));
                     const attachment = new ds.MessageAttachment(buff, 'trig.gif')
-                    await info.channel.send({files: [attachment]});
+                    await info.channel.send({files: [attachment]}); */
                     return;
                 }
             }

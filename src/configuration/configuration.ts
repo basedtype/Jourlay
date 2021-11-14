@@ -1,18 +1,42 @@
 import { registerAs } from '@nestjs/config';
-import * as fs from 'fs';
+import { join } from 'path/posix';
+require('dotenv').config();
 
-const env = process.env.NODE_ENV;
-let conf = null;
-let postgresConfig = null;
-if (env == null || env === 'development') {
-	const config = fs.readFileSync('./config.json', 'utf-8');
-	conf = JSON.parse(config);
-	postgresConfig = JSON.parse(fs.readFileSync('./ormconfig.json', 'utf-8'));
-} else if (env === 'production') {
-	const config = fs.readFileSync('/etc/metricator/config.json', 'utf-8');
-	conf = JSON.parse(config);
-	postgresConfig = JSON.parse(fs.readFileSync('/etc/metricator/ormconfig.json', 'utf-8'));
+const env = process.env;
+const conf = {
+	wwwPath: env.WWWPATH,
+	secret: env.SECRET,
+	host: {
+		IP: env.HOST_IP,
+		PORT: parseInt(env.HOST_PORT),
+		protocol: env.HOST_PROTOCOL,
+	},
+	cron: {
+		taskLog: env.CRON_TASKLOG,
+	},
+	redis: {
+		host: env.REDIS_HOST,
+		port: parseInt(env.REDIS_PORT)
+	},
+	postgres: {
+		host: env.POSTGRES_HOST,
+		port: parseInt(env.POSTGRES_PORT),
+		database: env.POSTGRES_DATABASE,
+		username: env.POSTGRES_USERNAME,
+		password: env.POSTGRES_PASSWORD,
+		entities: join(__dirname, JSON.parse(env.POSTGRES_ENTITIES)[0]),
+		synchronize: JSON.parse(env.POSTGRES_SYNCHRONIZE),
+		migrationsRun: JSON.parse(env.POSTGRES_MIGRATIONSRUN),
+		logging: JSON.parse(env.POSTGRES_LOGGING),
+		logger: env.POSTGRES_LOGGER,
+		migrations: JSON.parse(env.POSTGRES_MIGRATIONS),
+		cli: {
+			migrationsDir: env.POSTGRES_CLI_MIGRATIONSDIR,
+		}
+	}
 }
+
+console.log(conf.postgres.entities)
 
 export default registerAs('app', () => ({
 	secret: conf.secret,
@@ -29,13 +53,14 @@ export default registerAs('app', () => ({
 		port: conf.redis.port
 	},
 	postgres: {
-		host: postgresConfig.host,
-		port: postgresConfig.port,
-		database: postgresConfig.database,
+		host: conf.postgres.host,
+		port: conf.postgres.port,
+		database: conf.postgres.database,
+		entities: [conf.postgres.entities],
 		account: {
-			login: postgresConfig.username,
-			password: postgresConfig.password,
+			login: conf.postgres.username,
+			password: conf.postgres.password,
 		},
-		synchronize: postgresConfig.synchronize,
+		synchronize: conf.postgres.synchronize,
 	},
 }));

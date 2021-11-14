@@ -1,65 +1,44 @@
 import { Injectable } from '@nestjs/common';
 import { Log } from 'src/entity/log.entity';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BinanceLog } from 'src/entity/binance.entity';
 import { DiscordLog, DiscordUser } from 'src/entity/discord.entity';
 import { Service } from 'src/entity/services.entity';
 import { Config, Database } from 'types';
+import { ServerUser } from 'src/entity/users.entity';
 
 @Injectable()
 export class DatabaseService {
+    logRepository: Repository<Log>;
+    binanceLogRepository: Repository<BinanceLog>;
+    discordUserRepository: Repository<DiscordUser>;
+    discordLogRepository: Repository<DiscordLog>;
+    serviceRepository: Repository<Service>;
+    userRepository: Repository<ServerUser>;
+
     constructor(
-		@InjectRepository(Log)
-		private logRepository: Repository<Log>,
-
-		@InjectRepository(BinanceLog)
-		private binanceLogRepository: Repository<BinanceLog>,
-
-		@InjectRepository(DiscordUser)
-		private discordUserRepository: Repository<DiscordUser>,
-
-		@InjectRepository(DiscordLog)
-		private discordLogRepository: Repository<DiscordLog>,
-
-		@InjectRepository(Service)
-		private serviceRepository: Repository<Service>,
-	) { }
-
-    log = {
-        discord: {
-            findAll: this.discordLogFindAll,
-            insertOne: this.discordLogInsertOne,
-        },
-        binance: {
-            findAll: this.binanceLogFindAll,
-            insertOne: this.binanceLogInsertOne,
-        }
-    }
-
-    discord = {
-        findAll: this.discordUserFindAll,
-        findOneByID: this.discordUserFindOneByUserID,
-        insertOne: this.discordUserInsertOne,
-    }
-
-    service = {
-        findAll: this.serviceFindAll,
-        findOne: this.serviceFindOne,
-        insertOne: this.serviceInsertOne,
+        readonly connection: Connection
+	) { 
+        this.logRepository = this.connection.getRepository(Log);
+        this.binanceLogRepository = this.connection.getRepository(BinanceLog);
+        this.discordUserRepository = this.connection.getRepository(DiscordUser);
+        this.discordLogRepository = this.connection.getRepository(DiscordLog);
+        this.serviceRepository = this.connection.getRepository(Service);
+        this.userRepository = this.connection.getRepository(ServerUser);
     }
 
     /**
      * Find and return all logs in database
      */
-    private async logFindAll(): Promise<Log[]> {
+    async logFindAll(): Promise<Log[]> {
         return this.logRepository.find();
     }
 
     /**
      * Find and return all logs in database
      */
-    private async binanceLogFindAll(): Promise<BinanceLog[]> {
+    async binanceLogFindAll(): Promise<BinanceLog[]> {
         return this.binanceLogRepository.find();
     }
 
@@ -67,14 +46,14 @@ export class DatabaseService {
      * Add new log in database
      * @param log
      */
-    private async binanceLogInsertOne(log: BinanceLog) {
-        await this.discordUserRepository.insert(log);
+    async binanceLogInsertOne(log: BinanceLog) {
+        await this.binanceLogRepository.insert(log).catch();
     }
 
     /**
      * Find and return all discord users
      */
-    private async discordUserFindAll(): Promise<DiscordUser[]> {
+    async discordUserFindAll(): Promise<DiscordUser[]> {
         return this.discordUserRepository.find();
     }
 
@@ -82,7 +61,7 @@ export class DatabaseService {
      * Find and return discord user by ID
      * @param id ID of discord user
      */
-    private async discordUserFindOneByUserID(id: string): Promise<DiscordUser> {
+    async discordUserFindOneByUserID(id: string): Promise<DiscordUser> {
         return this.discordUserRepository.findOne({userID: id});
     }
 
@@ -90,7 +69,7 @@ export class DatabaseService {
      * Add new discord user in database
      * @param user 
      */
-    private async discordUserInsertOne(user: DiscordUser): Promise<Database.Result> {
+    async discordUserInsertOne(user: DiscordUser): Promise<Database.Result> {
         if (await this.discordUserFindOneByUserID(user.userID)) {
             return {err: true, message: 'This user alredy exist'};
         }
@@ -101,14 +80,14 @@ export class DatabaseService {
     /**
      * Find and return all logs
      */
-    private async discordLogFindAll(log: DiscordLog): Promise<DiscordLog[]> {
+    async discordLogFindAll(log: DiscordLog): Promise<DiscordLog[]> {
         return this.discordLogRepository.find();
     }
 
     /**
      * Add new log in database
      */
-    private async discordLogInsertOne(log: DiscordLog): Promise<Database.Result> {
+    async discordLogInsertOne(log: DiscordLog): Promise<Database.Result> {
         await this.discordLogRepository.insert(log);
         return {err: false}
     }
@@ -116,25 +95,60 @@ export class DatabaseService {
     /**
      * Find and return all services
      */
-    private async serviceFindAll(): Promise<Service[]> {
+    async serviceFindAll(): Promise<Service[]> {
         return this.serviceRepository.find();
     }
 
     /**
      * Find and return one service
      */
-    private async serviceFindOne(name: string, target: string): Promise<Service | undefined> {
+    async serviceFindOne(name: string, target: string): Promise<Service | undefined> {
         return this.serviceRepository.findOne({service: name, target: target});
     }
 
     /**
      * Add new service in database  
      */
-    private async serviceInsertOne(service: Config.Service): Promise<Database.Result> {
-        if (this.serviceFindOne(service.service, service.target)) {
-            return {err: true, message: `This server already exist`};
+    async serviceInsertOne(service: Config.Service): Promise<Database.Result> {
+        if (await this.serviceFindOne(service.service, service.target)) {
+            return {err: true, message: `This service already exist`};
         }
         await this.serviceRepository.insert(service);
+        return {err: false};
+    }
+
+    /**
+     * Find and return all services
+     */
+     async usersFindAll(): Promise<ServerUser[]> {
+        return this.userRepository.find();
+    }
+
+    /**
+     * Find and return one user by name
+     */
+    async userFindOneByUsername(username: string): Promise<ServerUser | undefined> {
+        return this.userRepository.findOne({username: username});
+    }
+
+    /**
+     * Find and return one user by email
+     */
+     async userFindOneByEmail(email: string): Promise<ServerUser | undefined> {
+        return this.userRepository.findOne({username: email});
+    }
+
+    /**
+     * Add new user in database  
+     */
+    async userInsertOne(user: ServerUser): Promise<Database.Result> {
+        if (this.userFindOneByUsername(user.email)) {
+            return {err: true, message: `This email already used`};
+        }
+        if (this.userFindOneByEmail(user.username)) {
+            return {err: true, message: `This username already used`};
+        }
+        await this.userRepository.insert(user);
         return {err: false};
     }
 }

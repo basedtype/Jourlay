@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 const { Spot } = require('@binance/connector')
 import { Binance, Config } from 'types';
 import * as _ from 'lodash';
 import { Cron } from '@nestjs/schedule';
-import * as fs from 'fs';
-import { file } from 'tmp-promise';
+import { Service } from 'src/entity/services.entity';
+import { BinanceLog } from 'src/entity/binance.entity';
 
 @Injectable()
 export class BinanceService {
-    constructor(private readonly databaseService: DatabaseService) { }
+    constructor(
+        private readonly databaseService: DatabaseService,
+        ) { }
+    
+    private readonly logger = new Logger(BinanceService.name);
 
     private client: any = null;
     private path: string = null;
@@ -55,31 +59,26 @@ export class BinanceService {
     }
 
     @Cron('0 */10 * * * *')
-    private async getClient() {
+    async getClient() {
         if (this.client != null) return
-        const config: Config.Service = await this.databaseService.getConfig('Binance', 'API')
-        this.client = new Spot(config.auth.api, config.auth.secret)
-    }
-
-    @Cron('0 */30 * * * *')
-    private async savePeriods() {
-        if (this.path == null) {
-            const {fd, path, cleanup} = await file();
-            this.path = path;
+        const config: Service = await this.databaseService.serviceFindOne('Binance', 'Nidhoggbot')
+        if (config == null) {
+            this.logger.error(`Database can't find sevice with 'Binance' name and 'Nidhoggbot' target`);
+            return;
         }
-        const data = JSON.stringify(this.priceLastPeriods);
-        fs.writeFileSync(this.path, data);
-        console.log(this.path)
+        this.client = new Spot(config.api, config.secret)
+        this.logger.log(`Binance are ready`);
     }
 
     @Cron('0 */1 * * * *')
     private async clearTimePeriod() {
-        this.priceLastPeriods.push(this.priceCurrentPeriod);
+        if (this.client == null) return;
         this.priceCurrentPeriod = { bid: { startPrice: '0', prices: [], avgDirection: 'none' }, ask: { startPrice: '0', prices: [], avgDirection: 'none' }, amount: 0, id: 0 };
     }
 
     @Cron('*/10 * * * * *')
     private async buildPriceDirection() {
+        if (this.client == null) return;
         const bookTicker = await this.getBookTicker('ETHRUB');
         const bidPrice = parseFloat(bookTicker.bidPrice).toFixed(1);
         const askPrice = parseFloat(bookTicker.askPrice).toFixed(1);
@@ -110,6 +109,14 @@ export class BinanceService {
         this.priceCurrentPeriod.ask.avgDirection = avgDirectionAsk;
 
         this.priceCurrentPeriod.amount++;
+        
+        const log = new BinanceLog;
+        log.askPrice = askPrice;
+        log.bidPrice = bidPrice;
+        log.currency = 'ETHRUB';
+
+        this.databaseService.binanceLogInsertOne(log);
+        this.logger.debug('Binance save market info')
     }
 
     async getBalance(token: string) {

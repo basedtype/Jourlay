@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from 'src/configuration/configuration';
 import { BinanceLog } from 'src/entity/binance.entity';
-import { DiscordUser } from 'src/entity/discord.entity';
+import { DiscordLog, DiscordUser } from 'src/entity/discord.entity';
 import { Log } from 'src/entity/log.entity';
 import { Service } from 'src/entity/services.entity';
+import { ServerUser } from 'src/entity/users.entity';
 import { DatabaseService } from './database.service';
 
 const config = configuration();
@@ -20,7 +21,7 @@ const config = configuration();
 					username: config.postgres.account.login,
 					password: config.postgres.account.password,
 					database: config.postgres.database,
-					entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+					entities: config.postgres.entities,
 					synchronize: config.postgres.synchronize,
 					migrationsRun: false,
 					logging: true,
@@ -32,7 +33,7 @@ const config = configuration();
 				}
 			},
 		}),
-		TypeOrmModule.forFeature([BinanceLog, DiscordUser, Log, Service])
+		TypeOrmModule.forFeature([BinanceLog, DiscordUser, Log, Service, DiscordLog, ServerUser])
 	],
 	providers: [DatabaseService],
 	exports: [DatabaseService],

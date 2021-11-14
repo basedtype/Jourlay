@@ -9,7 +9,7 @@ export class BinanceLog {
 	currency: string;
 
 	@Column()
-	bidPrice: number;
+	bidPrice: string;
 
 	@Column()
 	askPrice: string;

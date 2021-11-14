@@ -11,18 +11,18 @@ export class Service {
 	@Column()
 	target: string;
 
-	@Column({ nullable: true })
+	@Column()
 	api: string
 
-	@Column({ nullable: true })
+	@Column()
 	secret: string
 
-    @Column({ nullable: true })
+    @Column()
 	login: string
 
-    @Column({ nullable: true })
+    @Column()
 	password: string
 
-    @Column({ nullable: true })
+    @Column()
 	description: string
 }

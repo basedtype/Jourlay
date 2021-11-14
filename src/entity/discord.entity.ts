@@ -10,7 +10,7 @@ export class DiscordUser {
 	userID: string;
 
 	@Column()
-	warnings: Discord.Warning[];
+	warnings: number;
 
 	@Column()
 	bans: number;

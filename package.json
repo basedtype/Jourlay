@@ -27,7 +27,7 @@
     "docker-compose:run": "docker-compose up -d ",
     "docker-compose:rebuild": "docker-compose up -d -V --build",
     "docker-compose:restart": "docker-compose down && docker-compose up -d ",
-    "docker-compose:full-restart": "docker-compose down && docker-compose up -d -V --build",
+    "docker-compose:full-restart": "docker-compose down && docker rm -f $(docker ps -a -q) && docker volume rm $(docker volume ls -q) && docker-compose up -d",
     "docker-compose:down": "docker-compose down"
   },
   "dependencies": {
