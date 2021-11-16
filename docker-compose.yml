@@ -2,14 +2,14 @@ version: '3.7'
 
 services:
   redis:
-    container_name: redis
+    container_name: nidhoggbot-redis
     image: redis:6
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - redis-data:/data
   postgres:
-    container_name: postgres
+    container_name: nidhoggbot-postgres
     image: postgres:13.1-alpine
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -20,6 +20,19 @@ services:
       - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+  pgadmin:
+    container_name: nidhoggbot-pg_admin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+        - "127.0.0.1:16543:80"
+    depends_on:
+        - postgres
 networks:
   back:
 volumes:
