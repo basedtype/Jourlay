@@ -115,8 +115,8 @@ export class BinanceService {
         log.bidPrice = bidPrice;
         log.currency = 'ETHRUB';
 
-        this.databaseService.binanceLogInsertOne(log);
-        this.logger.debug('Binance save market info')
+        //this.databaseService.binanceLogInsertOne(log);
+        //this.logger.debug('Binance save market info')
     }
 
     async getBalance(token: string) {
