@@ -50,6 +50,7 @@ export class DiscordService {
     }
     private banVoiceUsers: string[] = [];
     private voiceUsers: string[] = [];
+    private workState: boolean = true;
 
     /**
      * Init discord module
@@ -464,11 +465,18 @@ export class DiscordService {
                 command: msg.content.split(' ')[0].split('!')[1],
             }
 
+            if (info.authorID === '308924864407011328' && info.command === 'switch_work') {
+                if (this.workState === false) this.workState = true;
+                else this.workState = false;
+            }
+
+            if (this.workState === false) return;
+
             /* <=========================== CROSSPOST ===========================> */
 
-            //if (info.channelID === '868517415787585656') msg.crosspost();
-            //if (info.channelID === '869957685326524456') msg.crosspost();
-            //if (info.channelID === '892576972650209311') msg.crosspost();
+            if (info.channelID === '868517415787585656') msg.crosspost();
+            if (info.channelID === '869957685326524456') msg.crosspost();
+            if (info.channelID === '892576972650209311') msg.crosspost();
 
             if (msg.author.bot === true) return;
 
@@ -499,6 +507,8 @@ export class DiscordService {
         })
 
         this.client.on('messageDelete', msg => {
+            if (this.workState === false) return;
+
             if (msg.guild == null || msg.guild.id !== '437601028662231040') return;
             if (msg.channel.id === '818566531486187611') return;
             this.client.channels.fetch('818566531486187611').then((channel: ds.TextChannel) => {
