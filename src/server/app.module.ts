@@ -18,17 +18,17 @@ import { AlisaModule } from 'src/modules/alisa/alisa.module';
 @Module({
 	imports: [
 		//TaskModule,
-		//ConfigurationModule,
-		//DatabaseModule,
-		//ConfigModule,
-		//BullModule,
-		//AuthModule,
-		//ProfileModule,
-		//DiscordModule,
-		//ConfigModule.forRoot({
-		//	load: [configuration],
-		//}),
-		//ScheduleModule.forRoot(),
+		ConfigurationModule,
+		DatabaseModule,
+		ConfigModule,
+		BullModule,
+		AuthModule,
+		ProfileModule,
+		DiscordModule,
+		ConfigModule.forRoot({
+			load: [configuration],
+		}),
+		ScheduleModule.forRoot(),
 		AlisaModule
 	],
 	controllers: [AppController],
