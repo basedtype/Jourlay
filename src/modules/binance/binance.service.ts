@@ -5,7 +5,6 @@ import { Binance, Config } from 'types';
 import * as _ from 'lodash';
 import { Cron } from '@nestjs/schedule';
 import { Service } from 'src/entity/services.entity';
-import { BinanceLog } from 'src/entity/binance.entity';
 
 @Injectable()
 export class BinanceService {
@@ -16,47 +15,6 @@ export class BinanceService {
     private readonly logger = new Logger(BinanceService.name);
 
     private client: any = null;
-    private path: string = null;
-    priceCurrentPeriod: Binance.CurrentPeriod = { bid: { startPrice: '0', prices: [], avgDirection: 'none' }, ask: { startPrice: '0', prices: [], avgDirection: 'none' }, amount: 0, id: 0 }
-    priceLastPeriods: Binance.CurrentPeriod[] = [];
-
-    private async calculateAverage(prices: Binance.PeriodPrice[], startPrice: string): Promise<'none' | 'up' | 'down'> {
-        const checkPrice = parseFloat(startPrice);
-        const stat = {
-            down: {
-                count: 0,
-                sum: 0.0
-            },
-            up: {
-                count: 0,
-                sum: 0.0
-            },
-            none: {
-                count: 0,
-                sum: 0.0
-            },
-            steps: 0,
-        }
-
-        for (let i in prices) {
-            const priceData = prices[i];
-            const price = parseFloat(priceData.lastPrice);
-            if (checkPrice === price) stat.none.count++;
-            else if (price > checkPrice) {
-                stat.up.count++;
-                stat.up.sum += price - checkPrice;
-            } else if (price < checkPrice) {
-                stat.down.count++;
-                stat.down.sum = checkPrice - price;
-            }
-            stat.steps++;
-        }
-
-        const noneP = stat.none.count / stat.steps * 100;
-        if (noneP > 50) return 'none';
-        else if (stat.down.sum > stat.up.sum) return 'down';
-        else return 'up'
-    }
 
     @Cron('0 */10 * * * *')
     async getClient() {
@@ -68,55 +26,6 @@ export class BinanceService {
         }
         this.client = new Spot(config.api, config.secret)
         this.logger.log(`Binance are ready`);
-    }
-
-    @Cron('0 */1 * * * *')
-    private async clearTimePeriod() {
-        if (this.client == null) return;
-        this.priceCurrentPeriod = { bid: { startPrice: '0', prices: [], avgDirection: 'none' }, ask: { startPrice: '0', prices: [], avgDirection: 'none' }, amount: 0, id: 0 };
-    }
-
-    @Cron('*/10 * * * * *')
-    private async buildPriceDirection() {
-        if (this.client == null) return;
-        const bookTicker = await this.getBookTicker('ETHRUB');
-        const bidPrice = parseFloat(bookTicker.bidPrice).toFixed(1);
-        const askPrice = parseFloat(bookTicker.askPrice).toFixed(1);
-
-        if (this.priceCurrentPeriod.bid.startPrice === '0') this.priceCurrentPeriod.bid.startPrice = bidPrice;
-        if (this.priceCurrentPeriod.ask.startPrice === '0') this.priceCurrentPeriod.ask.startPrice = askPrice;
-
-        let bidDirection: 'down' | 'up' | 'none' = null;
-        if (this.priceCurrentPeriod.bid.startPrice > bidPrice) bidDirection = 'down';
-        else if (this.priceCurrentPeriod.bid.startPrice < bidPrice) bidDirection = 'up';
-        else bidDirection = 'none';
-
-        let askDirection: 'down' | 'up' | 'none' = null;
-        if (this.priceCurrentPeriod.ask.startPrice > bidPrice) askDirection = 'down';
-        else if (this.priceCurrentPeriod.ask.startPrice < bidPrice) askDirection = 'up';
-        else bidDirection = 'none';
-
-        const periodPriceBid: Binance.PeriodPrice = {lastPrice: bidPrice, direction: bidDirection};
-        const periodPriceAsk: Binance.PeriodPrice = {lastPrice: askPrice, direction: askDirection};
-
-        this.priceCurrentPeriod.bid.prices.push(periodPriceBid);
-        this.priceCurrentPeriod.ask.prices.push(periodPriceAsk);
-
-        const avgDirectionBid = await this.calculateAverage(this.priceCurrentPeriod.bid.prices, this.priceCurrentPeriod.bid.startPrice);
-        const avgDirectionAsk = await this.calculateAverage(this.priceCurrentPeriod.ask.prices, this.priceCurrentPeriod.ask.startPrice);
-
-        this.priceCurrentPeriod.bid.avgDirection = avgDirectionBid;
-        this.priceCurrentPeriod.ask.avgDirection = avgDirectionAsk;
-
-        this.priceCurrentPeriod.amount++;
-        
-        const log = new BinanceLog;
-        log.askPrice = askPrice;
-        log.bidPrice = bidPrice;
-        log.currency = 'ETHRUB';
-
-        //this.databaseService.binanceLogInsertOne(log);
-        //this.logger.debug('Binance save market info')
     }
 
     async getBalance(token: string) {
