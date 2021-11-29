@@ -11,6 +11,7 @@ import { AnimeService } from '../anime/anime.service';
 //import { AmethystService } from '../amethyst/amethyst.service';
 import { WallhavenService } from '../wallhaven/wallhaven.service';
 import { Service } from 'src/entity/services.entity';
+import * as _ from "lodash";
 
 @Injectable()
 export class DiscordService {
@@ -425,6 +426,22 @@ export class DiscordService {
                     });
                 });
             }
+        });
+    }
+
+    async createChannelByAlisa() {
+        /* @ts-ignore */
+        const parent: ds.CategoryChannel = await this._guild.channels.fetch('870395638276300821');
+        const options: ds.GuildChannelCreateOptions = {
+            type: 'GUILD_VOICE',
+            position: parent.position + 10,
+            parent: parent,
+            reason: `Created channel for `,
+        }
+        const name = `Алиса (${_.random(0, 10)} | ${_.random(0, 10)})`
+        this._guild.channels.create(name, options).then(async data => {
+            const idNew = data.id;
+            const channelNew: ds.VoiceChannel = await this._guild.channels.fetch(idNew).then((ch: ds.VoiceChannel) => { return ch })
         });
     }
 
