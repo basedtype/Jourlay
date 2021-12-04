@@ -178,7 +178,7 @@ export class TraderService {
 		} else if (this.state === 1) {
 			if (this.test.on) {
 				const bookTicker = await this.binanceSevice.getBookTicker('ETHRUB');
-				const askPrice = parseFloat(parseFloat(bookTicker.bidPrice).toFixed(1));
+				const askPrice = parseFloat(parseFloat(bookTicker.askPrice).toFixed(1));
 
 				const buyAmount =
 					this.test.wallet.rub > this.test.maxRub
@@ -187,9 +187,12 @@ export class TraderService {
 
 				const amount =
 					buyAmount / askPrice - this.calculatePercent(buyAmount / askPrice, 0.5);
-
+				
+				this.logger.debug(`${Math.floor(askPrice + this.calculatePercent(buyAmount, 10)) > Math.round(this.price + this.calculatePercent(buyAmount / askPrice, 0.5) + this.staticPrice) &&
+					this.tries < 3600}`);
+				
 				if (
-					askPrice > this.price + this.calculatePercent(buyAmount / askPrice, 0.5) + this.staticPrice &&
+					Math.floor(askPrice + this.calculatePercent(buyAmount, 10)) > Math.round(this.price + this.calculatePercent(buyAmount / askPrice, 0.5) + this.staticPrice) &&
 					this.tries < 3600
 				) {
 					this.tries++;
