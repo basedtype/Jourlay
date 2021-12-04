@@ -9,6 +9,7 @@ async function bootstrap() {
 	app.get(DiscordService).init();
 	app.get(BinanceService).getClient();
 
+	app.enableCors();
 	await app.listen(3000);
 }
 bootstrap();

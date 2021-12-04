@@ -13,6 +13,8 @@ import { AuthModule } from 'src/auth/auth.module';
 import { ProfileModule } from 'src/profile/profile.module';
 import { DiscordModule } from 'src/modules/discord/discord.module';
 import { LoadFileMiddleware } from 'src/middleware/loadfiles.middleware';
+import { AlisaModule } from 'src/modules/alisa/alisa.module';
+import { TraderModule } from 'src/modules/trader/trader.module';
 
 @Module({
 	imports: [
@@ -28,6 +30,8 @@ import { LoadFileMiddleware } from 'src/middleware/loadfiles.middleware';
 			load: [configuration],
 		}),
 		ScheduleModule.forRoot(),
+		AlisaModule,
+		TraderModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
