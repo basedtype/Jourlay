@@ -31,7 +31,7 @@ import { TraderModule } from 'src/modules/trader/trader.module';
 		}),
 		ScheduleModule.forRoot(),
 		AlisaModule,
-		TraderModule,
+		//TraderModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
