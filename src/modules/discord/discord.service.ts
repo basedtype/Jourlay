@@ -12,6 +12,8 @@ import { AnimeService } from '../anime/anime.service';
 import { WallhavenService } from '../wallhaven/wallhaven.service';
 import { Service } from 'src/entity/services.entity';
 import * as _ from "lodash";
+import * as voice from "@discordjs/voice";
+import * as play from 'play-dl';
 
 @Injectable()
 export class DiscordService {
@@ -467,6 +469,77 @@ export class DiscordService {
         return (userMod == null) ? false : true;
     }
 
+    private player = voice.createAudioPlayer();
+
+    private async playSong(url: string) {
+        /**
+         * Here we are creating an audio resource using a sample song freely available online
+         * (see https://www.soundhelix.com/audio-examples)
+         *
+         * We specify an arbitrary inputType. This means that we aren't too sure what the format of
+         * the input is, and that we'd like to have this converted into a format we can use. If we
+         * were using an Ogg or WebM source, then we could change this value. However, for now we
+         * will leave this as arbitrary.
+         */
+
+         const stream = await play.stream(url)
+        const resource = voice.createAudioResource(stream.stream, {
+            inputType: stream.type,
+        });
+
+        /**
+         * We will now play this to the audio player. By default, the audio player will not play until
+         * at least one voice connection is subscribed to it, so it is fine to attach our resource to the
+         * audio player this early.
+         */
+        this.player.play(resource);
+
+        /**
+         * Here we are using a helper function. It will resolve if the player enters the Playing
+         * state within 5 seconds, otherwise it will reject with an error.
+         */
+        return voice.entersState(this.player, voice.AudioPlayerStatus.Playing, 5e3);
+    }
+
+    private async connectToChannel(channel: ds.VoiceChannel | ds.StageChannel) {
+        /**
+         * Here, we try to establish a connection to a voice channel. If we're already connected
+         * to this voice channel, @discordjs/voice will just return the existing connection for us!
+         */
+        const connection = voice.joinVoiceChannel({
+            channelId: channel.id,
+            guildId: channel.guild.id,
+            adapterCreator: this._guild.voiceAdapterCreator
+        });
+
+        /**
+         * If we're dealing with a connection that isn't yet Ready, we can set a reasonable
+         * time limit before giving up. In this example, we give the voice connection 30 seconds
+         * to enter the ready state before giving up.
+         */
+        try {
+            /**
+             * Allow ourselves 30 seconds to join the voice channel. If we do not join within then,
+             * an error is thrown.
+             */
+            await voice.entersState(connection, voice.VoiceConnectionStatus.Ready, 30e3);
+            /**
+             * At this point, the voice connection is ready within 30 seconds! This means we can
+             * start playing audio in the voice channel. We return the connection so it can be
+             * used by the caller.
+             */
+            return connection;
+        } catch (error) {
+            /**
+             * At this point, the voice connection has not entered the Ready state. We should make
+             * sure to destroy it, and propagate the error by throwing it, so that the calling function
+             * is aware that we failed to connect to the channel.
+             */
+            connection.destroy();
+            throw error;
+        }
+    }
+
     private async run() {
         this.logger.log('Discord are ready');
 
@@ -519,6 +592,31 @@ export class DiscordService {
                         this.createLog('ВНИМАНИЕ', `Модератор (<@${info.authorID}>) запустил очистку ${count - 1} сообщений`);
                         messages.forEach(ms => { ms.delete() });
                     })
+                }
+            }
+
+            /* MY GUILD */
+
+            if (info.isGuild === true && msg.guild.id === '437601028662231040') {
+                if ((info.command === 'play' || info.command === 'p') && info.channelID === '917132649603162212') {
+                    const url = info.splited[1];
+
+                    try {
+                        await this.playSong(url);
+                        console.log('Song is ready to play!');
+                    } catch (error) {
+                        console.error(error);
+                    }
+                    try {
+                        const connection = await this.connectToChannel(msg.member.voice.channel);
+                        connection.subscribe(this.player);
+                        msg.delete();
+                    } catch (error) {
+                        console.error(error);
+                    }
+                } else if (info.command === 'stop' && info.channelID === '917132649603162212') {
+                    this.player.stop(true);
+                    msg.delete();
                 }
             }
         })
