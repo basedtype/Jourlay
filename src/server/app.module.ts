@@ -2,7 +2,6 @@
 import { ConfigurationModule } from '../configuration/configuration.module';
 import { DatabaseModule } from '../database/database.module';
 import { AppController } from './app.controller';
-import { TaskModule } from '../task/task.module';
 import { AppService } from './app.service';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigModule } from '@nestjs/config';
@@ -14,11 +13,9 @@ import { ProfileModule } from 'src/profile/profile.module';
 import { DiscordModule } from 'src/modules/discord/discord.module';
 import { LoadFileMiddleware } from 'src/middleware/loadfiles.middleware';
 import { AlisaModule } from 'src/modules/alisa/alisa.module';
-import { TraderModule } from 'src/modules/trader/trader.module';
 
 @Module({
 	imports: [
-		//TaskModule,
 		ConfigurationModule,
 		DatabaseModule,
 		ConfigModule,
@@ -31,7 +28,6 @@ import { TraderModule } from 'src/modules/trader/trader.module';
 		}),
 		ScheduleModule.forRoot(),
 		AlisaModule,
-		//TraderModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
