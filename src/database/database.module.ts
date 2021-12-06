@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from 'src/configuration/configuration';
-import { BinanceLog } from 'src/entity/binance.entity';
 import { DiscordLog, DiscordUser } from 'src/entity/discord.entity';
 import { Log } from 'src/entity/log.entity';
 import { Service } from 'src/entity/services.entity';
@@ -33,7 +32,7 @@ const config = configuration();
 				}
 			},
 		}),
-		TypeOrmModule.forFeature([BinanceLog, DiscordUser, Log, Service, DiscordLog, ServerUser])
+		TypeOrmModule.forFeature([DiscordUser, Log, Service, DiscordLog, ServerUser])
 	],
 	providers: [DatabaseService],
 	exports: [DatabaseService],

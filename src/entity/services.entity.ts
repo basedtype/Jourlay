@@ -5,24 +5,24 @@ export class Service {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@Column()
+	@Column({ nullable: true })
 	service: string;
 
-	@Column()
+	@Column({ nullable: true })
 	target: string;
 
-	@Column()
-	api: string
+	@Column({ nullable: true })
+	api: string;
 
-	@Column()
-	secret: string
+	@Column({ nullable: true })
+	secret: string;
 
-    @Column()
-	login: string
+	@Column({ nullable: true })
+	login: string;
 
-    @Column()
-	password: string
+	@Column({ nullable: true })
+	password: string;
 
-    @Column()
-	description: string
+	@Column({ nullable: true })
+	description: string;
 }
