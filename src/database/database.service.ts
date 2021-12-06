@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { Log } from 'src/entity/log.entity';
 import { Connection, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BinanceLog } from 'src/entity/binance.entity';
 import { DiscordLog, DiscordUser } from 'src/entity/discord.entity';
 import { Service } from 'src/entity/services.entity';
 import { Config, Database } from 'types';
@@ -11,7 +10,6 @@ import { ServerUser } from 'src/entity/users.entity';
 @Injectable()
 export class DatabaseService {
     logRepository: Repository<Log>;
-    binanceLogRepository: Repository<BinanceLog>;
     discordUserRepository: Repository<DiscordUser>;
     discordLogRepository: Repository<DiscordLog>;
     serviceRepository: Repository<Service>;
@@ -21,7 +19,6 @@ export class DatabaseService {
         readonly connection: Connection
 	) { 
         this.logRepository = this.connection.getRepository(Log);
-        this.binanceLogRepository = this.connection.getRepository(BinanceLog);
         this.discordUserRepository = this.connection.getRepository(DiscordUser);
         this.discordLogRepository = this.connection.getRepository(DiscordLog);
         this.serviceRepository = this.connection.getRepository(Service);
@@ -34,22 +31,7 @@ export class DatabaseService {
     async logFindAll(): Promise<Log[]> {
         return this.logRepository.find();
     }
-
-    /**
-     * Find and return all logs in database
-     */
-    async binanceLogFindAll(): Promise<BinanceLog[]> {
-        return this.binanceLogRepository.find();
-    }
-
-    /**
-     * Add new log in database
-     * @param log
-     */
-    async binanceLogInsertOne(log: BinanceLog) {
-        await this.binanceLogRepository.insert(log).catch();
-    }
-
+    
     /**
      * Find and return all discord users
      */
