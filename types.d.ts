@@ -1,4 +1,6 @@
 /* IMPORTS */
+import * as voice from "@discordjs/voice";
+import { Guild } from "discord.js";
 
 /* TYPES */
 
@@ -114,4 +116,17 @@ export namespace Database {
         err: boolean,
         message?: string,
     }
+}
+
+export namespace DiscordMusicType {
+	interface Information {
+		state: boolean;
+        onPause: boolean;
+		queue: String[];
+		connection: voice.VoiceConnection;
+		authorID: string;
+        player: voice.AudioPlayer;
+        guild: Guild
+        updated: number;
+	}
 }
