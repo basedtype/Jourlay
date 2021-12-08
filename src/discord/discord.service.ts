@@ -14,6 +14,7 @@ import { Service } from "src/entity/services.entity";
 import * as _ from "lodash";
 import * as voice from "@discordjs/voice";
 import * as play from "play-dl";
+import { DiscordMusic } from "./modules/music";
 
 @Injectable()
 export class DiscordService {
@@ -54,12 +55,6 @@ export class DiscordService {
 	private voiceUsers: string[] = [];
 	private workState: boolean = true;
 	private player = voice.createAudioPlayer();
-	private music = {
-		play: false,
-		queue: [],
-		connections: null,
-		startedOwnerID: "",
-	};
 
 	/**
 	 * Init discord module
@@ -566,6 +561,8 @@ export class DiscordService {
 	private async run() {
 		this.client.on("ready", () => {
 			this.logger.log("Discord are ready");
+
+			DiscordMusic.init(this._guild);
 		});
 
 		this.client.on("messageCreate", async (msg) => {
@@ -632,71 +629,34 @@ export class DiscordService {
 			/* MY GUILD */
 
 			if (info.isGuild === true && msg.guild.id === "437601028662231040") {
-				if ((info.command === "play" || info.command === "p") && info.channelID === "917132649603162212") {
-					const url = info.splited[1];
 
-					if (
-						(this.music.play === true && this.music.startedOwnerID === info.authorID) ||
-						this.music.play === false
-					) {
-						try {
-							await this.playSong(url);
-						} catch (error) {
-							this.logger.error(error);
-						}
-
-						try {
-							const connection = await this.connectToChannel(msg.member.voice.channel);
-							connection.subscribe(this.player);
-							this.music.play = true;
-							this.music.connections = connection;
-							this.music.startedOwnerID = info.authorID;
-						} catch (error) {
-							this.logger.error(error);
-						}
-					}
-					msg.delete();
-				} else if (
-					info.command === "stop" ||
-					(info.command === "s" && info.channelID === "917132649603162212")
-				) {
-					if (
-						(this.music.play === true && this.music.startedOwnerID !== info.authorID) ||
-						this.music.play === false
-					) {
+				if (info.channelID === "917132649603162212") {
+					if (info.command === "play" || info.command === "p") {
 						msg.delete();
-						return;
-					}
-					this.player.stop(true);
-					this.music.connections.subscribe(this.player);
-					this.music.play = false;
-					this.music.startedOwnerID = "";
-					msg.delete();
-				} else if (info.command === "pause" && info.channelID === "917132649603162212") {
-					if (
-						(this.music.play === true && this.music.startedOwnerID !== info.authorID) ||
-						this.music.play === false
-					) {
-						this.logger.log(
-							`${msg.author.username} (${info.authorID}) try to pause music | Started: ${this.music.startedOwnerID} | Music state: ${this.music.play}`
-						);
+						const result = await DiscordMusic.play(info.splited[1], info.authorID, msg.member.voice.channel, (info.authorID === '308924864407011328') ? true : false);
+						const message = await info.channel.send({content: `<@${info.authorID}>, ${result}`});
+						setTimeout(() => {message.delete()}, 1000 * 10);
+					} else if (info.command === "stop" || info.command === "s") {
 						msg.delete();
-						return;
-					}
-					this.player.pause();
-					this.music.connections.subscribe(this.player);
-					msg.delete();
-				} else if (info.command === "unpause" && info.channelID === "917132649603162212") {
-					if (
-						(this.music.play === true && this.music.startedOwnerID !== info.authorID) ||
-						this.music.play === false
-					) {
+						const result = await DiscordMusic.stop(info.authorID, (info.authorID === '308924864407011328') ? true : false);
+						const message = await info.channel.send({content: `<@${info.authorID}>, ${result}`});
+						setTimeout(() => {message.delete()}, 1000 * 10);
+					} else if (info.command === "pause") {
 						msg.delete();
-						return;
+						const result = await DiscordMusic.pause(info.authorID, (info.authorID === '308924864407011328') ? true : false);
+						const message = await info.channel.send({content: `<@${info.authorID}>, ${result}`});
+						setTimeout(() => {message.delete()}, 1000 * 10);
+					} else if (info.command === "unpause") {
+						msg.delete();
+						const result = await DiscordMusic.unPause(info.authorID, (info.authorID === '308924864407011328') ? true : false);
+						const message = await info.channel.send({content: `<@${info.authorID}>, ${result}`});
+						setTimeout(() => {message.delete()}, 1000 * 10);
+					} else if (info.command === 'skip' ) {
+						msg.delete();
+						const result = await DiscordMusic.skip(info.authorID, (info.authorID === '308924864407011328') ? true : false);
+						const message = await info.channel.send({content: `<@${info.authorID}>, ${result}`});
+						setTimeout(() => {message.delete()}, 1000 * 10);
 					}
-					this.player.unpause();
-					this.music.connections.subscribe(this.player);
-					msg.delete();
 				}
 			}
 		});
