@@ -22,7 +22,7 @@ export class DiscordMusic {
 			player: voice.createAudioPlayer(),
 			guild: guild,
 			updated: Date.now(),
-		}
+		};
 
 		this.handler();
 	}
@@ -53,7 +53,7 @@ export class DiscordMusic {
 					if (now >= this.information.updated) {
 						this.information.connection.disconnect();
 						this.init(this.information.guild);
-					};
+					}
 				}, 1000 * 60 * 5);
 			}
 
@@ -122,7 +122,7 @@ export class DiscordMusic {
 		url: string,
 		authorID: string,
 		channel: ds.VoiceChannel | ds.StageChannel,
-		force: boolean,
+		force: boolean
 	): Promise<string> {
 		if (this.information.state === false) {
 			await this.connectToChannel(channel);
@@ -132,8 +132,10 @@ export class DiscordMusic {
 		} else if (this.information.authorID === authorID || force) {
 			this.information.queue.push(url);
 			return 'Музыка добавлена в очередь';
-		} else {
-			return 'Вы не можете управлять музыкой, так как ее запустил кто-то другой';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -145,8 +147,10 @@ export class DiscordMusic {
 		if (this.information.authorID === authorID || force) {
 			await this.stopSong();
 			return 'Музыка остановлена, очередь очищена';
-		} else {
-			return 'Музыка не может быть остановлена, так как ее запустили не вы';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -162,8 +166,10 @@ export class DiscordMusic {
 			} else {
 				return 'Музыка не может быть поставлена на паузу, так как она уже на ней';
 			}
-		} else {
-			return 'Музыка не может быть поставлена на паузу, так как ее запустили не вы';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -179,8 +185,10 @@ export class DiscordMusic {
 			} else {
 				return 'Музыка не может быть снята с паузы, так как она уже не на ней';
 			}
-		} else {
-			return 'Музыка не может быть снята с паузы, так как ее запустили не вы';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -196,6 +204,21 @@ export class DiscordMusic {
 			} else {
 				return 'Очередь пуста';
 			}
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
+		}
+	}
+
+	static async clearQueue(authorID: string, force: boolean): Promise<string> {
+		if (this.information.state === false) {
+			return 'Музыка не активна';
+		}
+
+		if (this.information.authorID === authorID || force) {
+			this.information.queue = [];
+			return 'Очередь сброшена';
 		}
 
 		if (this.information.authorID !== authorID) {
