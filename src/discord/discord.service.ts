@@ -196,27 +196,21 @@ export class DiscordService {
 			.then((channel: ds.TextChannel) => channel.send({ files: [url] }));
 	}
 
-	@Cron('0 0 */4 * * *')
-	private async animeWallpaper() {
-		const sfwWallpaper = await this.wallhavenService.search();
-		this.client.channels
-			.fetch('898741499028725760')
-			.then((channel: ds.TextChannel) => channel.send({ files: [sfwWallpaper.path] }));
-	}
-
 	/**
 	 * Set member count in name of voice channel
 	 */
-	@Cron('* */1 * * * *')
+	@Cron('* */5 * * * *')
 	private async memberCount() {
 		if (this.client == null) return;
 		if (this._guild == null) return;
+
+		const names = ['Тянок', 'Ебейших', 'Викингов', 'Участников', 'Ботов'];
 
 		this.client.channels.fetch('871750394211090452').then((channel: ds.VoiceChannel) => {
 			const memberCount = this._guild.memberCount;
 			const channelName = channel.name.split(' ');
 			if (parseInt(channelName[1]) != memberCount)
-				channel.setName(`Участников: ${memberCount}`);
+				channel.setName(`${_.sample(names)}: ${memberCount}`);
 		});
 	}
 
