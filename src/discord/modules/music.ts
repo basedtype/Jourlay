@@ -50,7 +50,10 @@ export class DiscordMusic {
 			if (this.information.queue.length === 0) {
 				const now = Date.now();
 				setTimeout(() => {
-					if (now >= this.information.updated) this.stopSong();
+					if (now >= this.information.updated) {
+						this.information.connection.disconnect();
+						this.init(this.information.guild);
+					};
 				}, 1000 * 60 * 5);
 			}
 
