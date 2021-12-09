@@ -108,8 +108,8 @@ export class DiscordService {
 	/**
 	 * Check and give basic role
 	 */
-	@Cron('* */5 * * * *')
-	private async setBasicRole(): Promise<void> {
+	//@Cron('* */5 * * * *')
+	/* private async setBasicRole(): Promise<void> {
 		if (this._guild == null) return;
 
 		this._guild.members.cache.forEach(async (member, key, map) => {
@@ -150,7 +150,7 @@ export class DiscordService {
 				}
 			}
 		});
-	}
+	} */
 
 	/**
 	 * Send information about sales in EGS
