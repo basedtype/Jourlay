@@ -13,20 +13,17 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.4.0
-  
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: Executing remote ssh commands using password
-      uses: ./
+    - name: SSH deploy
+      uses: easingthemes/ssh-deploy@v2.2.11
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
+        # Private Key
+        SSH_PRIVATE_KEY: ${{ secrets.SECRET_KEY }} 
+        REMOTE_HOST: ${{ secrets.HOST }}
+        REMOTE_USER: ${{ secrets.USERNAME }}
+        REMOTE_PORT: ${{ secrets.PORT }}
+        TARGET: ${{ secrets.FOLDER }}
         script: |
-          cd ${{ secrets.FOLDER }}
+          cd 
           git checkout master && git pull
           npm run build
           pm2 restart Nidhoggbot
