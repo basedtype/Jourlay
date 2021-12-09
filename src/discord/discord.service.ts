@@ -113,45 +113,46 @@ export class DiscordService {
 		if (this._guild == null) return;
 
 		(await this._guild.members.list()).each(async (member, key, collection) => {
-			if (member.id === '816872036051058698') return;
-			const databaseMember = await this.databaseService.discordUserFindOneByUserID(member.id);
-			if (databaseMember == null) {
-				const user = new DiscordUser();
-				user.userID = member.id;
-				user.warnings = 0;
-				user.bans = 0;
-				user.messages = 0;
-				await this.databaseService.discordUserInsertOne(user);
-				const role = member.roles.cache.find(
-					(role, key, collection) => role.id === '918626964825317416'
+			if (member.id !== '816872036051058698') {
+				const databaseMember = await this.databaseService.discordUserFindOneByUserID(
+					member.id
 				);
-				console.log(role);
-				if (role == null) {
-					const roleAdd = this._guild.roles.cache.find(
+				if (databaseMember == null) {
+					const user = new DiscordUser();
+					user.userID = member.id;
+					user.warnings = 0;
+					user.bans = 0;
+					user.messages = 0;
+					await this.databaseService.discordUserInsertOne(user);
+					const role = member.roles.cache.find(
 						(role, key, collection) => role.id === '918626964825317416'
 					);
-					member.roles.add(roleAdd);
-				}
-			} else if (databaseMember.messages > 5) {
-				const role = member.roles.cache.find(
-					(role, key, collection) => role.id === '918626848274002050'
-				);
-				if (role == null) {
-					const roleAdd = this._guild.roles.cache.find(
+					if (role == null) {
+						const roleAdd = this._guild.roles.cache.find(
+							(role, key, collection) => role.id === '918626964825317416'
+						);
+						member.roles.add(roleAdd);
+					}
+				} else if (databaseMember.messages > 5) {
+					const role = member.roles.cache.find(
 						(role, key, collection) => role.id === '918626848274002050'
 					);
-					member.roles.add(roleAdd);
-				}
-			} else {
-				const role = member.roles.cache.find(
-					(role, key, collection) => role.id === '918626964825317416'
-				);
-				console.log(role);
-				if (role == null) {
-					const roleAdd = this._guild.roles.cache.find(
+					if (role == null) {
+						const roleAdd = this._guild.roles.cache.find(
+							(role, key, collection) => role.id === '918626848274002050'
+						);
+						member.roles.add(roleAdd);
+					}
+				} else {
+					const role = member.roles.cache.find(
 						(role, key, collection) => role.id === '918626964825317416'
 					);
-					member.roles.add(roleAdd);
+					if (role == null) {
+						const roleAdd = this._guild.roles.cache.find(
+							(role, key, collection) => role.id === '918626964825317416'
+						);
+						member.roles.add(roleAdd);
+					}
 				}
 			}
 		});
