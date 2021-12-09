@@ -115,6 +115,7 @@ export class DiscordService {
 		(await this._guild.members.list()).each(async (member, key, collection) => {
 			if (member.id === '816872036051058698') return;
 			const databaseMember = await this.databaseService.discordUserFindOneByUserID(member.id);
+			console.log(databaseMember);
 			if (databaseMember == null) {
 				const user = new DiscordUser();
 				user.userID = member.id;
@@ -125,6 +126,7 @@ export class DiscordService {
 				const role = member.roles.cache.find(
 					(role, key, collection) => role.id === '918626964825317416'
 				);
+				console.log(role);
 				if (role == null) {
 					const roleAdd = this._guild.roles.cache.find(
 						(role, key, collection) => role.id === '918626964825317416'
