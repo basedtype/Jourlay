@@ -4,10 +4,29 @@ import { DiscordMusicType } from 'types';
 import * as voice from '@discordjs/voice';
 import * as ds from 'discord.js';
 import * as play from 'play-dl';
+import { Cron } from '@nestjs/schedule';
 
 /* CLASSES */
 export class DiscordMusic {
-	private static information: DiscordMusicType.Information = null;
+	public static information: DiscordMusicType.Information = null;
+
+	/**
+	 * Check amount users in voice channel
+	 */
+	@Cron('* */1 * * * *')
+	private static async checkMusicChannel() {
+		if (this.information.channelID === '') return;
+
+		this.information.guild.channels
+			.fetch(this.information.channelID)
+			.then((ch: ds.VoiceChannel) => {
+				if (ch.members.size <= 1) {
+					setTimeout(() => {
+						if (ch.members.size <= 1) this.stopSong();
+					}, 1000 * 60 * 5);
+				}
+			});
+	}
 
 	/**
 	 * Initialization music class
@@ -22,7 +41,8 @@ export class DiscordMusic {
 			player: voice.createAudioPlayer(),
 			guild: guild,
 			updated: Date.now(),
-		}
+			channelID: '',
+		};
 
 		this.handler();
 	}
@@ -36,6 +56,7 @@ export class DiscordMusic {
 		try {
 			await voice.entersState(connection, voice.VoiceConnectionStatus.Ready, 30e3);
 			this.information.connection = connection;
+			this.information.channelID = channel.id;
 		} catch (error) {
 			connection.destroy();
 			console.log(error); // TODO: To logger
@@ -50,7 +71,10 @@ export class DiscordMusic {
 			if (this.information.queue.length === 0) {
 				const now = Date.now();
 				setTimeout(() => {
-					if (now >= this.information.updated) this.stopSong();
+					if (now >= this.information.updated) {
+						this.information.connection.disconnect();
+						this.init(this.information.guild);
+					}
 				}, 1000 * 60 * 5);
 			}
 
@@ -119,7 +143,7 @@ export class DiscordMusic {
 		url: string,
 		authorID: string,
 		channel: ds.VoiceChannel | ds.StageChannel,
-		force: boolean,
+		force: boolean
 	): Promise<string> {
 		if (this.information.state === false) {
 			await this.connectToChannel(channel);
@@ -129,8 +153,10 @@ export class DiscordMusic {
 		} else if (this.information.authorID === authorID || force) {
 			this.information.queue.push(url);
 			return 'Музыка добавлена в очередь';
-		} else {
-			return 'Вы не можете управлять музыкой, так как ее запустил кто-то другой';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -142,8 +168,10 @@ export class DiscordMusic {
 		if (this.information.authorID === authorID || force) {
 			await this.stopSong();
 			return 'Музыка остановлена, очередь очищена';
-		} else {
-			return 'Музыка не может быть остановлена, так как ее запустили не вы';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -159,8 +187,10 @@ export class DiscordMusic {
 			} else {
 				return 'Музыка не может быть поставлена на паузу, так как она уже на ней';
 			}
-		} else {
-			return 'Музыка не может быть поставлена на паузу, так как ее запустили не вы';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -176,8 +206,10 @@ export class DiscordMusic {
 			} else {
 				return 'Музыка не может быть снята с паузы, так как она уже не на ней';
 			}
-		} else {
-			return 'Музыка не может быть снята с паузы, так как ее запустили не вы';
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -193,6 +225,21 @@ export class DiscordMusic {
 			} else {
 				return 'Очередь пуста';
 			}
+		}
+
+		if (this.information.authorID !== authorID) {
+			return 'Вы не можете управлять музыкой';
+		}
+	}
+
+	static async clearQueue(authorID: string, force: boolean): Promise<string> {
+		if (this.information.state === false) {
+			return 'Музыка не активна';
+		}
+
+		if (this.information.authorID === authorID || force) {
+			this.information.queue = [];
+			return 'Очередь сброшена';
 		}
 
 		if (this.information.authorID !== authorID) {
