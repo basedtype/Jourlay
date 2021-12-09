@@ -208,9 +208,7 @@ export class DiscordService {
 
 		this.client.channels.fetch('871750394211090452').then((channel: ds.VoiceChannel) => {
 			const memberCount = this._guild.memberCount;
-			const channelName = channel.name.split(' ');
-			if (parseInt(channelName[1]) != memberCount)
-				channel.setName(`${_.sample(names)}: ${memberCount}`);
+			channel.setName(`${_.sample(names)}: ${memberCount}`);
 		});
 	}
 
@@ -668,6 +666,7 @@ export class DiscordService {
 			/* MY GUILD */
 
 			if (info.isGuild === true && msg.guild.id === '437601028662231040') {
+				/* MUSIC CHANNEL */
 				if (info.channelID === '917132649603162212') {
 					if (info.command === 'play' || info.command === 'p') {
 						msg.delete();

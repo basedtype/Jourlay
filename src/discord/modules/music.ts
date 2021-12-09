@@ -4,10 +4,29 @@ import { DiscordMusicType } from 'types';
 import * as voice from '@discordjs/voice';
 import * as ds from 'discord.js';
 import * as play from 'play-dl';
+import { Cron } from '@nestjs/schedule';
 
 /* CLASSES */
 export class DiscordMusic {
-	private static information: DiscordMusicType.Information = null;
+	public static information: DiscordMusicType.Information = null;
+
+	/**
+	 * Check amount users in voice channel
+	 */
+	@Cron('* */1 * * * *')
+	private static async checkMusicChannel() {
+		if (this.information.channelID === '') return;
+
+		this.information.guild.channels
+			.fetch(this.information.channelID)
+			.then((ch: ds.VoiceChannel) => {
+				if (ch.members.size <= 1) {
+					setTimeout(() => {
+						if (ch.members.size <= 1) this.stopSong();
+					}, 1000 * 5);
+				}
+			});
+	}
 
 	/**
 	 * Initialization music class
@@ -22,6 +41,7 @@ export class DiscordMusic {
 			player: voice.createAudioPlayer(),
 			guild: guild,
 			updated: Date.now(),
+			channelID: '',
 		};
 
 		this.handler();
@@ -36,6 +56,7 @@ export class DiscordMusic {
 		try {
 			await voice.entersState(connection, voice.VoiceConnectionStatus.Ready, 30e3);
 			this.information.connection = connection;
+			this.information.channelID = channel.id;
 		} catch (error) {
 			connection.destroy();
 			console.log(error); // TODO: To logger
