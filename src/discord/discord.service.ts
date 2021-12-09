@@ -112,8 +112,7 @@ export class DiscordService {
 	private async setBasicRole(): Promise<void> {
 		if (this._guild == null) return;
 
-		(await this._guild.members.list()).each(async (member, key, collection) => {
-			this.logger.debug(member.displayName);
+		(await this._guild.members.cache).forEach(async (member, key, map) => {
 			if (member.id !== '816872036051058698') {
 				const databaseMember = await this.databaseService.discordUserFindOneByUserID(
 					member.id

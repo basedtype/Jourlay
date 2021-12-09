@@ -1,31 +1,23 @@
 name: Deploy to server
 
 on:
-  push:
-    branches:
-    - master
-  workflow_dispatch:
+    push:
+        branches:
+            - master
+    workflow_dispatch:
 
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2.4.0
-    - name: Pull
-      uses: garygrossgarten/github-action-ssh@v0.6.3
-      with:
-        command: cd ${{ secrets.FOLDER }} && git checkout master && git pull && npm run build
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        port: ${{ secrets.PORT }}
-        password: ${{ secrets.PASSWORD }} 
-    - name: Restart program
-      uses: garygrossgarten/github-action-ssh@v0.6.3
-      with:
-        command: pm2 restart Nidhoggbot
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        port: ${{ secrets.PORT }}
-        password: ${{ secrets.PASSWORD }} 
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2.4.0
+            - name: Pull
+              uses: garygrossgarten/github-action-ssh@v0.6.3
+              with:
+                  command: cd ${{ secrets.FOLDER }} && git checkout master && git pull && npm run build && pm2 restart Nidhoggbot
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  port: ${{ secrets.PORT }}
+                  password: ${{ secrets.PASSWORD }}
