@@ -105,6 +105,40 @@ export class DiscordService {
 	}
 
 	/**
+	 * Check and give basic role
+	 */
+	@Cron('* */1 * * * *')
+	private async setBasicRole(): Promise<void> {
+		if (this._guild == null) return;
+
+		(await this._guild.members.list()).each(async (member, key, collection) => {
+			if (member.id === '816872036051058698') return;
+			const databaseMember = await this.databaseService.discordUserFindOneByUserID(member.id);
+			if (databaseMember.messages > 0) {
+				const role = member.roles.cache.find(
+					(role, key, collection) => role.id === '918626848274002050'
+				);
+				if (role == null) {
+					const roleAdd = this._guild.roles.cache.find(
+						(role, key, collection) => role.id === '918626848274002050'
+					);
+					member.roles.add(roleAdd);
+				}
+			} else {
+				const role = member.roles.cache.find(
+					(role, key, collection) => role.id === '918626964825317416'
+				);
+				if (role == null) {
+					const roleAdd = this._guild.roles.cache.find(
+						(role, key, collection) => role.id === '918626964825317416'
+					);
+					member.roles.add(roleAdd);
+				}
+			}
+		});
+	}
+
+	/**
 	 * Send information about sales in EGS
 	 */
 	@Cron('0 30 21 * * *')
@@ -609,12 +643,7 @@ export class DiscordService {
 				command: msg.content.split(' ')[0].split('!')[1],
 			};
 
-			if (info.authorID === '308924864407011328' && info.command === 'switch_work') {
-				if (this.workState === false) this.workState = true;
-				else this.workState = false;
-			}
-
-			if (this.workState === false) return;
+			this.databaseService.discordUserAddMessage(info.authorID);
 
 			/* <=========================== CROSSPOST ===========================> */
 
@@ -668,13 +697,15 @@ export class DiscordService {
 			if (info.isGuild === true && msg.guild.id === '437601028662231040') {
 				/* MUSIC CHANNEL */
 				if (info.channelID === '917132649603162212') {
+					const force = await this.isMod(info.authorID);
+
 					if (info.command === 'play' || info.command === 'p') {
 						msg.delete();
 						const result = await DiscordMusic.play(
 							info.splited[1],
 							info.authorID,
 							msg.member.voice.channel,
-							info.authorID === '308924864407011328' ? true : false
+							force
 						);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
@@ -684,10 +715,7 @@ export class DiscordService {
 						}, 1000 * 10);
 					} else if (info.command === 'stop' || info.command === 's') {
 						msg.delete();
-						const result = await DiscordMusic.stop(
-							info.authorID,
-							info.authorID === '308924864407011328' ? true : false
-						);
+						const result = await DiscordMusic.stop(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
 						});
@@ -696,10 +724,7 @@ export class DiscordService {
 						}, 1000 * 10);
 					} else if (info.command === 'pause') {
 						msg.delete();
-						const result = await DiscordMusic.pause(
-							info.authorID,
-							info.authorID === '308924864407011328' ? true : false
-						);
+						const result = await DiscordMusic.pause(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
 						});
@@ -708,10 +733,7 @@ export class DiscordService {
 						}, 1000 * 10);
 					} else if (info.command === 'unpause') {
 						msg.delete();
-						const result = await DiscordMusic.unPause(
-							info.authorID,
-							info.authorID === '308924864407011328' ? true : false
-						);
+						const result = await DiscordMusic.unPause(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
 						});
@@ -720,10 +742,7 @@ export class DiscordService {
 						}, 1000 * 10);
 					} else if (info.command === 'skip') {
 						msg.delete();
-						const result = await DiscordMusic.skip(
-							info.authorID,
-							info.authorID === '308924864407011328' ? true : false
-						);
+						const result = await DiscordMusic.skip(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
 						});
@@ -732,10 +751,7 @@ export class DiscordService {
 						}, 1000 * 10);
 					} else if (info.command === 'drop') {
 						msg.delete();
-						const result = await DiscordMusic.clearQueue(
-							info.authorID,
-							info.authorID === '308924864407011328' ? true : false
-						);
+						const result = await DiscordMusic.clearQueue(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
 						});
