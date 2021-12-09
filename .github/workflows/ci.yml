@@ -20,7 +20,7 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
-        privateKey: ${{ secrets.SECRET_KEY }} 
+        password: ${{ secrets.PASSWORD }} 
     - name: Restart program
       uses: garygrossgarten/github-action-ssh@v0.6.3
       with:
@@ -28,4 +28,4 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
-        privateKey: ${{ secrets.SECRET_KEY }} 
+        password: ${{ secrets.PASSWORD }} 
