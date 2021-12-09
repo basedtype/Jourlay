@@ -124,37 +124,28 @@ export class DiscordService {
 					user.bans = 0;
 					user.messages = 0;
 					await this.databaseService.discordUserInsertOne(user);
-					const role = member.roles.cache.find(
-						(role, key, collection) => role.id === '918626964825317416'
-					);
-					if (role == null) {
+					if (member.roles.cache.has('918626964825317416') === false) {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918626964825317416'
 						);
 						member.roles.add(roleAdd);
-						this.createLog(`<@${member.id}> не наш`);
+						this.createLog(`<@&${member.id}> не наш`);
 					}
 				} else if (databaseMember.messages > 5) {
-					const role = member.roles.cache.find(
-						(role, key, collection) => role.id === '918626848274002050'
-					);
-					if (role == null) {
+					if (member.roles.cache.has('918626848274002050') === false) {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918626848274002050'
 						);
 						member.roles.add(roleAdd);
-						this.createLog(`<@${member.id}> не наш`);
+						this.createLog(`<@&${member.id}> наш`);
 					}
 				} else {
-					const role = member.roles.cache.find(
-						(role, key, collection) => role.id === '918626964825317416'
-					);
-					if (role == null) {
+					if (member.roles.cache.has('918626964825317416') === false) {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918626964825317416'
 						);
 						member.roles.add(roleAdd);
-						this.createLog(`<@${member.id}> наш`);
+						this.createLog(`<@&${member.id}> не наш`);
 					}
 				}
 			}
