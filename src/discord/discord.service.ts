@@ -15,6 +15,7 @@ import * as _ from 'lodash';
 import * as voice from '@discordjs/voice';
 import * as play from 'play-dl';
 import { DiscordMusic } from './modules/music';
+import { DiscordUser } from 'src/entity/discord.entity';
 
 @Injectable()
 export class DiscordService {
@@ -114,7 +115,23 @@ export class DiscordService {
 		(await this._guild.members.list()).each(async (member, key, collection) => {
 			if (member.id === '816872036051058698') return;
 			const databaseMember = await this.databaseService.discordUserFindOneByUserID(member.id);
-			if (databaseMember.messages > 0) {
+			if (databaseMember == null) {
+				const user = new DiscordUser();
+				user.userID = member.id;
+				user.warnings = 0;
+				user.bans = 0;
+				user.messages = 1;
+				await this.databaseService.discordUserInsertOne(user);
+				const role = member.roles.cache.find(
+					(role, key, collection) => role.id === '918626964825317416'
+				);
+				if (role == null) {
+					const roleAdd = this._guild.roles.cache.find(
+						(role, key, collection) => role.id === '918626964825317416'
+					);
+					member.roles.add(roleAdd);
+				}
+			} else if (databaseMember.messages > 0) {
 				const role = member.roles.cache.find(
 					(role, key, collection) => role.id === '918626848274002050'
 				);
