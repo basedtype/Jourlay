@@ -23,7 +23,7 @@ export class DiscordMusic {
 				if (ch.members.size <= 1) {
 					setTimeout(() => {
 						if (ch.members.size <= 1) this.stopSong();
-					}, 1000 * 5);
+					}, 1000 * 60 * 5);
 				}
 			});
 	}
