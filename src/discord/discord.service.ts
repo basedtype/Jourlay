@@ -108,11 +108,11 @@ export class DiscordService {
 	/**
 	 * Check and give basic role
 	 */
-	@Cron('* */1 * * * *')
+	@Cron('* */5 * * * *')
 	private async setBasicRole(): Promise<void> {
 		if (this._guild == null) return;
 
-		(await this._guild.members.cache).forEach(async (member, key, map) => {
+		this._guild.members.cache.forEach(async (member, key, map) => {
 			if (member.id !== '816872036051058698') {
 				const databaseMember = await this.databaseService.discordUserFindOneByUserID(
 					member.id
@@ -132,6 +132,7 @@ export class DiscordService {
 							(role, key, collection) => role.id === '918626964825317416'
 						);
 						member.roles.add(roleAdd);
+						this.createLog(`<@${member.id}> не наш`);
 					}
 				} else if (databaseMember.messages > 5) {
 					const role = member.roles.cache.find(
@@ -142,6 +143,7 @@ export class DiscordService {
 							(role, key, collection) => role.id === '918626848274002050'
 						);
 						member.roles.add(roleAdd);
+						this.createLog(`<@${member.id}> не наш`);
 					}
 				} else {
 					const role = member.roles.cache.find(
@@ -152,6 +154,7 @@ export class DiscordService {
 							(role, key, collection) => role.id === '918626964825317416'
 						);
 						member.roles.add(roleAdd);
+						this.createLog(`<@${member.id}> наш`);
 					}
 				}
 			}
