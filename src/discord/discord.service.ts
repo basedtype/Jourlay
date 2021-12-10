@@ -77,14 +77,15 @@ export class DiscordService {
 				intents: [
 					ds.Intents.FLAGS.GUILDS,
 					ds.Intents.FLAGS.GUILD_BANS,
+					ds.Intents.FLAGS.GUILD_MEMBERS,
+					ds.Intents.FLAGS.GUILD_INVITES,
 					ds.Intents.FLAGS.GUILD_MESSAGES,
-					ds.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+					ds.Intents.FLAGS.DIRECT_MESSAGES,
 					ds.Intents.FLAGS.GUILD_PRESENCES,
 					ds.Intents.FLAGS.GUILD_VOICE_STATES,
-					ds.Intents.FLAGS.GUILD_INVITES,
-					ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
-					ds.Intents.FLAGS.DIRECT_MESSAGES,
+					ds.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
 					ds.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+					ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
 				],
 			});
 			await client.login(config.api);
@@ -108,12 +109,16 @@ export class DiscordService {
 	/**
 	 * Check and give basic role
 	 */
-	//@Cron('* */5 * * * *')
-	/* private async setBasicRole(): Promise<void> {
+	@Cron('* */5 * * * *')
+	private async setBasicRole(): Promise<void> {
 		if (this._guild == null) return;
 
-		this._guild.members.cache.forEach(async (member, key, map) => {
-			if (member.id !== '816872036051058698') {
+		const members = (await this._guild.members.fetch()).toJSON();
+
+		for (let i in members) {
+			const member = members[i];
+
+			if (!member.user.bot && !member.roles.cache.has('918626848274002050')) {
 				const databaseMember = await this.databaseService.discordUserFindOneByUserID(
 					member.id
 				);
@@ -124,12 +129,12 @@ export class DiscordService {
 					user.bans = 0;
 					user.messages = 0;
 					await this.databaseService.discordUserInsertOne(user);
-					if (member.roles.cache.has('918626964825317416') === false) {
+					if (member.roles.cache.has('918778640869773334') === false) {
 						const roleAdd = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === '918626964825317416'
+							(role, key, collection) => role.id === '918778640869773334'
 						);
 						member.roles.add(roleAdd);
-						this.createLog(`<@&${member.id}> не наш`);
+						this.createLog(null, `<@${member.id}> не наш`);
 					}
 				} else if (databaseMember.messages > 5) {
 					if (member.roles.cache.has('918626848274002050') === false) {
@@ -137,20 +142,20 @@ export class DiscordService {
 							(role, key, collection) => role.id === '918626848274002050'
 						);
 						member.roles.add(roleAdd);
-						this.createLog(`<@&${member.id}> наш`);
+						this.createLog(null, `<@${member.id}> наш`);
 					}
 				} else {
-					if (member.roles.cache.has('918626964825317416') === false) {
+					if (member.roles.cache.has('918778640869773334') === false) {
 						const roleAdd = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === '918626964825317416'
+							(role, key, collection) => role.id === '918778640869773334'
 						);
 						member.roles.add(roleAdd);
-						this.createLog(`<@&${member.id}> не наш`);
+						this.createLog(null, `<@${member.id}> не наш`);
 					}
 				}
 			}
-		});
-	} */
+		}
+	}
 
 	/**
 	 * Send information about sales in EGS
@@ -646,6 +651,8 @@ export class DiscordService {
 		});
 
 		this.client.on('messageCreate', async (msg) => {
+			if (msg.author.bot) return;
+
 			const info = {
 				isGuild: msg.guild == null ? false : true,
 				channelID: msg.channel.id,
