@@ -144,6 +144,12 @@ export class DiscordService {
 						member.roles.add(roleAdd);
 						this.createLog(null, `<@${member.id}> наш`);
 					}
+					if (member.roles.cache.has('918778640869773334') === false) {
+						const roleRemove = this._guild.roles.cache.find(
+							(role, key, collection) => role.id === '918778640869773334'
+						);
+						member.roles.remove(roleRemove);
+					}
 				} else {
 					if (member.roles.cache.has('918778640869773334') === false) {
 						const roleAdd = this._guild.roles.cache.find(
