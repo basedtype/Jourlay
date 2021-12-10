@@ -60,17 +60,32 @@ export class DatabaseService {
 	/**
 	 * Add one message to user
 	 */
-	async discordUserAddMessage(userID: string): Promise<void> {
+	async discordUserAddMessage(userID: string, amount?: number): Promise<void> {
 		const user = await this.discordUserRepository.findOne({ userID: userID });
-
+		if (amount == null) amount = 1;
 		if (user == null) {
 			user.userID = userID;
 			user.warnings = 0;
 			user.bans = 0;
-			user.messages = 1;
+			user.messages = amount;
 			await this.discordUserInsertOne(user);
 		} else {
-			user.messages += 1;
+			user.messages += amount;
+			await this.discordUserRepository.save(user);
+		}
+	}
+
+	async discordUserRemoveMessage(userID: string, amount?: number): Promise<void> {
+		const user = await this.discordUserRepository.findOne({ userID: userID });
+		if (amount == null) amount = 1;
+		if (user == null) {
+			user.userID = userID;
+			user.warnings = 0;
+			user.bans = 0;
+			user.messages = 0;
+			await this.discordUserInsertOne(user);
+		} else {
+			user.messages -= amount;
 			await this.discordUserRepository.save(user);
 		}
 	}

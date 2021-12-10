@@ -109,7 +109,7 @@ export class DiscordService {
 	/**
 	 * Check and give basic role
 	 */
-	@Cron('* */5 * * * *')
+	@Cron('* */1 * * * *')
 	private async setBasicRole(): Promise<void> {
 		if (this._guild == null) return;
 
@@ -118,7 +118,7 @@ export class DiscordService {
 		for (let i in members) {
 			const member = members[i];
 
-			if (!member.user.bot && !member.roles.cache.has('918626848274002050')) {
+			if (!member.user.bot) {
 				const databaseMember = await this.databaseService.discordUserFindOneByUserID(
 					member.id
 				);
@@ -133,7 +133,7 @@ export class DiscordService {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918778640869773334'
 						);
-						member.roles.add(roleAdd);
+						await member.roles.add(roleAdd);
 						this.createLog(null, `<@${member.id}> не наш`);
 					}
 				} else if (databaseMember.messages > 5) {
@@ -141,22 +141,28 @@ export class DiscordService {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918626848274002050'
 						);
-						member.roles.add(roleAdd);
+						await member.roles.add(roleAdd);
 						this.createLog(null, `<@${member.id}> наш`);
 					}
-					if (member.roles.cache.has('918778640869773334') === false) {
+					if (member.roles.cache.has('918778640869773334') === true) {
 						const roleRemove = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918778640869773334'
 						);
-						member.roles.remove(roleRemove);
+						await member.roles.remove(roleRemove);
 					}
 				} else {
 					if (member.roles.cache.has('918778640869773334') === false) {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918778640869773334'
 						);
-						member.roles.add(roleAdd);
+						await member.roles.add(roleAdd);
 						this.createLog(null, `<@${member.id}> не наш`);
+					}
+					if (member.roles.cache.has('918626848274002050') === true) {
+						const roleRemove = this._guild.roles.cache.find(
+							(role, key, collection) => role.id === '918626848274002050'
+						);
+						await member.roles.remove(roleRemove);
 					}
 				}
 			}
@@ -670,7 +676,7 @@ export class DiscordService {
 				command: msg.content.split(' ')[0].split('!')[1],
 			};
 
-			this.databaseService.discordUserAddMessage(info.authorID);
+			if (info.content.length >= 3 && msg.guildId === '437601028662231040') this.databaseService.discordUserAddMessage(info.authorID);
 
 			/* <=========================== CROSSPOST ===========================> */
 
@@ -717,11 +723,50 @@ export class DiscordService {
 						});
 					});
 				}
+
+				if (info.command === 'db_add') {
+					const userID = info.splited[1];
+					const amount = parseInt(info.splited[2]);
+					await this.databaseService.discordUserAddMessage(userID, amount);
+					const user = await this.databaseService.discordUserFindOneByUserID(userID);
+					info.channel.send({content: `Было успешно добавлено ${amount} сообщений, теперь у него ${(user).messages} сообщений`});
+				}
+
+				if (info.command === 'db_remove') {
+					const userID = info.splited[1];
+					const amount = parseInt(info.splited[2]);
+					await this.databaseService.discordUserRemoveMessage(userID, amount);
+					const user = await this.databaseService.discordUserFindOneByUserID(userID);
+					info.channel.send({content: `Было успешно отнято ${amount} сообщений, теперь у него ${(user).messages} сообщений`});
+				}
+
+				if ( info.command === 'user') {
+					const userID = info.splited[1];
+					const user = await this.databaseService.discordUserFindOneByUserID(userID);
+					const member = await this._guild.members.fetch(userID);
+					const embed = new ds.MessageEmbed()
+						.setAuthor(member.user.username, member.user.avatarURL())
+						.setDescription(`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`)
+						.setFooter(`With ❤️ by NidhoggBot v2.0`);
+					info.channel.send({embeds: [embed]});
+					return;
+				}
 			}
 
 			/* MY GUILD */
 
 			if (info.isGuild === true && msg.guild.id === '437601028662231040') {
+
+				if (info.command === 'me') {
+					const user = await this.databaseService.discordUserFindOneByUserID(info.authorID);
+					const embed = new ds.MessageEmbed()
+						.setAuthor(msg.author.username, msg.author.avatarURL())
+						.setDescription(`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`)
+						.setFooter(`With ❤️ by NidhoggBot v2.0`);
+					info.channel.send({embeds: [embed]});
+					return;
+				}
+
 				/* MUSIC CHANNEL */
 				if (info.channelID === '917132649603162212') {
 					const force = await this.isMod(info.authorID);
