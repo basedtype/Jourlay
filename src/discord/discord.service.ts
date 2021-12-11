@@ -54,7 +54,6 @@ export class DiscordService {
 	};
 	private banVoiceUsers: string[] = [];
 	private voiceUsers: string[] = [];
-	private workState: boolean = true;
 	private player = voice.createAudioPlayer();
 
 	/**
@@ -676,7 +675,8 @@ export class DiscordService {
 				command: msg.content.split(' ')[0].split('!')[1],
 			};
 
-			if (info.content.length >= 3 && msg.guildId === '437601028662231040') this.databaseService.discordUserAddMessage(info.authorID);
+			if (info.content.length >= 3 && msg.guildId === '437601028662231040')
+				this.databaseService.discordUserAddMessage(info.authorID);
 
 			/* <=========================== CROSSPOST ===========================> */
 
@@ -729,7 +729,9 @@ export class DiscordService {
 					const amount = parseInt(info.splited[2]);
 					await this.databaseService.discordUserAddMessage(userID, amount);
 					const user = await this.databaseService.discordUserFindOneByUserID(userID);
-					info.channel.send({content: `Было успешно добавлено ${amount} сообщений, теперь у него ${(user).messages} сообщений`});
+					info.channel.send({
+						content: `Было успешно добавлено ${amount} сообщений, теперь у него ${user.messages} сообщений`,
+					});
 				}
 
 				if (info.command === 'db_remove') {
@@ -737,18 +739,22 @@ export class DiscordService {
 					const amount = parseInt(info.splited[2]);
 					await this.databaseService.discordUserRemoveMessage(userID, amount);
 					const user = await this.databaseService.discordUserFindOneByUserID(userID);
-					info.channel.send({content: `Было успешно отнято ${amount} сообщений, теперь у него ${(user).messages} сообщений`});
+					info.channel.send({
+						content: `Было успешно отнято ${amount} сообщений, теперь у него ${user.messages} сообщений`,
+					});
 				}
 
-				if ( info.command === 'user') {
+				if (info.command === 'user') {
 					const userID = info.splited[1];
 					const user = await this.databaseService.discordUserFindOneByUserID(userID);
 					const member = await this._guild.members.fetch(userID);
 					const embed = new ds.MessageEmbed()
 						.setAuthor(member.user.username, member.user.avatarURL())
-						.setDescription(`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`)
+						.setDescription(
+							`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`
+						)
 						.setFooter(`With ❤️ by NidhoggBot v2.0`);
-					info.channel.send({embeds: [embed]});
+					info.channel.send({ embeds: [embed] });
 					return;
 				}
 			}
@@ -756,14 +762,17 @@ export class DiscordService {
 			/* MY GUILD */
 
 			if (info.isGuild === true && msg.guild.id === '437601028662231040') {
-
 				if (info.command === 'me') {
-					const user = await this.databaseService.discordUserFindOneByUserID(info.authorID);
+					const user = await this.databaseService.discordUserFindOneByUserID(
+						info.authorID
+					);
 					const embed = new ds.MessageEmbed()
 						.setAuthor(msg.author.username, msg.author.avatarURL())
-						.setDescription(`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`)
+						.setDescription(
+							`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`
+						)
 						.setFooter(`With ❤️ by NidhoggBot v2.0`);
-					info.channel.send({embeds: [embed]});
+					info.channel.send({ embeds: [embed] });
 					return;
 				}
 
