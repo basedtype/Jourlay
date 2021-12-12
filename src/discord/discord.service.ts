@@ -675,8 +675,9 @@ export class DiscordService {
 				command: msg.content.split(' ')[0].split('!')[1],
 			};
 
-			if (info.content.length >= 3 && msg.guildId === '437601028662231040')
+			if (info.content.length >= 3 && msg.guildId === '437601028662231040') {
 				this.databaseService.discordUserAddMessage(info.authorID);
+			}
 
 			/* <=========================== CROSSPOST ===========================> */
 
