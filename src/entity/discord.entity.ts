@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, CreateDateColumn, JoinColumn, UpdateDateColumn, DeleteDateColumn } from 'typeorm';
 import { Discord } from 'types';
+import { GameUser } from './game.entity';
 
 @Entity()
 export class DiscordUser {
@@ -29,6 +30,19 @@ export class DiscordUser {
 
 	@Column({ nullable: true })
 	color: string;
+
+	@JoinColumn()
+	gameUser: GameUser;
+
+	@CreateDateColumn()
+	createdAt: Date;
+
+	@UpdateDateColumn()
+	updatedAt: Date;
+
+	@DeleteDateColumn()
+	deletedAt?: Date;
+
 }
 
 @Entity()
@@ -48,6 +62,13 @@ export class DiscordLog {
 	@Column({ default: false })
 	isRequestAttention: Boolean
 
-	@CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-	timestamp: Date;
+	@CreateDateColumn()
+	createdAt: Date;
+
+	@UpdateDateColumn()
+	updatedAt: Date;
+
+	@DeleteDateColumn()
+	deletedAt?: Date;
+
 }
