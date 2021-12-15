@@ -7,7 +7,7 @@ import { ToolsService } from '../modules/tools/tools.service';
 import { Cron } from '@nestjs/schedule';
 import { SteamService } from '../modules/steam/steam.service';
 import { GogService } from '../modules/gog/gog.service';
-import { AnimeService } from '../modules/anime/anime.service';
+import { AnimeService } from './modules/anime/anime.service';
 //import { AmethystService } from '../amethyst/amethyst.service;
 import { WallhavenService } from '../modules/wallhaven/wallhaven.service';
 import { Service } from 'src/entity/services.entity';
@@ -251,14 +251,26 @@ export class DiscordService {
 	/**
 	 * Send random anime photo in channel ^-^
 	 */
-	@Cron('0 0 */4 * * *')
+	@Cron('0 0 */1 * * *')
 	private async animePhotos() {
 		if (this.client == null) return;
-		const url = await this.animeService.getRandomPhoto();
+		const url = await this.animeService.getAnimePhoto();
 		this.client.channels
 			.fetch('898741828717789184')
 			.then((channel: ds.TextChannel) => channel.send({ files: [url] }));
 	}
+
+	/**
+	 * Send random real photo in channel
+	 */
+	 @Cron('0 0 */1 * * *')
+	 private async realPhotos() {
+		 if (this.client == null) return;
+		 const url = await this.animeService.getRealPhoto();
+		 this.client.channels
+			 .fetch('920639086077833226')
+			 .then((channel: ds.TextChannel) => channel.send({ files: [url] }));
+	 }
 
 	/**
 	 * Set member count in name of voice channel

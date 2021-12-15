@@ -1,18 +1,30 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
-</p>
+# NidhoggBot
 
-## Description
+One tool - many things
 
-Template TypeScript repository.
+## Getting start
 
-## Installation
+### Installation
 
 ```bash
 $ npm i
 ```
 
-## Running the app
+### Build the app
+
+```bash
+$ npm run build
+```
+
+### Running the app
+
+- [recommend] Using PM2:
+
+```bash
+$ pm2 start dist/main.js --name="Nidhoggbot" -i 0 
+```
+
+- Using nest
 
 ```bash
 # development
@@ -25,72 +37,75 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Test
+## Settings
+
+### .env
+
+You should create a **.env** file
+
+Template:
+```
+NODE_ENV='development'
+
+WWWPATH=<string>
+SECRET=<string>
+HOST_IP=<string>
+HOST_PORT=<number>
+HOST_PROTOCOL=<string>
+
+REDIS_HOST=<string>
+REDIS_PORT=<number>
+
+POSTGRES_TYPE='postgres'
+POSTGRES_HOST=<string>
+POSTGRES_PORT=<number>
+POSTGRES_USERNAME=<string>
+POSTGRES_PASSWORD=<string>
+POSTGRES_DATABASE=<string>
+POSTGRES_ENTITIES=[<string>]
+POSTGRES_SYNCHRONIZE=<boolean>
+POSTGRES_MIGRATIONSRUN=<boolean>
+POSTGRES_LOGGING=<boolean>
+POSTGRES_LOGGER=<string>
+POSTGRES_MIGRATIONS=["<string>"]
+POSTGRES_CLI_MIGRATIONSDIR=<string>
+
+PGADMIN_DEFAULT_EMAIL=<string>
+PGADMIN_DEFAULT_PASSWORD=<string>
+```
+
+### ormconfig.json
+
+For work with migrations you should generate a **ormconfig** file
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+$ npm run ormconfig:generate
 ```
 
-## config.json
+### Migrations
 
-You must create a `config.json` file in repository folder (for dev) or in /etc folder (for prod).
+Generate migration
 
-Template:
-```json
-{
-    "secret": "",
-    "host": {
-        "IP": "",
-        "PORT": 0000,
-        "protocol": ""
-    },
-    "cron": {
-        "taskLog": "* * * * * *"
-    },
-    "redis": {
-        "host": "",
-        "port": 0000
-    },
-    "postgres": {
-        "host": "",
-        "port": 0000,
-        "database": "",
-        "account": {
-            "login": "",
-            "password": ""
-        }
-    }
-}
+```bash
+$ npm run migration:generate
 ```
 
-## ormconfig.json
+Create migration
 
-You must create a `ormconfig.json` file in repository folder (for dev) or in /etc folder (for prod).
+```bash
+$ npm run migration:create
+```
 
-Template:
-```json
-{
-    "type": "",
-    "host": "",
-    "port": 0000,
-    "username": "",
-    "password": "",
-    "database": "",
-    "entities": ["src/**/*.entity{.ts,.js}"],
-    "synchronize": false,
-    "migrationsRun": false,
-    "logging": true,
-    "logger": "file",
-    "migrations": ["src/database/migrations/**/*{.ts,.js}"],
-    "cli": {
-        "migrationsDir": "src/database/migrations"
-    }
-}
+Run migrations
+
+```bash
+$ npm run migration:run
+```
+
+### Typeorm
+
+You can clear all database (**WARNING! You can lose all data**)
+
+```bash
+$ npm run typeorm:clear
 ```
