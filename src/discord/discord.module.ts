@@ -7,7 +7,7 @@ import { DatabaseModule } from "src/database/database.module";
 import { SteamModule } from "../modules/steam/steam.module";
 import { GogModule } from "../modules/gog/gog.module";
 import { HtlbModule } from "../modules/htlb/htlb.module";
-import { AnimeModule } from "../modules/anime/anime.module";
+import { AnimeModule } from "./modules/anime/anime.module";
 import { AmethystModule } from "../modules/amethyst/amethyst.module";
 import { WallhavenModule } from "../modules/wallhaven/wallhaven.module";
 
