@@ -20,5 +20,5 @@ jobs:
                 username: ${{ secrets.USERNAME }}
                 port: ${{ secrets.PORT }}
                 password: ${{ secrets.PASSWORD }}
-                command: cd ${{ secrets.FOLDER }} && git checkout master && git pull && npm run build && pm2 restart Nidhoggbot
+                command: cd ${{ secrets.FOLDER }} && git checkout master && git pull && npm i && npm run build && pm2 restart Nidhoggbot
                   
