@@ -872,7 +872,7 @@ export class DiscordService {
 						<#880036048162402304> Сюда поржать`
 					)
 					.setFooter(`With ❤️ by NidhoggBot v2.0`);
-				channel.send({ embeds: [embed] });
+				channel.send({ content: `<@${member.id}>`, embeds: [embed] });
 			});
 		});
 
