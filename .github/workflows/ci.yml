@@ -20,5 +20,5 @@ jobs:
                 username: ${{ secrets.USERNAME }}
                 port: ${{ secrets.PORT }}
                 password: ${{ secrets.PASSWORD }}
-                command: cd ${{ secrets.FOLDER }} && git checkout master && git pull && npm run build && pm2 restart Nidhoggbot
+                command: docker stop nidhoggbot && cd ${{ secrets.FOLDER }} && git checkout master && git pull && docker-compose up -d
                   
