@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import _ from 'lodash';
 import { Time } from 'types';
 
 @Injectable()
 export class ToolsService {
+
+	private readonly logger = new Logger(ToolsService.name);
+
 	convertTime(time: Time): number {
 		let totalTime = 0;
 		if (time.seconds != null) totalTime += time.seconds * 1000;
@@ -48,13 +51,13 @@ export class ToolsService {
 		let formatedMinutes = '';
 		let formatedSeconds = '';
 
-		if (days < 10) formatedDays = '0' + days;
+		if (days < 10) formatedDays = `${days}`;
 		else formatedDays = days.toString();
-		if (hours < 10) formatedDays = '0' + hours;
+		if (hours < 10) formatedHours = `${hours}`;
 		else formatedHours = hours.toString();
-		if (minutes < 10) formatedMinutes = '0' + minutes;
+		if (minutes < 10) formatedMinutes = `${minutes}`;
 		else formatedMinutes = minutes.toString();
-		if (seconds < 10) formatedSeconds = '0' + seconds;
+		if (seconds < 10) formatedSeconds = `${seconds}`;
 		else formatedSeconds = seconds.toString();
 
 		return (

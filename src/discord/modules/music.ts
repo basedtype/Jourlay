@@ -47,6 +47,9 @@ export class DiscordMusic {
 		this.handler();
 	}
 
+	/**
+	 * Connectig to channel and create connection
+	 */
 	private static async connectToChannel(channel: ds.VoiceChannel | ds.StageChannel) {
 		const connection = voice.joinVoiceChannel({
 			channelId: channel.id,
@@ -63,12 +66,18 @@ export class DiscordMusic {
 		}
 	}
 
+	/**
+	 * Start timeout on state change
+	 */
 	private static handler() {
 		this.information.player.on('stateChange', (oldState, newState) => {
 			if (this.information.state === false) return;
 			if (this.information.onPause === true) return;
 
-			if (this.information.queue.length === 0) {
+			if (
+				newState.status === voice.AudioPlayerStatus.Idle &&
+				this.information.queue.length === 0
+			) {
 				const now = Date.now();
 				setTimeout(() => {
 					if (now >= this.information.updated) {

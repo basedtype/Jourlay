@@ -16,7 +16,7 @@ const conf = {
 	},
 	redis: {
 		host: env.REDIS_HOST,
-		port: parseInt(env.REDIS_PORT)
+		port: parseInt(env.REDIS_PORT),
 	},
 	postgres: {
 		host: env.POSTGRES_HOST,
@@ -32,11 +32,9 @@ const conf = {
 		migrations: JSON.parse(env.POSTGRES_MIGRATIONS),
 		cli: {
 			migrationsDir: env.POSTGRES_CLI_MIGRATIONSDIR,
-		}
-	}
-}
-
-console.log(conf.postgres.entities)
+		},
+	},
+};
 
 export default registerAs('app', () => ({
 	secret: conf.secret,
@@ -50,7 +48,7 @@ export default registerAs('app', () => ({
 	},
 	redis: {
 		host: conf.redis.host,
-		port: conf.redis.port
+		port: conf.redis.port,
 	},
 	postgres: {
 		host: conf.postgres.host,

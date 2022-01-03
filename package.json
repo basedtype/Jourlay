@@ -1,6 +1,6 @@
 {
   "name": "nidhoggbot",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "description": "",
   "author": "",
   "private": true,
@@ -73,7 +73,6 @@
     "rxjs": "^7.2.0",
     "tmp-promise": "^3.0.3",
     "typeorm": "^0.2.38",
-    "youtube-dl": "^3.5.0",
     "youtube-dl-exec": "^1.2.4",
     "ytdl-core": "^4.9.1"
   },

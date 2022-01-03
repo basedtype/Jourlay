@@ -55,6 +55,31 @@ export class DiscordService {
 	private banVoiceUsers: string[] = [];
 	private voiceUsers: string[] = [];
 	private player = voice.createAudioPlayer();
+	private memberInVoice = {};
+
+	/**
+	 * Send any message in channel
+	 */
+	private async sendInChannel(opt: {
+		channelID: string;
+		message: string | ds.MessagePayload | ds.MessageOptions;
+	}): Promise<{ error: boolean; errorMessage?: string }> {
+		const channel = await this.client.channels.fetch(opt.channelID);
+
+		if (channel.isText()) {
+			channel.send(opt.message);
+			return { error: false };
+		} else if (channel.isThread()) {
+			this.logger.error('Bot cannot send message in threads');
+			return { error: true, errorMessage: 'This is thread' };
+		} else if (channel.isVoice()) {
+			this.logger.error('Bot cannot send message in voice');
+			return { error: true, errorMessage: 'This is voice channel' };
+		} else {
+			this.logger.error('Unknown type of channel');
+			return { error: true, errorMessage: 'Unknown type of channel' };
+		}
+	}
 
 	/**
 	 * Init discord module
@@ -133,15 +158,15 @@ export class DiscordService {
 							(role, key, collection) => role.id === '918778640869773334'
 						);
 						await member.roles.add(roleAdd);
-						this.createLog(null, `<@${member.id}> не наш`);
+						this.logger.log(`${member.id} (${member.displayName}) не наш`);
 					}
-				} else if (databaseMember.messages > 5) {
+				} else if (databaseMember.messages >= 1) {
 					if (member.roles.cache.has('918626848274002050') === false) {
 						const roleAdd = this._guild.roles.cache.find(
 							(role, key, collection) => role.id === '918626848274002050'
 						);
 						await member.roles.add(roleAdd);
-						this.createLog(null, `<@${member.id}> наш`);
+						this.logger.log(`${member.id} (${member.displayName}) наш`);
 					}
 					if (member.roles.cache.has('918778640869773334') === true) {
 						const roleRemove = this._guild.roles.cache.find(
@@ -155,7 +180,7 @@ export class DiscordService {
 							(role, key, collection) => role.id === '918778640869773334'
 						);
 						await member.roles.add(roleAdd);
-						this.createLog(null, `<@${member.id}> не наш`);
+						this.logger.log(`${member.id} (${member.displayName}) не наш`);
 					}
 					if (member.roles.cache.has('918626848274002050') === true) {
 						const roleRemove = this._guild.roles.cache.find(
@@ -166,6 +191,39 @@ export class DiscordService {
 				}
 			}
 		}
+	}
+
+	@Cron('*/1 * * * * *')
+	private async minutesInVoice() {
+		if (this.client == null) return;
+		const allChannels = this._guild.channels.cache.toJSON();
+		const channels = _.filter(allChannels, (channel) => channel.isVoice());
+		_.forEach(channels, (channel: ds.VoiceChannel) => {
+			if (channel.members.toJSON().length > 0) {
+				_.forEach(channel.members.toJSON(), async (member) => {
+					if (!this.memberInVoice[member.id]) {
+						this.memberInVoice[member.id] = { channelID: channel.id, seconds: 1 };
+					} else {
+						if (this.memberInVoice[member.id].channelID === channel.id)
+							this.memberInVoice[member.id].seconds++;
+						else this.memberInVoice[member.id] = { channelID: channel.id, seconds: 1 };
+					}
+					if (this.memberInVoice[member.id].seconds === 5 * 60 * 60) {
+						if (_.random(0, 1) === 0) {
+							this.sendInChannel({
+								channelID: '868108110001221632',
+								message: `<@${member.id}>, 5 часов в голосовом канале, не скучно?`,
+							});
+						}
+					}
+					const discordUser = await this.databaseService.discordUserFindOneByUserID(
+						member.id
+					);
+					discordUser.minutesInVoice++;
+					await this.databaseService.discordUserRepository.save(discordUser);
+				});
+			}
+		});
 	}
 
 	/**
@@ -257,20 +315,24 @@ export class DiscordService {
 		const url = await this.animeService.getAnimePhoto();
 		this.client.channels
 			.fetch('898741828717789184')
-			.then((channel: ds.TextChannel) => channel.send({ files: [url] }));
+			.then((channel: ds.TextChannel) => channel.send({ files: [url] }))
+			.catch((err) => {
+				this.logger.error(`Can't send photo in chat. (URL: ${url})`);
+				this.logger.error(err);
+			});
 	}
 
 	/**
 	 * Send random real photo in channel
 	 */
-	 @Cron('0 0 */1 * * *')
-	 private async realPhotos() {
-		 if (this.client == null) return;
-		 const url = await this.animeService.getRealPhoto();
-		 this.client.channels
-			 .fetch('920639086077833226')
-			 .then((channel: ds.TextChannel) => channel.send({ files: [url] }));
-	 }
+	//@Cron('0 0 */1 * * *')
+	private async realPhotos() {
+		if (this.client == null) return;
+		const url = await this.animeService.getRealPhoto();
+		this.client.channels
+			.fetch('920639086077833226')
+			.then((channel: ds.TextChannel) => channel.send({ files: [url] }));
+	}
 
 	/**
 	 * Set member count in name of voice channel
@@ -346,6 +408,9 @@ export class DiscordService {
 		this.voiceUsers = [];
 	}
 
+	/**
+	 * Create voice channels with limit
+	 */
 	@Cron('*/1 * * * * *')
 	private async createVoiceChannel() {
 		if (this._guild == null) return;
@@ -655,7 +720,7 @@ export class DiscordService {
 		const connection = voice.joinVoiceChannel({
 			channelId: channel.id,
 			guildId: channel.guild.id,
-			adapterCreator: this._guild.voiceAdapterCreator,
+			adapterCreator: channel.guild.voiceAdapterCreator,
 		});
 		try {
 			await voice.entersState(connection, voice.VoiceConnectionStatus.Ready, 30e3);
@@ -770,6 +835,19 @@ export class DiscordService {
 					info.channel.send({ embeds: [embed] });
 					return;
 				}
+
+				if (info.command === 'test') {
+					const members = this._guild.members.cache.toJSON();
+					const limit = Date.now() - 3 * 31 * 24 * 60 * 60 * 1000;
+					msg.delete();
+					_.forEach(members, (member) => {
+						if (
+							member.joinedTimestamp <= limit &&
+							member.roles.cache.has('918778640869773334')
+						)
+							console.log(member.displayName);
+					});
+				}
 			}
 
 			/* MY GUILD */
@@ -779,13 +857,31 @@ export class DiscordService {
 					const user = await this.databaseService.discordUserFindOneByUserID(
 						info.authorID
 					);
-					const embed = new ds.MessageEmbed()
-						.setAuthor(msg.author.username, msg.author.avatarURL())
-						.setDescription(
-							`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`
-						)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`);
-					info.channel.send({ embeds: [embed] });
+					if (!user) {
+						this.logger.error(
+							`${msg.author.username} (ID: ${msg.author.id}) not found in database`
+						);
+						const embed = new ds.MessageEmbed()
+							.setAuthor(msg.author.username, msg.author.avatarURL())
+							.setDescription(`Ошибка`)
+							.setColor(0xff0000)
+							.setFooter(`With ❤️ by NidhoggBot v2.0`);
+						info.channel.send({ embeds: [embed] });
+					} else {
+						const embed = new ds.MessageEmbed()
+							.setAuthor(msg.author.username, msg.author.avatarURL())
+							.setDescription(
+								`Сообщений: ${
+									user.messages
+								}\nВремя в голосовых каналах: ${this.toolsService.toDDHHMMSS(
+									`${user.minutesInVoice}`
+								)}`
+							)
+							.setFooter(
+								`With ❤️ by NidhoggBot v2.0 · Предупреждений: ${user.warnings}`
+							);
+						info.channel.send({ embeds: [embed] });
+					}
 					return;
 				}
 
@@ -872,7 +968,7 @@ export class DiscordService {
 						<#880036048162402304> Сюда поржать`
 					)
 					.setFooter(`With ❤️ by NidhoggBot v2.0`);
-				channel.send({ embeds: [embed] });
+				channel.send({ content: `<@${member.id}>`, embeds: [embed] });
 			});
 		});
 

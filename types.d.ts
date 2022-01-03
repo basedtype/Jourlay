@@ -1,6 +1,7 @@
 /* IMPORTS */
 import * as voice from '@discordjs/voice';
 import { Guild } from 'discord.js';
+import * as ds from 'discord.js';
 
 /* TYPES */
 
@@ -129,5 +130,21 @@ export namespace DiscordMusicType {
 		guild: Guild;
 		updated: number;
 		channelID: string;
+	}
+}
+
+export namespace DiscordRolesTypes {
+	interface SetRoleOpt {
+		client: ds.Client;
+		guild: ds.Guild;
+		userID: string;
+		roleID: string;
+		expire?: number;
+	}
+
+	interface Output {
+		error: boolean;
+		description?: string;
+		reason?: string;
 	}
 }

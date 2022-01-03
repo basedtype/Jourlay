@@ -18,13 +18,19 @@ $ npm run build
 
 ### Running the app
 
-- [recommend] Using PM2:
+- [Recommend] Using Docker:
+
+```bash
+$ docker-compose up -d
+```
+
+- [Not recommend] Using PM2:
 
 ```bash
 $ pm2 start dist/main.js --name="Nidhoggbot" -i 0 
 ```
 
-- Using nest
+- [Not recommend] Using nest
 
 ```bash
 # development

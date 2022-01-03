@@ -12,7 +12,7 @@ export class AnimeService {
 	) {}
 
 	private client = HMfull.HMtai;
-	private nsfw = new RandomPHUB({unique: true});
+	private nsfw = new RandomPHUB();
     private options = {
 		method: 'GET',
 		headers: {}
@@ -29,12 +29,10 @@ export class AnimeService {
 	}
 
 	async getAnimePhoto(): Promise<string> {
-		const rand = this.toolService.random(0, 4);
+		const rand = this.toolService.random(0, 2);
 		if (rand === 0) return this.client.sfw.neko().url;
-		else if (rand === 1) return this.client.sfw.lick().url;
-		else if (rand === 2) return this.client.sfw.slap().url;
-		else if (rand === 3) this.client.nsfw.nsfwMobileWallpaper().url;
-		else this.client.nsfw.uniform().url;
+		else if (rand === 1) return this.client.nsfw.nsfwMobileWallpaper().url;
+		else return this.client.nsfw.uniform().url;
 	}
 
 	async getRealPhoto() {
