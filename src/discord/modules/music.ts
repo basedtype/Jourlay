@@ -159,7 +159,7 @@ export class DiscordMusic {
 			this.information.authorID = authorID;
 			await this.playSong(url);
 			return 'Музыка включена';
-		} else if (this.information.authorID === authorID || force) {
+		} else {
 			this.information.queue.push(url);
 			return 'Музыка добавлена в очередь';
 		}
@@ -189,13 +189,11 @@ export class DiscordMusic {
 			return 'Музыка не активна';
 		}
 
-		if (this.information.authorID === authorID || force) {
-			if (this.information.onPause === false) {
-				await this.pauseSong();
-				return 'Музыка поставлена на паузу';
-			} else {
-				return 'Музыка не может быть поставлена на паузу, так как она уже на ней';
-			}
+		if (this.information.onPause === false) {
+			await this.pauseSong();
+			return 'Музыка поставлена на паузу';
+		} else {
+			return 'Музыка не может быть поставлена на паузу, так как она уже на ней';
 		}
 
 		if (this.information.authorID !== authorID) {
@@ -208,13 +206,11 @@ export class DiscordMusic {
 			return 'Музыка не активна';
 		}
 
-		if (this.information.authorID === authorID || force) {
-			if (this.information.onPause === true) {
-				await this.unPauseSong();
-				return 'Музыка снята с паузы';
-			} else {
-				return 'Музыка не может быть снята с паузы, так как она уже не на ней';
-			}
+		if (this.information.onPause === true) {
+			await this.unPauseSong();
+			return 'Музыка снята с паузы';
+		} else {
+			return 'Музыка не может быть снята с паузы, так как она уже не на ней';
 		}
 
 		if (this.information.authorID !== authorID) {
@@ -227,13 +223,11 @@ export class DiscordMusic {
 			return 'Музыка не активна';
 		}
 
-		if (this.information.authorID === authorID || force) {
-			if (this.information.queue.length > 0) {
-				await this.skipSong();
-				return 'Музыка пропущена';
-			} else {
-				return 'Очередь пуста';
-			}
+		if (this.information.queue.length > 0) {
+			await this.skipSong();
+			return 'Музыка пропущена';
+		} else {
+			return 'Очередь пуста';
 		}
 
 		if (this.information.authorID !== authorID) {
@@ -254,5 +248,13 @@ export class DiscordMusic {
 		if (this.information.authorID !== authorID) {
 			return 'Вы не можете управлять музыкой';
 		}
+	}
+
+	static async getQueue() {
+		if (this.information.state === false) {
+			return 'Музыка не активна';
+		}
+
+		return this.information.queue;
 	}
 }

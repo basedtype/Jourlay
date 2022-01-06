@@ -949,6 +949,30 @@ export class DiscordService {
 							message.delete();
 						}, 1000 * 10);
 						msg.delete();
+					} else if (info.command === 'queue') {
+						const result = await DiscordMusic.getQueue();
+						if (result === 'Музыка не активна') {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+							return;
+						}
+						let qu = '';
+						for (let i in result) {
+							qu += result[i] + '\n';
+						}
+						const embed = new ds.MessageEmbed().addField('Очередь', qu);
+						const message = await info.channel.send({
+							content: `<@${info.authorID}>`,
+							embeds: [embed],
+						});
+						setTimeout(() => {
+							message.delete();
+						}, 1000 * 20);
+						return;
 					}
 				}
 			}
