@@ -230,6 +230,7 @@ export class DiscordService {
 						user.messages = 0;
 						user.minutesInVoice = 1;
 						await this.databaseService.discordUserInsertOne(user);
+						return;
 					}
 					discordUser.minutesInVoice++;
 					await this.databaseService.discordUserRepository.save(discordUser);
