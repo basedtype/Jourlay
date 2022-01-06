@@ -193,6 +193,9 @@ export class DiscordService {
 		}
 	}
 
+	/**
+	 * Add a second for users which in voice channels
+	 */
 	@Cron('*/1 * * * * *')
 	private async minutesInVoice() {
 		if (this.client == null) return;
@@ -219,7 +222,15 @@ export class DiscordService {
 					const discordUser = await this.databaseService.discordUserFindOneByUserID(
 						member.id
 					);
-					if (discordUser == null || discordUser.minutesInVoice == null) return;
+					if (discordUser == null || discordUser.minutesInVoice == null) {
+						const user = new DiscordUser();
+						user.userID = member.id;
+						user.warnings = 0;
+						user.bans = 0;
+						user.messages = 0;
+						user.minutesInVoice = 1;
+						await this.databaseService.discordUserInsertOne(user);
+					}
 					discordUser.minutesInVoice++;
 					await this.databaseService.discordUserRepository.save(discordUser);
 				});
@@ -878,9 +889,7 @@ export class DiscordService {
 									`${user.minutesInVoice}`
 								)}`
 							)
-							.setFooter(
-								`With ❤️ by NidhoggBot v2.0 · Предупреждений: ${user.warnings}`
-							);
+							.setFooter(`With ❤️ by NidhoggBot v2.0`);
 						info.channel.send({ embeds: [embed] });
 					}
 					return;
@@ -977,6 +986,38 @@ export class DiscordService {
 							qu += result[i] + '\n';
 						}
 						const embed = new ds.MessageEmbed().addField('Очередь', qu);
+						const message = await info.channel.send({
+							content: `<@${info.authorID}>`,
+							embeds: [embed],
+						});
+						setTimeout(() => {
+							message.delete();
+						}, 1000 * 20);
+						msg.delete();
+					} else if (info.command === 'now') {
+						const result = await DiscordMusic.getNowSong();
+						if (result === 'Музыка не активна') {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+
+							msg.delete();
+							return;
+						} else if (result === 'Сейчас ничего не играет') {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+
+							msg.delete();
+							return;
+						}
+						const embed = new ds.MessageEmbed().addField('Сейчас играет', result);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>`,
 							embeds: [embed],
