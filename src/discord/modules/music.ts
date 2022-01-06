@@ -255,6 +255,10 @@ export class DiscordMusic {
 			return 'Музыка не активна';
 		}
 
+		if (this.information.queue.length === 0) {
+			return 'Очередь пуста';
+		}
+
 		return this.information.queue;
 	}
 }

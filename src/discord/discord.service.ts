@@ -949,9 +949,17 @@ export class DiscordService {
 							message.delete();
 						}, 1000 * 10);
 						msg.delete();
-					} else if (info.command === 'queue') {
+					} else if (info.command === 'queue' || info.command === 'q') {
 						const result = await DiscordMusic.getQueue();
 						if (result === 'Музыка не активна') {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+							return;
+						} else if (result === 'Очередь пуста') {
 							const message = await info.channel.send({
 								content: `<@${info.authorID}>, ${result}`,
 							});
