@@ -132,6 +132,32 @@ export namespace DiscordMusicType {
 		updated: number;
 		channelID: string;
 	}
+
+	interface PlayTypes {
+		url: string;
+		authorID: string;
+		channelID: string;
+		channel: ds.VoiceChannel | ds.StageChannel;
+		force: boolean;
+	}
+
+	interface PauseTypes {
+		channelID: string;
+		force?: boolean;
+	}
+
+	interface ChangeQueueOwnerTypes {
+		ownerID: string;
+		nextOwnerID: string;
+		force?: boolean;
+	}
+
+	interface Return {
+		error: boolean;
+		errorMessage?: string;
+		content?: any;
+		contentType?: string;
+	}
 }
 
 export namespace DiscordRolesTypes {
