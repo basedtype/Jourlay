@@ -219,7 +219,7 @@ export class DiscordService {
 					const discordUser = await this.databaseService.discordUserFindOneByUserID(
 						member.id
 					);
-					if (discordUser.minutesInVoice == null) return;
+					if (discordUser == null || discordUser.minutesInVoice == null) return;
 					discordUser.minutesInVoice++;
 					await this.databaseService.discordUserRepository.save(discordUser);
 				});
