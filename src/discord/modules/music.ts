@@ -36,6 +36,7 @@ export class DiscordMusic {
 			state: false,
 			onPause: false,
 			queue: [],
+			nowPlaying: '',
 			authorID: '',
 			connection: null,
 			player: voice.createAudioPlayer(),
@@ -99,8 +100,12 @@ export class DiscordMusic {
 		});
 	}
 
+	/**
+	 * Start play a song
+	 */
 	private static async playSong(url: string) {
 		try {
+			this.information.nowPlaying = url;
 			const stream = await play.stream(url);
 			const resource = voice.createAudioResource(stream.stream, {
 				inputType: stream.type,
@@ -163,10 +168,6 @@ export class DiscordMusic {
 			this.information.queue.push(url);
 			return 'Музыка добавлена в очередь';
 		}
-
-		if (this.information.authorID !== authorID) {
-			return 'Вы не можете управлять музыкой';
-		}
 	}
 
 	static async stop(authorID: string, force: boolean): Promise<string> {
@@ -195,10 +196,6 @@ export class DiscordMusic {
 		} else {
 			return 'Музыка не может быть поставлена на паузу, так как она уже на ней';
 		}
-
-		if (this.information.authorID !== authorID) {
-			return 'Вы не можете управлять музыкой';
-		}
 	}
 
 	static async unPause(authorID: string, force: boolean): Promise<string> {
@@ -212,10 +209,6 @@ export class DiscordMusic {
 		} else {
 			return 'Музыка не может быть снята с паузы, так как она уже не на ней';
 		}
-
-		if (this.information.authorID !== authorID) {
-			return 'Вы не можете управлять музыкой';
-		}
 	}
 
 	static async skip(authorID: string, force: boolean): Promise<string> {
@@ -228,10 +221,6 @@ export class DiscordMusic {
 			return 'Музыка пропущена';
 		} else {
 			return 'Очередь пуста';
-		}
-
-		if (this.information.authorID !== authorID) {
-			return 'Вы не можете управлять музыкой';
 		}
 	}
 
@@ -260,5 +249,17 @@ export class DiscordMusic {
 		}
 
 		return this.information.queue;
+	}
+
+	static async getNowSong() {
+		if (this.information.state === false) {
+			return 'Музыка не активна';
+		}
+
+		if (this.information.nowPlaying === '') {
+			return 'Сейчас ничего не играет';
+		}
+
+		return this.information.nowPlaying;
 	}
 }

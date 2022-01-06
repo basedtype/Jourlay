@@ -124,6 +124,7 @@ export namespace DiscordMusicType {
 		state: boolean;
 		onPause: boolean;
 		queue: String[];
+		nowPlaying: string;
 		connection: voice.VoiceConnection;
 		authorID: string;
 		player: voice.AudioPlayer;
