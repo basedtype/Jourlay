@@ -16,9 +16,8 @@ jobs:
             - name: Pull
               uses: garygrossgarten/github-action-ssh@v0.6.3
               with:
-                host: ${{ secrets.HOST }}
-                username: ${{ secrets.USERNAME }}
-                port: ${{ secrets.PORT }}
-                password: ${{ secrets.PASSWORD }}
-                command: cd ${{ secrets.FOLDER }} && docker-compose down && git checkout master && git pull && docker-compose up -d
-                  
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  port: ${{ secrets.PORT }}
+                  password: ${{ secrets.PASSWORD }}
+                  command: cd ${{ secrets.FOLDER }} && docker-compose down && git checkout master && git pull && docker-compose up -d
