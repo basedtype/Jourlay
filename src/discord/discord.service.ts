@@ -891,7 +891,6 @@ export class DiscordService {
 					const force = await this.isMod(info.authorID);
 
 					if (info.command === 'play' || info.command === 'p') {
-						msg.delete();
 						const result = await DiscordMusic.play(
 							info.splited[1],
 							info.authorID,
@@ -904,8 +903,8 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 10);
-					} else if (info.command === 'stop' || info.command === 's') {
 						msg.delete();
+					} else if (info.command === 'stop' || info.command === 's') {
 						const result = await DiscordMusic.stop(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
@@ -913,8 +912,8 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 10);
-					} else if (info.command === 'pause') {
 						msg.delete();
+					} else if (info.command === 'pause') {
 						const result = await DiscordMusic.pause(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
@@ -922,8 +921,8 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 10);
-					} else if (info.command === 'unpause') {
 						msg.delete();
+					} else if (info.command === 'unpause') {
 						const result = await DiscordMusic.unPause(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
@@ -931,8 +930,8 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 10);
-					} else if (info.command === 'skip') {
 						msg.delete();
+					} else if (info.command === 'skip') {
 						const result = await DiscordMusic.skip(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
@@ -940,8 +939,8 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 10);
-					} else if (info.command === 'drop') {
 						msg.delete();
+					} else if (info.command === 'drop') {
 						const result = await DiscordMusic.clearQueue(info.authorID, force);
 						const message = await info.channel.send({
 							content: `<@${info.authorID}>, ${result}`,
@@ -949,6 +948,7 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 10);
+						msg.delete();
 					}
 				}
 			}
