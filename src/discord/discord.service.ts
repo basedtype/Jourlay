@@ -958,6 +958,8 @@ export class DiscordService {
 							setTimeout(() => {
 								message.delete();
 							}, 1000 * 10);
+
+							msg.delete();
 							return;
 						} else if (result === 'Очередь пуста') {
 							const message = await info.channel.send({
@@ -966,6 +968,8 @@ export class DiscordService {
 							setTimeout(() => {
 								message.delete();
 							}, 1000 * 10);
+
+							msg.delete();
 							return;
 						}
 						let qu = '';
@@ -980,7 +984,7 @@ export class DiscordService {
 						setTimeout(() => {
 							message.delete();
 						}, 1000 * 20);
-						return;
+						msg.delete();
 					}
 				}
 			}
