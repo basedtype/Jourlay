@@ -20,9 +20,9 @@ export class DiscordMusic {
 		this.information.guild.channels
 			.fetch(this.information.channelID)
 			.then((ch: ds.VoiceChannel) => {
-				if (ch.members.size <= 1) {
+				if (ch.members.size < 1) {
 					setTimeout(() => {
-						if (ch.members.size <= 1) this.stopSong();
+						if (ch.members.size < 1) this.stopSong();
 					}, 1000 * 60 * 5);
 				}
 			});
