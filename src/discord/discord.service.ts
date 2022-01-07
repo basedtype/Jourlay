@@ -195,6 +195,7 @@ export class DiscordService {
 
 	/**
 	 * Add a second for users which in voice channels
+	 * Increase voice limit
 	 */
 	@Cron('*/1 * * * * *')
 	private async minutesInVoice() {
@@ -235,6 +236,11 @@ export class DiscordService {
 					discordUser.minutesInVoice++;
 					await this.databaseService.discordUserRepository.save(discordUser);
 				});
+
+				if (channel.name.startsWith('Игровая') && channel.members.toJSON().length > channel.userLimit) {
+					channel.setName(`Игровая комната [${channel.members.toJSON().length}]`)
+					channel.setUserLimit(channel.members.toJSON().length)
+				}
 			}
 		});
 	}
