@@ -901,18 +901,28 @@ export class DiscordService {
 					const force = await this.isMod(info.authorID);
 
 					if (info.command === 'play' || info.command === 'p') {
-						const result = await DiscordMusic.play(
-							info.splited[1],
-							info.authorID,
-							msg.member.voice.channel,
-							force
-						);
-						const message = await info.channel.send({
-							content: `<@${info.authorID}>, ${result}`,
+						const result = await DiscordMusic.play({
+							authorID: info.authorID,
+							channel: msg.member.voice.channel,
+							channelID: msg.member.voice.channelId,
+							url: info.splited[1],
+							force: force,
 						});
-						setTimeout(() => {
-							message.delete();
-						}, 1000 * 10);
+						if (result.error) {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.errorMessage}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						} else {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.content}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						}
 						msg.delete();
 					} else if (info.command === 'stop' || info.command === 's') {
 						const result = await DiscordMusic.stop(info.authorID, force);
@@ -924,31 +934,67 @@ export class DiscordService {
 						}, 1000 * 10);
 						msg.delete();
 					} else if (info.command === 'pause') {
-						const result = await DiscordMusic.pause(info.authorID, force);
-						const message = await info.channel.send({
-							content: `<@${info.authorID}>, ${result}`,
+						const result = await DiscordMusic.pause({
+							channelID: msg.member.voice.channelId,
+							force: force,
 						});
-						setTimeout(() => {
-							message.delete();
-						}, 1000 * 10);
+						if (result.error) {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.errorMessage}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						} else {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.content}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						}
 						msg.delete();
 					} else if (info.command === 'unpause') {
-						const result = await DiscordMusic.unPause(info.authorID, force);
-						const message = await info.channel.send({
-							content: `<@${info.authorID}>, ${result}`,
+						const result = await DiscordMusic.unPause({
+							channelID: msg.member.voice.channelId,
+							force: force,
 						});
-						setTimeout(() => {
-							message.delete();
-						}, 1000 * 10);
+						if (result.error) {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.errorMessage}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						} else {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.content}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						}
 						msg.delete();
 					} else if (info.command === 'skip') {
-						const result = await DiscordMusic.skip(info.authorID, force);
-						const message = await info.channel.send({
-							content: `<@${info.authorID}>, ${result}`,
+						const result = await DiscordMusic.skip({
+							channelID: msg.member.voice.channelId,
+							force: force,
 						});
-						setTimeout(() => {
-							message.delete();
-						}, 1000 * 10);
+						if (result.error) {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.errorMessage}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						} else {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.content}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						}
 						msg.delete();
 					} else if (info.command === 'drop') {
 						const result = await DiscordMusic.clearQueue(info.authorID, force);
@@ -997,36 +1043,48 @@ export class DiscordService {
 						msg.delete();
 					} else if (info.command === 'now') {
 						const result = await DiscordMusic.getNowSong();
-						if (result === 'Музыка не активна') {
+						if (result.error) {
 							const message = await info.channel.send({
-								content: `<@${info.authorID}>, ${result}`,
+								content: `<@${info.authorID}>, ${result.errorMessage}`,
 							});
 							setTimeout(() => {
 								message.delete();
 							}, 1000 * 10);
-
-							msg.delete();
-							return;
-						} else if (result === 'Сейчас ничего не играет') {
+						} else {
+							const embed = new ds.MessageEmbed().addField(
+								'Сейчас играет',
+								result.content
+							);
 							const message = await info.channel.send({
-								content: `<@${info.authorID}>, ${result}`,
+								content: `<@${info.authorID}>`,
+								embeds: [embed],
 							});
 							setTimeout(() => {
 								message.delete();
-							}, 1000 * 10);
-
-							msg.delete();
-							return;
+							}, 1000 * 20);
 						}
-						const embed = new ds.MessageEmbed().addField('Сейчас играет', result);
-						const message = await info.channel.send({
-							content: `<@${info.authorID}>`,
-							embeds: [embed],
-						});
-						setTimeout(() => {
-							message.delete();
-						}, 1000 * 20);
 						msg.delete();
+					} else if (info.command === 'change') {
+						const result = await DiscordMusic.changeQueueOwner({
+							ownerID: info.authorID,
+							nextOwnerID: info.splited[1],
+							force: force,
+						});
+						if (result.error) {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.errorMessage}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						} else {
+							const message = await info.channel.send({
+								content: `<@${info.authorID}>, ${result.content}`,
+							});
+							setTimeout(() => {
+								message.delete();
+							}, 1000 * 10);
+						}
 					}
 				}
 			}
