@@ -188,7 +188,13 @@ export class DiscordMusic {
 		this.information.connection.subscribe(this.information.player);
 		const url = this.information.queue.shift();
 		//@ts-ignore
-		await this.playSong(url.url);
+		const res = await this.playSong(url.url);
+		if (res.error) {
+			this.sendInChannel({
+				channelID: '917132649603162212',
+				message: `<@${url.authorID}>, ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров`,
+			});
+		}
 	}
 
 	static async play(opt: DiscordMusicType.PlayTypes): Promise<DiscordMusicType.Return> {
