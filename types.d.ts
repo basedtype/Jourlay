@@ -123,14 +123,20 @@ export namespace DiscordMusicType {
 	interface Information {
 		state: boolean;
 		onPause: boolean;
-		queue: String[];
-		nowPlaying: string;
+		queue: QueueRequest[];
+		nowPlaying: QueueRequest;
 		connection: voice.VoiceConnection;
 		authorID: string;
 		player: voice.AudioPlayer;
 		guild: Guild;
 		updated: number;
 		channelID: string;
+		client: ds.Client;
+	}
+
+	interface QueueRequest {
+		url: string;
+		authorID: string;
 	}
 
 	interface PlayTypes {
@@ -139,6 +145,7 @@ export namespace DiscordMusicType {
 		channelID: string;
 		channel: ds.VoiceChannel | ds.StageChannel;
 		force: boolean;
+		client: ds.Client;
 	}
 
 	interface PauseTypes {
@@ -156,7 +163,7 @@ export namespace DiscordMusicType {
 		error: boolean;
 		errorMessage?: string;
 		content?: any;
-		contentType?: string;
+		contentType?: InstanceType;
 	}
 }
 

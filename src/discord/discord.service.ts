@@ -212,14 +212,6 @@ export class DiscordService {
 							this.memberInVoice[member.id].seconds++;
 						else this.memberInVoice[member.id] = { channelID: channel.id, seconds: 1 };
 					}
-					if (this.memberInVoice[member.id].seconds === 5 * 60 * 60) {
-						if (_.random(0, 1) === 0) {
-							this.sendInChannel({
-								channelID: '868108110001221632',
-								message: `<@${member.id}>, 5 часов в голосовом канале, не скучно?`,
-							});
-						}
-					}
 					const discordUser = await this.databaseService.discordUserFindOneByUserID(
 						member.id
 					);
@@ -237,9 +229,12 @@ export class DiscordService {
 					await this.databaseService.discordUserRepository.save(discordUser);
 				});
 
-				if (channel.name.startsWith('Игровая') && channel.members.toJSON().length > channel.userLimit) {
-					channel.setName(`Игровая комната [${channel.members.toJSON().length}]`)
-					channel.setUserLimit(channel.members.toJSON().length)
+				if (
+					channel.name.startsWith('Игровая') &&
+					channel.members.toJSON().length > channel.userLimit
+				) {
+					channel.setName(`Игровая комната [${channel.members.toJSON().length}]`);
+					channel.setUserLimit(channel.members.toJSON().length);
 				}
 			}
 		});
@@ -913,6 +908,7 @@ export class DiscordService {
 							channelID: msg.member.voice.channelId,
 							url: info.splited[1],
 							force: force,
+							client: this.client,
 						});
 						if (result.error) {
 							const message = await info.channel.send({
@@ -1036,7 +1032,7 @@ export class DiscordService {
 						}
 						let qu = '';
 						for (let i in result) {
-							qu += result[i] + '\n';
+							qu += `${result[i].url} | <@${result[i].authorID}>\n`;
 						}
 						const embed = new ds.MessageEmbed().addField('Очередь', qu);
 						const message = await info.channel.send({
@@ -1059,7 +1055,7 @@ export class DiscordService {
 						} else {
 							const embed = new ds.MessageEmbed().addField(
 								'Сейчас играет',
-								result.content
+								`${result.content.url}\nДобавил: ${result.content.authorID}`
 							);
 							const message = await info.channel.send({
 								content: `<@${info.authorID}>`,
