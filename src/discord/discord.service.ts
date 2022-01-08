@@ -1003,7 +1003,7 @@ export class DiscordService {
 						} else {
 							const embed = new ds.MessageEmbed().addField(
 								'Сейчас играет',
-								`${result.content.url}\nДобавил: ${result.content.authorID}`
+								`${result.content.url}\nДобавил: <@${result.content.authorID}>`
 							);
 							await info.channel.send({
 								content: `<@${info.authorID}>`,
