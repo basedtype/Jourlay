@@ -1,5 +1,6 @@
 /* IMPORTS */
 import { DiscordMusicType } from 'types';
+import { DiscordService } from '../discord.service';
 
 import * as voice from '@discordjs/voice';
 import * as ds from 'discord.js';
@@ -11,6 +12,27 @@ export class DiscordMusic {
 	public static information: DiscordMusicType.Information = null;
 
 	/**
+	 * Send any message in channel
+	 */
+	private static async sendInChannel(opt: {
+		channelID: string;
+		message: string | ds.MessagePayload | ds.MessageOptions;
+	}): Promise<{ error: boolean; errorMessage?: string }> {
+		const channel = await this.information.client.channels.fetch(opt.channelID);
+
+		if (channel.isText()) {
+			channel.send(opt.message);
+			return { error: false };
+		} else if (channel.isThread()) {
+			return { error: true, errorMessage: 'This is thread' };
+		} else if (channel.isVoice()) {
+			return { error: true, errorMessage: 'This is voice channel' };
+		} else {
+			return { error: true, errorMessage: 'Unknown type of channel' };
+		}
+	}
+
+	/**
 	 * Check amount users in voice channel
 	 */
 	@Cron('* */1 * * * *')
@@ -20,9 +42,9 @@ export class DiscordMusic {
 		this.information.guild.channels
 			.fetch(this.information.channelID)
 			.then((ch: ds.VoiceChannel) => {
-				if (ch.members.size < 1) {
+				if (ch.members.toJSON().length < 1) {
 					setTimeout(() => {
-						if (ch.members.size < 1) this.stopSong();
+						if (ch.members.toJSON().length < 1) this.stopSong();
 					}, 1000 * 60 * 5);
 				}
 			});
@@ -36,13 +58,14 @@ export class DiscordMusic {
 			state: false,
 			onPause: false,
 			queue: [],
-			nowPlaying: '',
+			nowPlaying: null,
 			authorID: '',
 			connection: null,
 			player: voice.createAudioPlayer(),
 			guild: guild,
 			updated: Date.now(),
 			channelID: '',
+			client: null,
 		};
 
 		this.handler();
@@ -51,7 +74,9 @@ export class DiscordMusic {
 	/**
 	 * Connectig to channel and create connection
 	 */
-	private static async connectToChannel(channel: ds.VoiceChannel | ds.StageChannel) {
+	private static async connectToChannel(
+		channel: ds.VoiceChannel | ds.StageChannel
+	): Promise<DiscordMusicType.Return> {
 		const connection = voice.joinVoiceChannel({
 			channelId: channel.id,
 			guildId: channel.guild.id,
@@ -61,9 +86,10 @@ export class DiscordMusic {
 			await voice.entersState(connection, voice.VoiceConnectionStatus.Ready, 30e3);
 			this.information.connection = connection;
 			this.information.channelID = channel.id;
-		} catch (error) {
+			return { error: false, content: 'Success' };
+		} catch (err) {
 			connection.destroy();
-			console.log(error); // TODO: To logger
+			return { error: true, errorMessage: err };
 		}
 	}
 
@@ -71,7 +97,7 @@ export class DiscordMusic {
 	 * Start timeout on state change
 	 */
 	private static handler() {
-		this.information.player.on('stateChange', (oldState, newState) => {
+		this.information.player.on('stateChange', async (oldState, newState) => {
 			if (this.information.state === false) return;
 			if (this.information.onPause === true) return;
 
@@ -92,10 +118,18 @@ export class DiscordMusic {
 				newState.status === voice.AudioPlayerStatus.Idle &&
 				this.information.queue.length > 0
 			) {
-				this.information.player.stop(true);
+				this.information.player.stop();
+				this.information.connection.subscribe(this.information.player);
 				const url = this.information.queue.shift();
-				//@ts-ignore
-				this.playSong(url);
+				const res = await this.playSong(url);
+				if (res.error) {
+					if (this.information.client != null) {
+						this.sendInChannel({
+							channelID: '917132649603162212',
+							message: `<@${url.authorID}>, ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров`,
+						});
+					}
+				}
 			}
 		});
 	}
@@ -103,10 +137,12 @@ export class DiscordMusic {
 	/**
 	 * Start play a song
 	 */
-	private static async playSong(url: string) {
+	private static async playSong(
+		opt: DiscordMusicType.QueueRequest
+	): Promise<DiscordMusicType.Return> {
 		try {
-			this.information.nowPlaying = url;
-			const stream = await play.stream(url);
+			this.information.nowPlaying = opt;
+			const stream = await play.stream(opt.url);
 			const resource = voice.createAudioResource(stream.stream, {
 				inputType: stream.type,
 			});
@@ -116,14 +152,15 @@ export class DiscordMusic {
 			this.information.state = true;
 			this.information.updated = Date.now();
 
-			return voice.entersState(this.information.player, voice.AudioPlayerStatus.Playing, 5e3);
+			await voice.entersState(this.information.player, voice.AudioPlayerStatus.Playing, 5e3);
+			return { error: false, content: 'Success' };
 		} catch (err) {
-			console.log(err);
+			return { error: true, errorMessage: err };
 		}
 	}
 
 	private static async stopSong() {
-		this.information.player.stop(true);
+		this.information.player.stop();
 		this.information.connection.subscribe(this.information.player);
 		this.information.connection.disconnect();
 
@@ -147,21 +184,33 @@ export class DiscordMusic {
 	}
 
 	private static async skipSong() {
-		this.information.player.stop(true);
+		this.information.player.stop();
+		this.information.connection.subscribe(this.information.player);
 		const url = this.information.queue.shift();
 		//@ts-ignore
-		await this.playSong(url);
+		await this.playSong(url.url);
 	}
 
 	static async play(opt: DiscordMusicType.PlayTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
-			await this.connectToChannel(opt.channel);
+			const connectResult = await this.connectToChannel(opt.channel);
+			if (connectResult.error) {
+				return { error: true, errorMessage: 'Ошибка подключения к каналу' };
+			}
 			this.information.authorID = opt.authorID;
 			this.information.channelID = opt.channel.id;
-			await this.playSong(opt.url);
+			this.information.client = opt.client;
+			const playResult = await this.playSong({ url: opt.url, authorID: opt.authorID });
+			if (playResult.error) {
+				return {
+					error: true,
+					errorMessage:
+						'Ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров',
+				};
+			}
 			return { error: false, content: 'Музыка запущена', contentType: 'string' };
 		} else if (opt.channelID === this.information.channelID) {
-			this.information.queue.push(opt.url);
+			this.information.queue.push({ url: opt.url, authorID: opt.authorID });
 			return { error: false, content: 'Музыка добавлена в очередь', contentType: 'string' };
 		} else {
 			return {
@@ -189,7 +238,7 @@ export class DiscordMusic {
 	static async pause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: 'Бот не активен' };
-		} else if (this.information.nowPlaying === '') {
+		} else if (this.information.nowPlaying === null) {
 			return { error: true, errorMessage: 'Сейчас ничего не играет' };
 		} else if (this.information.onPause) {
 			return { error: true, errorMessage: 'Музыка уже на паузе' };
@@ -207,7 +256,7 @@ export class DiscordMusic {
 	static async unPause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: 'Бот не активен' };
-		} else if (this.information.nowPlaying === '') {
+		} else if (this.information.nowPlaying === null) {
 			return { error: true, errorMessage: 'Сейчас ничего не играет' };
 		} else if (!this.information.onPause) {
 			return { error: true, errorMessage: 'Музыка уже снята с паузы' };
@@ -268,10 +317,13 @@ export class DiscordMusic {
 	static async getNowSong(): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: 'Бот не активен' };
-		} else if (this.information.nowPlaying === '') {
+		} else if (this.information.nowPlaying === null) {
 			return { error: true, errorMessage: 'Сейчас ничего не играет' };
 		} else {
-			return { error: false, content: this.information.nowPlaying, contentType: 'string' };
+			return {
+				error: false,
+				content: this.information.nowPlaying,
+			};
 		}
 	}
 
