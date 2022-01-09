@@ -6,6 +6,7 @@ import { DiscordLog, DiscordUser } from 'src/entity/discord.entity';
 import { Service } from 'src/entity/services.entity';
 import { Config, Database } from 'types';
 import { ServerUser } from 'src/entity/users.entity';
+import { NswfEntity } from 'src/entity/nsfw.entity';
 
 @Injectable()
 export class DatabaseService {
@@ -14,6 +15,7 @@ export class DatabaseService {
 	discordLogRepository: Repository<DiscordLog>;
 	serviceRepository: Repository<Service>;
 	userRepository: Repository<ServerUser>;
+	nsfwRepository: Repository<NswfEntity>;
 
 	constructor(readonly connection: Connection) {
 		this.logRepository = this.connection.getRepository(Log);
@@ -21,20 +23,21 @@ export class DatabaseService {
 		this.discordLogRepository = this.connection.getRepository(DiscordLog);
 		this.serviceRepository = this.connection.getRepository(Service);
 		this.userRepository = this.connection.getRepository(ServerUser);
+		this.nsfwRepository = this.connection.getRepository(NswfEntity);
 	}
 
 	/**
 	 * Find and return all logs in database
 	 */
 	async logFindAll(): Promise<Log[]> {
-		return this.logRepository.find();
+		return await this.logRepository.find();
 	}
 
 	/**
 	 * Find and return all discord users
 	 */
 	async discordUserFindAll(): Promise<DiscordUser[]> {
-		return this.discordUserRepository.find();
+		return await this.discordUserRepository.find();
 	}
 
 	/**
@@ -42,7 +45,7 @@ export class DatabaseService {
 	 * @param id ID of discord user
 	 */
 	async discordUserFindOneByUserID(id: string): Promise<DiscordUser> {
-		return this.discordUserRepository.findOne({ userID: id });
+		return await this.discordUserRepository.findOne({ userID: id });
 	}
 
 	/**
@@ -94,14 +97,14 @@ export class DatabaseService {
 	 * Find and return all logs
 	 */
 	async discordLogFindAll(log: DiscordLog): Promise<DiscordLog[]> {
-		return this.discordLogRepository.find();
+		return await this.discordLogRepository.find();
 	}
 
 	/**
 	 * Add new log in database
 	 */
 	async discordLogInsertOne(log: DiscordLog): Promise<Database.Result> {
-		await this.discordLogRepository.insert(log);
+		await await this.discordLogRepository.insert(log);
 		return { err: false };
 	}
 
@@ -109,14 +112,14 @@ export class DatabaseService {
 	 * Find and return all services
 	 */
 	async serviceFindAll(): Promise<Service[]> {
-		return this.serviceRepository.find();
+		return await this.serviceRepository.find();
 	}
 
 	/**
 	 * Find and return one service
 	 */
 	async serviceFindOne(name: string, target: string): Promise<Service | undefined> {
-		return this.serviceRepository.findOne({ service: name, target: target });
+		return await this.serviceRepository.findOne({ service: name, target: target });
 	}
 
 	/**
@@ -134,34 +137,67 @@ export class DatabaseService {
 	 * Find and return all services
 	 */
 	async usersFindAll(): Promise<ServerUser[]> {
-		return this.userRepository.find();
+		return await this.userRepository.find();
 	}
 
 	/**
 	 * Find and return one user by name
 	 */
 	async userFindOneByUsername(username: string): Promise<ServerUser | undefined> {
-		return this.userRepository.findOne({ username: username });
+		return await this.userRepository.findOne({ username: username });
 	}
 
 	/**
 	 * Find and return one user by email
 	 */
 	async userFindOneByEmail(email: string): Promise<ServerUser | undefined> {
-		return this.userRepository.findOne({ username: email });
+		return await this.userRepository.findOne({ username: email });
 	}
 
 	/**
 	 * Add new user in database
 	 */
 	async userInsertOne(user: ServerUser): Promise<Database.Result> {
-		if (this.userFindOneByUsername(user.email)) {
+		if (await this.userFindOneByUsername(user.email)) {
 			return { err: true, message: `This email already used` };
 		}
-		if (this.userFindOneByEmail(user.username)) {
+		if (await this.userFindOneByEmail(user.username)) {
 			return { err: true, message: `This username already used` };
 		}
 		await this.userRepository.insert(user);
 		return { err: false };
+	}
+
+	async addNsfw(nsfw: NswfEntity): Promise<Database.Result> {
+		if (await this.nsfwRepository.findOne({ url: nsfw.url })) {
+			return { err: true, message: 'This nsfw already in database' };
+		} else {
+			await this.nsfwRepository.insert(nsfw);
+			return { err: false };
+		}
+	}
+
+	async removeNsfw(url: string): Promise<Database.Result> {
+		const nsfw = await this.nsfwRepository.findOne({ url: url });
+		if (nsfw) {
+			this.nsfwRepository.remove(nsfw);
+			return { err: false };
+		} else {
+			return { err: true, message: 'This nsfw not found in database' };
+		}
+	}
+
+	async aproveNsfw(url: string): Promise<Database.Result> {
+		const nsfw = await this.nsfwRepository.findOne({ url: url });
+		if (nsfw) {
+			nsfw.approve = true;
+			this.nsfwRepository.save(nsfw);
+		} else {
+			return { err: true, message: 'This nsfw not found in database' };
+		}
+	}
+
+	async getAproveNsfw(): Promise<NswfEntity[]> {
+		return await this.nsfwRepository.find({ approve: true });
 	}
 }

@@ -16,6 +16,7 @@ import * as voice from '@discordjs/voice';
 import * as play from 'play-dl';
 import { DiscordMusic } from './modules/music';
 import { DiscordUser } from 'src/entity/discord.entity';
+import { NswfEntity } from 'src/entity/nsfw.entity';
 
 @Injectable()
 export class DiscordService {
@@ -37,19 +38,19 @@ export class DiscordService {
 	private voiceChannels = {
 		duo: {
 			id: '865697645920911371',
-			name: 'Игровая комната [2]',
+			name: 'Кибер комната',
 		},
 		trio: {
 			id: '865697670852378684',
-			name: 'Игровая комната [3]',
+			name: 'Кибер комната',
 		},
 		four: {
 			id: '865697708676087828',
-			name: 'Игровая комната [4]',
+			name: 'Кибер комната',
 		},
 		five: {
 			id: '865697728766803998',
-			name: 'Игровая комната [5]',
+			name: 'Кибер комната',
 		},
 	};
 	private banVoiceUsers: string[] = [];
@@ -337,15 +338,42 @@ export class DiscordService {
 	}
 
 	/**
-	 * Send random real photo in channel
+	 * Send random real photo in dev channel
 	 */
-	//@Cron('0 0 */1 * * *')
-	private async realPhotos() {
+	@Cron('0 */10 * * * *')
+	private async realDevPhotos() {
 		if (this.client == null) return;
 		const url = await this.animeService.getRealPhoto();
+		this.logger.debug(url);
+		this.client.channels
+			.fetch('929526910113964063')
+			.then(async (channel: ds.TextChannel) => {
+				await channel.send({ content: `${url.sub}\n${url.url}` });
+			})
+			.catch((err) => {
+				this.logger.error(`Can't send photo in chat. (URL: ${url})`);
+				this.logger.error(err);
+			});
+	}
+
+	@Cron('0 0 */1 * * *')
+	private async realPhotos() {
+		if (this.client == null) return;
+		const nsfws = await this.databaseService.getAproveNsfw();
+		if (nsfws.length === 0) return;
+		const nsfw = _.sample(nsfws);
+		const url = nsfw.url;
+		this.logger.debug(url);
 		this.client.channels
 			.fetch('920639086077833226')
-			.then((channel: ds.TextChannel) => channel.send({ files: [url] }));
+			.then(async (channel: ds.TextChannel) => {
+				await channel.send({ content: url });
+				await this.databaseService.removeNsfw(url);
+			})
+			.catch((err) => {
+				this.logger.error(`Can't send photo in chat. (URL: ${url})`);
+				this.logger.error(err);
+			});
 	}
 
 	/**
@@ -864,6 +892,11 @@ export class DiscordService {
 				}
 			}
 
+			/* DEV GUILD */
+
+			if (info.isGuild === true && msg.guild.id === '823463145963913236') {
+			}
+
 			/* MY GUILD */
 
 			if (info.isGuild === true && msg.guild.id === '437601028662231040') {
@@ -1085,6 +1118,23 @@ export class DiscordService {
 				if (msg.embeds.length > 0) for (let i in msg.embeds) embeds.push(msg.embeds[i]);
 				channel.send({ embeds: [embed], files: attachments });
 			});
+		});
+
+		this.client.on('messageReactionAdd', async (reaction, user) => {
+			if (reaction.message.guild.id === '823463145963913236') {
+				if (reaction.message.channel.id === '929526910113964063') {
+					if (reaction.message.content == null) return;
+					if (reaction.emoji.name === 'JR_Cross') {
+						reaction.message.delete();
+					} else {
+						const nsfw = new NswfEntity();
+						nsfw.url = reaction.message.content.split('\n')[1];
+						nsfw.approve = true;
+						await this.databaseService.addNsfw(nsfw);
+						await reaction.message.delete();
+					}
+				}
+			}
 		});
 	}
 }

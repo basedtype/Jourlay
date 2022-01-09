@@ -6,6 +6,7 @@ import { Log } from 'src/entity/log.entity';
 import { Service } from 'src/entity/services.entity';
 import { ServerUser } from 'src/entity/users.entity';
 import { DatabaseService } from './database.service';
+import { NswfEntity } from 'src/entity/nsfw.entity';
 
 const config = configuration();
 
@@ -29,12 +30,12 @@ const config = configuration();
 					cli: {
 						migrationsDir: 'src/database/migrations',
 					},
-				}
+				};
 			},
 		}),
-		TypeOrmModule.forFeature([DiscordUser, Log, Service, DiscordLog, ServerUser])
+		TypeOrmModule.forFeature([DiscordUser, Log, Service, DiscordLog, ServerUser, NswfEntity]),
 	],
 	providers: [DatabaseService],
 	exports: [DatabaseService],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

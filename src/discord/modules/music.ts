@@ -187,8 +187,7 @@ export class DiscordMusic {
 		this.information.player.stop();
 		this.information.connection.subscribe(this.information.player);
 		const url = this.information.queue.shift();
-		//@ts-ignore
-		const res = await this.playSong(url.url);
+		const res = await this.playSong(url);
 		if (res.error) {
 			this.sendInChannel({
 				channelID: '917132649603162212',
