@@ -1091,6 +1091,7 @@ export class DiscordService {
 					.setDescription(`<@${member.id}> (${member.id}) покинул сервер`)
 					.setFooter(`With ❤️ by NidhoggBot v2.0`)
 					.setTimestamp();
+				channel.send({ embeds: [embed] });
 			});
 		});
 
