@@ -7,8 +7,6 @@ import { ToolsService } from '../modules/tools/tools.service';
 import { Cron } from '@nestjs/schedule';
 import { SteamService } from '../modules/steam/steam.service';
 import { GogService } from '../modules/gog/gog.service';
-import { AnimeService } from './modules/anime/anime.service';
-//import { AmethystService } from '../amethyst/amethyst.service;
 import { WallhavenService } from '../modules/wallhaven/wallhaven.service';
 import { Service } from 'src/entity/services.entity';
 import * as _ from 'lodash';
@@ -16,7 +14,6 @@ import * as voice from '@discordjs/voice';
 import * as play from 'play-dl';
 import { DiscordMusic } from './modules/music';
 import { DiscordUser } from 'src/entity/discord.entity';
-import { NswfEntity } from 'src/entity/nsfw.entity';
 
 @Injectable()
 export class DiscordService {
@@ -26,8 +23,6 @@ export class DiscordService {
 		private readonly steamService: SteamService,
 		private readonly gogService: GogService,
 		private readonly toolsService: ToolsService,
-		private readonly animeService: AnimeService,
-		//private readonly amethystService: AmethystService,
 		private readonly wallhavenService: WallhavenService
 	) {}
 
