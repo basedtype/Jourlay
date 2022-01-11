@@ -322,61 +322,6 @@ export class DiscordService {
 	}
 
 	/**
-	 * Send random anime photo in channel ^-^
-	 */
-	@Cron('0 0 */1 * * *')
-	private async animePhotos() {
-		if (this.client == null) return;
-		const url = await this.animeService.getAnimePhoto();
-		this.client.channels
-			.fetch('898741828717789184')
-			.then((channel: ds.TextChannel) => channel.send({ files: [url] }))
-			.catch((err) => {
-				this.logger.error(`Can't send photo in chat. (URL: ${url})`);
-				this.logger.error(err);
-			});
-	}
-
-	/**
-	 * Send random real photo in dev channel
-	 */
-	@Cron('0 */10 * * * *')
-	private async realDevPhotos() {
-		if (this.client == null) return;
-		const url = await this.animeService.getRealPhoto();
-		this.logger.debug(url);
-		this.client.channels
-			.fetch('929526910113964063')
-			.then(async (channel: ds.TextChannel) => {
-				await channel.send({ content: `${url.sub}\n${url.url}` });
-			})
-			.catch((err) => {
-				this.logger.error(`Can't send photo in chat. (URL: ${url})`);
-				this.logger.error(err);
-			});
-	}
-
-	@Cron('0 0 */1 * * *')
-	private async realPhotos() {
-		if (this.client == null) return;
-		const nsfws = await this.databaseService.getAproveNsfw();
-		if (nsfws.length === 0) return;
-		const nsfw = _.sample(nsfws);
-		const url = nsfw.url;
-		this.logger.debug(url);
-		this.client.channels
-			.fetch('920639086077833226')
-			.then(async (channel: ds.TextChannel) => {
-				await channel.send({ content: url });
-				await this.databaseService.removeNsfw(url);
-			})
-			.catch((err) => {
-				this.logger.error(`Can't send photo in chat. (URL: ${url})`);
-				this.logger.error(err);
-			});
-	}
-
-	/**
 	 * Set member count in name of voice channel
 	 */
 	@Cron('* */5 * * * *')
@@ -1091,6 +1036,7 @@ export class DiscordService {
 					.setDescription(`<@${member.id}> (${member.id}) покинул сервер`)
 					.setFooter(`With ❤️ by NidhoggBot v2.0`)
 					.setTimestamp();
+				channel.send({ embeds: [embed] });
 			});
 		});
 
@@ -1120,21 +1066,6 @@ export class DiscordService {
 			});
 		});
 
-		this.client.on('messageReactionAdd', async (reaction, user) => {
-			if (reaction.message.guild.id === '823463145963913236') {
-				if (reaction.message.channel.id === '929526910113964063') {
-					if (reaction.message.content == null) return;
-					if (reaction.emoji.name === 'JR_Cross') {
-						reaction.message.delete();
-					} else {
-						const nsfw = new NswfEntity();
-						nsfw.url = reaction.message.content.split('\n')[1];
-						nsfw.approve = true;
-						await this.databaseService.addNsfw(nsfw);
-						await reaction.message.delete();
-					}
-				}
-			}
-		});
+		this.client.on('messageReactionAdd', async (reaction, user) => {});
 	}
 }
