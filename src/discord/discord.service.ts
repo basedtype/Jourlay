@@ -53,6 +53,14 @@ export class DiscordService {
 	private player = voice.createAudioPlayer();
 	private memberInVoice = {};
 
+	private deleteMSG(msg: ds.Message, time: number) {
+		setTimeout(async () => {
+			if (msg.deletable && !msg.deleted) {
+				await msg.delete();
+			}
+		}, time);
+	}
+
 	/**
 	 * Send any message in channel
 	 */
@@ -884,32 +892,42 @@ export class DiscordService {
 							client: this.client,
 						});
 						if (result.error) {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.errorMessage}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.errorMessage}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						} else {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.content}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.content}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						}
 					} else if (info.command === 'stop' || info.command === 's') {
 						const result = await DiscordMusic.stop(info.authorID, force);
-						await info.channel.send({
-							content: `<@${info.authorID}>, ${result}`,
-						});
+						await info.channel
+							.send({
+								content: `<@${info.authorID}>, ${result}`,
+							})
+							.then((msg) => this.deleteMSG(msg, 5000));
 					} else if (info.command === 'pause') {
 						const result = await DiscordMusic.pause({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
 						if (result.error) {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.errorMessage}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.errorMessage}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						} else {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.content}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.content}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						}
 					} else if (info.command === 'unpause') {
 						const result = await DiscordMusic.unPause({
@@ -917,13 +935,17 @@ export class DiscordService {
 							force: force,
 						});
 						if (result.error) {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.errorMessage}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.errorMessage}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						} else {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.content}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.content}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						}
 					} else if (info.command === 'skip') {
 						const result = await DiscordMusic.skip({
@@ -931,31 +953,40 @@ export class DiscordService {
 							force: force,
 						});
 						if (result.error) {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.errorMessage}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.errorMessage}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						} else {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.content}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.content}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						}
-						msg.delete();
 					} else if (info.command === 'drop') {
 						const result = await DiscordMusic.clearQueue(info.authorID, force);
-						await info.channel.send({
-							content: `<@${info.authorID}>, ${result}`,
-						});
+						await info.channel
+							.send({
+								content: `<@${info.authorID}>, ${result}`,
+							})
+							.then((msg) => this.deleteMSG(msg, 5000));
 					} else if (info.command === 'queue' || info.command === 'q') {
 						const result = await DiscordMusic.getQueue();
 						if (result === 'Музыка не активна') {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 							return;
 						} else if (result === 'Очередь пуста') {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 							return;
 						}
 						let qu = '';
@@ -963,25 +994,31 @@ export class DiscordService {
 							qu += `${result[i].url} | <@${result[i].authorID}>\n`;
 						}
 						const embed = new ds.MessageEmbed().addField('Очередь', qu);
-						await info.channel.send({
-							content: `<@${info.authorID}>`,
-							embeds: [embed],
-						});
+						await info.channel
+							.send({
+								content: `<@${info.authorID}>`,
+								embeds: [embed],
+							})
+							.then((msg) => this.deleteMSG(msg, 5000));
 					} else if (info.command === 'now' || info.command === 'n') {
 						const result = await DiscordMusic.getNowSong();
 						if (result.error) {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.errorMessage}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.errorMessage}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						} else {
 							const embed = new ds.MessageEmbed().addField(
 								'Сейчас играет',
 								`${result.content.url}\nДобавил: <@${result.content.authorID}>`
 							);
-							await info.channel.send({
-								content: `<@${info.authorID}>`,
-								embeds: [embed],
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>`,
+									embeds: [embed],
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						}
 					} else if (info.command === 'change') {
 						const result = await DiscordMusic.changeQueueOwner({
@@ -990,16 +1027,20 @@ export class DiscordService {
 							force: force,
 						});
 						if (result.error) {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.errorMessage}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.errorMessage}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						} else {
-							await info.channel.send({
-								content: `<@${info.authorID}>, ${result.content}`,
-							});
+							await info.channel
+								.send({
+									content: `<@${info.authorID}>, ${result.content}`,
+								})
+								.then((msg) => this.deleteMSG(msg, 5000));
 						}
 					}
-					msg.delete();
+					this.deleteMSG(msg, 1000);
 				}
 			}
 		});
