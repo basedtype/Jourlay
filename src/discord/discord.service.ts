@@ -999,6 +999,7 @@ export class DiscordService {
 							});
 						}
 					}
+					msg.delete();
 				}
 			}
 		});
