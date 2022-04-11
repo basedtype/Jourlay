@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@binance/connector": "^1.5.0",
-    "@discordjs/opus": "^0.5.3",
     "@discordjs/voice": "^0.7.5",
     "@nestjs/bull": "^0.4.2",
     "@nestjs/common": "^8.0.0",
