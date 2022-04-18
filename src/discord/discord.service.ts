@@ -1,13 +1,11 @@
 import {Injectable, Logger} from "@nestjs/common";
 import * as ds from "discord.js";
 import {DatabaseService} from "src/database/database.service";
-import {Config} from "types";
 import {EgsService} from "../modules/egs/egs.service";
 import {ToolsService} from "../modules/tools/tools.service";
 import {Cron} from "@nestjs/schedule";
 import {SteamService} from "../modules/steam/steam.service";
 import {GogService} from "../modules/gog/gog.service";
-import {WallhavenService} from "../modules/wallhaven/wallhaven.service";
 import {Service} from "src/entity/services.entity";
 import * as _ from "lodash";
 import * as voice from "@discordjs/voice";
@@ -23,46 +21,28 @@ export class DiscordService {
 		private readonly steamService: SteamService,
 		private readonly gogService: GogService,
 		private readonly toolsService: ToolsService,
-		private readonly wallhavenService: WallhavenService
 	) {}
 
 	private readonly logger = new Logger(DiscordService.name);
 
 	private client: ds.Client = null;
 	private _guild: ds.Guild = null;
-	private voiceSettings = {
-		users: {
-			ban: [],
-			active: [],
-			member: {},
-		},
-		rooms: {
-			name: `Переговорная`,
-			ids: {
-				two: `865697645920911371`,
-				three: `865697670852378684`,
-				four: `865697708676087828`,
-				five: `865697728766803998`,
-				infinity: `963168191813668954`,
-			},
-		},
-	};
 	private voiceChannels = {
 		duo: {
-			id: "865697645920911371",
-			name: "Кибер комната",
+			id: `865697645920911371`,
+			name: `Кибер комната`,
 		},
 		trio: {
-			id: "865697670852378684",
-			name: "Кибер комната",
+			id: `865697670852378684`,
+			name: `Кибер комната`,
 		},
 		four: {
-			id: "865697708676087828",
-			name: "Кибер комната",
+			id: `865697708676087828`,
+			name: `Кибер комната`,
 		},
 		five: {
-			id: "865697728766803998",
-			name: "Кибер комната",
+			id: `865697728766803998`,
+			name: `Кибер комната`,
 		},
 	};
 	private banVoiceUsers: string[] = [];
@@ -91,26 +71,25 @@ export class DiscordService {
 			channel.send(opt.message);
 			return {error: false};
 		} else if (channel.isThread()) {
-			this.logger.error("Bot cannot send message in threads");
-			return {error: true, errorMessage: "This is thread"};
+			this.logger.error(`Bot cannot send message in threads`);
+			return {error: true, errorMessage: `This is thread`};
 		} else if (channel.isVoice()) {
-			this.logger.error("Bot cannot send message in voice");
-			return {error: true, errorMessage: "This is voice channel"};
-		} else {
-			this.logger.error("Unknown type of channel");
-			return {error: true, errorMessage: "Unknown type of channel"};
-		}
+			this.logger.error(`Bot cannot send message in voice`);
+			return {error: true, errorMessage: `This is voice channel`};
+		} 
+		this.logger.error(`Unknown type of channel`);
+		return {error: true, errorMessage: `Unknown type of channel`};
 	}
 
 	/**
 	 * Init discord module
 	 */
-	@Cron("*/30 * * * * *")
+	@Cron(`*/30 * * * * *`)
 	async init() {
 		if (this.client == null) {
 			const config: Service = await this.databaseService.serviceFindOne(
-				"Discord",
-				"Nidhoggbot"
+				`Discord`,
+				`Nidhoggbot`
 			);
 			if (config == null) {
 				this.logger.error(
@@ -147,77 +126,12 @@ export class DiscordService {
 	 */
 	private async getInformation(client: ds.Client) {
 		const data = {client: client, guild: null};
-		data.guild = client.guilds.cache.find(guild => guild.id === "437601028662231040");
+		data.guild = client.guilds.cache.find(guild => guild.id === `437601028662231040`);
 		return data;
 	}
 
-	/**
-	 * Check and give basic role
-	 */
-	@Cron("* */1 * * * *")
-	private async setBasicRole(): Promise<void> {
-		if (this._guild == null) return;
 
-		const members = (await this._guild.members.fetch()).toJSON();
-
-		for (let i in members) {
-			const member = members[i];
-
-			if (!member.user.bot) {
-				const databaseMember =
-					await this.databaseService.discordUserFindOneByUserID(member.id);
-				if (databaseMember == null) {
-					const user = new DiscordUser();
-					user.userID = member.id;
-					user.warnings = 0;
-					user.bans = 0;
-					user.messages = 0;
-					await this.databaseService.discordUserInsertOne(user);
-					if (member.roles.cache.has("918778640869773334") === false) {
-						const roleAdd = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === "918778640869773334"
-						);
-						await member.roles.add(roleAdd);
-						this.logger.log(`${member.id} (${member.displayName}) не наш`);
-					}
-				} else if (databaseMember.messages >= 1) {
-					if (member.roles.cache.has("918626848274002050") === false) {
-						const roleAdd = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === "918626848274002050"
-						);
-						await member.roles.add(roleAdd);
-						this.logger.log(`${member.id} (${member.displayName}) наш`);
-					}
-					if (member.roles.cache.has("918778640869773334") === true) {
-						const roleRemove = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === "918778640869773334"
-						);
-						await member.roles.remove(roleRemove);
-					}
-				} else {
-					if (member.roles.cache.has("918778640869773334") === false) {
-						const roleAdd = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === "918778640869773334"
-						);
-						await member.roles.add(roleAdd);
-						this.logger.log(`${member.id} (${member.displayName}) не наш`);
-					}
-					if (member.roles.cache.has("918626848274002050") === true) {
-						const roleRemove = this._guild.roles.cache.find(
-							(role, key, collection) => role.id === "918626848274002050"
-						);
-						await member.roles.remove(roleRemove);
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Add a second for users which in voice channels
-	 * Increase voice limit
-	 */
-	@Cron("*/1 * * * * *")
+	@Cron(`*/1 * * * * *`)
 	private async minutesInVoice() {
 		if (this.client == null) return;
 		const allChannels = this._guild.channels.cache.toJSON();
@@ -230,15 +144,13 @@ export class DiscordService {
 							channelID: channel.id,
 							seconds: 1,
 						};
-					} else {
-						if (this.memberInVoice[member.id].channelID === channel.id)
-							this.memberInVoice[member.id].seconds++;
-						else
-							this.memberInVoice[member.id] = {
-								channelID: channel.id,
-								seconds: 1,
-							};
-					}
+					} else if (this.memberInVoice[member.id].channelID === channel.id)
+						this.memberInVoice[member.id].seconds++;
+					else
+						this.memberInVoice[member.id] = {
+							channelID: channel.id,
+							seconds: 1,
+						};
 					const discordUser =
 						await this.databaseService.discordUserFindOneByUserID(member.id);
 					if (discordUser == null || discordUser.minutesInVoice == null) {
@@ -254,16 +166,6 @@ export class DiscordService {
 					discordUser.minutesInVoice++;
 					await this.databaseService.discordUserRepository.save(discordUser);
 				});
-
-				if (
-					channel.name.startsWith("Игровая") &&
-					channel.members.toJSON().length > channel.userLimit
-				) {
-					channel.setName(
-						`Игровая комната [${channel.members.toJSON().length}]`
-					);
-					channel.setUserLimit(channel.members.toJSON().length);
-				}
 			}
 		});
 	}
@@ -271,11 +173,11 @@ export class DiscordService {
 	/**
 	 * Send information about sales in EGS
 	 */
-	@Cron("0 30 21 * * *")
+	@Cron(`0 30 21 * * *`)
 	private async EGSsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
-			.setTitle("Epic Games Store")
+			.setTitle(`Epic Games Store`)
 			.setColor(0xf05656)
 			.setFooter(`With ❤️ by NidhoggBot v2.0`);
 
@@ -287,12 +189,12 @@ export class DiscordService {
 		embed.addField(`Раздается на следующей неделе`, nextWeek);
 
 		this.client.channels
-			.fetch("869957685326524456")
+			.fetch(`869957685326524456`)
 			.then((channel: ds.TextChannel) => {
 				channel.send({embeds: [embed]});
 			});
 		this.client.channels
-			.fetch("881988459437359135")
+			.fetch(`881988459437359135`)
 			.then((channel: ds.TextChannel) => {
 				channel.send({embeds: [embed]});
 			});
@@ -301,37 +203,37 @@ export class DiscordService {
 	/**
 	 * Send information about sales in STEAM
 	 */
-	@Cron("0 31 21 * * *")
+	@Cron(`0 31 21 * * *`)
 	private async STEAMsales() {
 		let embed = new ds.MessageEmbed()
-			.setTitle("Steam")
+			.setTitle(`Steam`)
 			.setColor(0xf05656)
 			.setFooter(`With ❤️ by NidhoggBot v2.0`);
 
 		embed = await this.steamService.getSales(embed);
 
 		this.client.channels
-			.fetch("869957685326524456")
+			.fetch(`869957685326524456`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 		this.client.channels
-			.fetch("881988459437359135")
+			.fetch(`881988459437359135`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
 	/**
 	 * Send information about sales in GOG
 	 */
-	@Cron("0 32 21 * * *")
+	@Cron(`0 32 21 * * *`)
 	private async GOGsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
-			.setTitle("GOG")
+			.setTitle(`GOG`)
 			.setColor(0xf05656)
 			.setFooter(`With ❤️ by NidhoggBot v2.0`);
 
 		const sales = await this.gogService.getSales();
 
-		for (let i in sales) {
+		for (const i in sales) {
 			const name = sales[i].title;
 			const percent = sales[i].price.discount;
 			const price = sales[i].price.amount;
@@ -345,25 +247,25 @@ export class DiscordService {
 			);
 		}
 		this.client.channels
-			.fetch("869957685326524456")
+			.fetch(`869957685326524456`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 		this.client.channels
-			.fetch("881988459437359135")
+			.fetch(`881988459437359135`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
 	/**
 	 * Set member count in name of voice channel
 	 */
-	@Cron("* */5 * * * *")
+	@Cron(`* */5 * * * *`)
 	private async memberCount() {
 		if (this.client == null) return;
 		if (this._guild == null) return;
 
-		const names = ["Тянок", "Ебейших", "Викингов", "Участников", "Ботов"];
+		const names = [`Тянок`, `Ебейших`, `Викингов`, `Участников`, `Ботов`];
 
 		this.client.channels
-			.fetch("871750394211090452")
+			.fetch(`871750394211090452`)
 			.then((channel: ds.VoiceChannel) => {
 				const memberCount = this._guild.memberCount;
 				channel.setName(`${_.sample(names)}: ${memberCount}`);
@@ -373,14 +275,14 @@ export class DiscordService {
 	/**
 	 * Remove unused rooms
 	 */
-	@Cron("*/20 * * * * *")
+	@Cron(`*/20 * * * * *`)
 	private async cleaner() {
 		if (this._guild == null) return;
 
 		const channels: ds.GuildChannel[] = [];
 		this._guild.channels.cache.forEach(channel => {
 			if (
-				channel.type === "GUILD_VOICE" &&
+				channel.type === `GUILD_VOICE` &&
 				(channel.name === this.voiceChannels.duo.name ||
 					channel.name === this.voiceChannels.trio.name ||
 					channel.name === this.voiceChannels.four.name ||
@@ -388,7 +290,7 @@ export class DiscordService {
 			)
 				channels.push(channel);
 		});
-		for (let i in channels) {
+		for (const i in channels) {
 			if (channels[i].members.first() == null) {
 				channels[i]
 					.delete()
@@ -401,17 +303,17 @@ export class DiscordService {
 	/**
 	 * Add user in ban list if he created too many channels
 	 */
-	@Cron("*/5 * * * * *")
+	@Cron(`*/5 * * * * *`)
 	private async addUsersInVoiceBan() {
 		const warningsID = {};
-		for (let i in this.voiceUsers) {
+		for (const i in this.voiceUsers) {
 			if (warningsID[this.voiceUsers[i]] == null) {
 				warningsID[this.voiceUsers[i]] = {count: 1};
 			} else if (warningsID[this.voiceUsers[i]] != null) {
 				warningsID[this.voiceUsers[i]].count++;
 			}
 		}
-		for (let i in warningsID) {
+		for (const i in warningsID) {
 			if (warningsID[i].count > 3 && this.banVoiceUsers.includes(i) === false) {
 				this.createLog(null, `User <@${i}> created too many channels`);
 				this.banVoiceUsers.push(i);
@@ -422,7 +324,7 @@ export class DiscordService {
 	/**
 	 * Remove user from ban list if his ban expired
 	 */
-	@Cron("0 */15 * * * *")
+	@Cron(`0 */15 * * * *`)
 	private async clearBanLists() {
 		this.banVoiceUsers = [];
 		this.voiceUsers = [];
@@ -431,7 +333,7 @@ export class DiscordService {
 	/**
 	 * Create voice channels with limit
 	 */
-	@Cron("*/1 * * * * *")
+	@Cron(`*/1 * * * * *`)
 	private async createVoiceChannel() {
 		if (this._guild == null) return;
 
@@ -469,7 +371,7 @@ export class DiscordService {
 				const guild = channel.guild;
 				const name = this.voiceChannels.duo.name;
 				const options: ds.GuildChannelCreateOptions = {
-					type: "GUILD_VOICE",
+					type: `GUILD_VOICE`,
 					userLimit: 2,
 					position: parent.position + 10,
 					parent: parent,
@@ -484,8 +386,8 @@ export class DiscordService {
 						userVoiceState = member.guild.voiceStates.cache.find(
 							userFind => userFind.id === user.id
 						);
-						userVoiceState.disconnect("User created too many channels");
-						return;
+						userVoiceState.disconnect(`User created too many channels`);
+						
 					});
 				} else {
 					let userVoiceState: ds.VoiceState = null;
@@ -500,9 +402,7 @@ export class DiscordService {
 							idNew = data.id;
 							const channelNew: ds.VoiceChannel = await guild.channels
 								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => {
-									return ch;
-								});
+								.then((ch: ds.VoiceChannel) => ch);
 							userVoiceState
 								.setChannel(channelNew)
 								.then(res => {})
@@ -526,7 +426,7 @@ export class DiscordService {
 				const guild = channel.guild;
 				const name = this.voiceChannels.trio.name;
 				const options: ds.GuildChannelCreateOptions = {
-					type: "GUILD_VOICE",
+					type: `GUILD_VOICE`,
 					userLimit: 3,
 					position: parent.position + 10,
 					parent: parent,
@@ -541,8 +441,8 @@ export class DiscordService {
 						userVoiceState = member.guild.voiceStates.cache.find(
 							userFind => userFind.id === user.id
 						);
-						userVoiceState.disconnect("User created too many channels");
-						return;
+						userVoiceState.disconnect(`User created too many channels`);
+						
 					});
 				} else {
 					let userVoiceState: ds.VoiceState = null;
@@ -557,9 +457,7 @@ export class DiscordService {
 							idNew = data.id;
 							const channelNew: ds.VoiceChannel = await guild.channels
 								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => {
-									return ch;
-								});
+								.then((ch: ds.VoiceChannel) => ch);
 							userVoiceState
 								.setChannel(channelNew)
 								.then(res => {})
@@ -583,7 +481,7 @@ export class DiscordService {
 				const guild = channel.guild;
 				const name = this.voiceChannels.four.name;
 				const options: ds.GuildChannelCreateOptions = {
-					type: "GUILD_VOICE",
+					type: `GUILD_VOICE`,
 					userLimit: 4,
 					position: parent.position + 10,
 					parent: parent,
@@ -598,8 +496,8 @@ export class DiscordService {
 						userVoiceState = member.guild.voiceStates.cache.find(
 							userFind => userFind.id === user.id
 						);
-						userVoiceState.disconnect("User created too many channels");
-						return;
+						userVoiceState.disconnect(`User created too many channels`);
+						
 					});
 				} else {
 					let userVoiceState: ds.VoiceState = null;
@@ -614,9 +512,7 @@ export class DiscordService {
 							idNew = data.id;
 							const channelNew: ds.VoiceChannel = await guild.channels
 								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => {
-									return ch;
-								});
+								.then((ch: ds.VoiceChannel) => ch);
 							userVoiceState
 								.setChannel(channelNew)
 								.then(res => {})
@@ -640,7 +536,7 @@ export class DiscordService {
 				const guild = channel.guild;
 				const name = this.voiceChannels.five.name;
 				const options: ds.GuildChannelCreateOptions = {
-					type: "GUILD_VOICE",
+					type: `GUILD_VOICE`,
 					userLimit: 5,
 					position: parent.position + 10,
 					parent: parent,
@@ -655,8 +551,8 @@ export class DiscordService {
 						userVoiceState = member.guild.voiceStates.cache.find(
 							userFind => userFind.id === user.id
 						);
-						userVoiceState.disconnect("User created too many channels");
-						return;
+						userVoiceState.disconnect(`User created too many channels`);
+						
 					});
 				} else {
 					let userVoiceState: ds.VoiceState = null;
@@ -671,9 +567,7 @@ export class DiscordService {
 							idNew = data.id;
 							const channelNew: ds.VoiceChannel = await guild.channels
 								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => {
-									return ch;
-								});
+								.then((ch: ds.VoiceChannel) => ch);
 							userVoiceState
 								.setChannel(channelNew)
 								.then(res => {})
@@ -688,10 +582,10 @@ export class DiscordService {
 	async createChannelByAlisa() {
 		/* @ts-ignore */
 		const parent: ds.CategoryChannel = await this._guild.channels.fetch(
-			"870395638276300821"
+			`870395638276300821`
 		);
 		const options: ds.GuildChannelCreateOptions = {
-			type: "GUILD_VOICE",
+			type: `GUILD_VOICE`,
 			position: parent.position + 10,
 			parent: parent,
 			reason: `Created channel for `,
@@ -701,9 +595,7 @@ export class DiscordService {
 			const idNew = data.id;
 			const channelNew: ds.VoiceChannel = await this._guild.channels
 				.fetch(idNew)
-				.then((ch: ds.VoiceChannel) => {
-					return ch;
-				});
+				.then((ch: ds.VoiceChannel) => ch);
 		});
 	}
 
@@ -719,7 +611,7 @@ export class DiscordService {
 		if (text == null && title == null) return;
 
 		this._guild.channels
-			.fetch("818566531486187611")
+			.fetch(`818566531486187611`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
@@ -727,9 +619,7 @@ export class DiscordService {
 	 * Check moderation permissions
 	 */
 	private async isMod(userID: string): Promise<boolean> {
-		const userMod = await this._guild.members.fetch(userID).then(user => {
-			return user.roles.cache.find(role => role.id === "799561051905458176");
-		});
+		const userMod = await this._guild.members.fetch(userID).then(user => user.roles.cache.find(role => role.id === `799561051905458176`));
 		return userMod == null ? false : true;
 	}
 
@@ -758,13 +648,13 @@ export class DiscordService {
 	}
 
 	private async run() {
-		this.client.on("ready", () => {
-			this.logger.log("Discord are ready");
+		this.client.on(`ready`, () => {
+			this.logger.log(`Discord are ready`);
 
 			DiscordMusic.init(this._guild);
 		});
 
-		this.client.on("messageCreate", async msg => {
+		this.client.on(`messageCreate`, async msg => {
 			if (msg.author.bot) return;
 
 			const info = {
@@ -774,29 +664,31 @@ export class DiscordService {
 				authorID: msg.author.id,
 				author: msg.author,
 				content: msg.content,
-				splited: msg.content.split(" "),
-				command: msg.content.split(" ")[0].split("!")[1],
+				splited: msg.content.split(` `),
+				command: msg.content.split(` `)[0].split(`!`)[1],
 			};
 
-			if (info.content.length >= 3 && msg.guildId === "437601028662231040") {
+			if (info.content.length >= 3 && msg.guildId === `437601028662231040`) {
 				this.databaseService.discordUserAddMessage(info.authorID);
 			}
 
 			/* <=========================== CROSSPOST ===========================> */
 
-			if (info.channelID === "868517415787585656") msg.crosspost();
-			if (info.channelID === "869957685326524456") msg.crosspost();
-			if (info.channelID === "892576972650209311") msg.crosspost();
+			if (info.channelID === `868517415787585656`) msg.crosspost();
+			if (info.channelID === `869957685326524456`) msg.crosspost();
+			if (info.channelID === `892576972650209311`) msg.crosspost();
 
 			if (msg.author.bot === true) return;
 
 			/* <=========================== GLOBAL ===========================> */
 
 			if (info.isGuild === true) {
-				if (info.command === "triggered") {
-					/* const buff = await this.amethystService.triggered(msg.author.avatarURL({format: 'png'}));
-                    const attachment = new ds.MessageAttachment(buff, 'trig.gif')
-                    await info.channel.send({files: [attachment]}); */
+				if (info.command === `triggered`) {
+					/*
+					 * const buff = await this.amethystService.triggered(msg.author.avatarURL({format: 'png'}));
+					 *             const attachment = new ds.MessageAttachment(buff, 'trig.gif')
+					 *             await info.channel.send({files: [attachment]}); 
+					 */
 					return;
 				}
 			}
@@ -805,19 +697,19 @@ export class DiscordService {
 
 			if (
 				info.isGuild === true &&
-				msg.guild.id === "437601028662231040" &&
+				msg.guild.id === `437601028662231040` &&
 				(await this.isMod(info.authorID)) === true
 			) {
-				if (info.command === "ping") info.channel.send("Pong");
+				if (info.command === `ping`) info.channel.send(`Pong`);
 
-				if (info.command === "clear") {
+				if (info.command === `clear`) {
 					const count =
 						isNaN(parseInt(info.splited[1])) === false
 							? parseInt(info.splited[1]) + 1
 							: 100;
 					info.channel.messages.fetch({limit: count}).then(async messages => {
 						this.createLog(
-							"ВНИМАНИЕ",
+							`ВНИМАНИЕ`,
 							`Модератор (<@${info.authorID}>) запустил очистку ${
 								count - 1
 							} сообщений`
@@ -828,7 +720,7 @@ export class DiscordService {
 					});
 				}
 
-				if (info.command === "db_add") {
+				if (info.command === `db_add`) {
 					const userID = info.splited[1];
 					const amount = parseInt(info.splited[2]);
 					await this.databaseService.discordUserAddMessage(userID, amount);
@@ -840,7 +732,7 @@ export class DiscordService {
 					});
 				}
 
-				if (info.command === "db_remove") {
+				if (info.command === `db_remove`) {
 					const userID = info.splited[1];
 					const amount = parseInt(info.splited[2]);
 					await this.databaseService.discordUserRemoveMessage(userID, amount);
@@ -852,7 +744,7 @@ export class DiscordService {
 					});
 				}
 
-				if (info.command === "user") {
+				if (info.command === `user`) {
 					const userID = info.splited[1];
 					const user = await this.databaseService.discordUserFindOneByUserID(
 						userID
@@ -868,14 +760,14 @@ export class DiscordService {
 					return;
 				}
 
-				if (info.command === "test") {
+				if (info.command === `test`) {
 					const members = this._guild.members.cache.toJSON();
 					const limit = Date.now() - 3 * 31 * 24 * 60 * 60 * 1000;
 					msg.delete();
 					_.forEach(members, member => {
 						if (
 							member.joinedTimestamp <= limit &&
-							member.roles.cache.has("918778640869773334")
+							member.roles.cache.has(`918778640869773334`)
 						)
 							console.log(member.displayName);
 					});
@@ -884,13 +776,13 @@ export class DiscordService {
 
 			/* DEV GUILD */
 
-			if (info.isGuild === true && msg.guild.id === "823463145963913236") {
+			if (info.isGuild === true && msg.guild.id === `823463145963913236`) {
 			}
 
 			/* MY GUILD */
 
-			if (info.isGuild === true && msg.guild.id === "437601028662231040") {
-				if (info.command === "me") {
+			if (info.isGuild === true && msg.guild.id === `437601028662231040`) {
+				if (info.command === `me`) {
 					const user = await this.databaseService.discordUserFindOneByUserID(
 						info.authorID
 					);
@@ -921,10 +813,10 @@ export class DiscordService {
 				}
 
 				/* MUSIC CHANNEL */
-				if (info.channelID === "917132649603162212") {
+				if (info.channelID === `917132649603162212`) {
 					const force = await this.isMod(info.authorID);
 
-					if (info.command === "play" || info.command === "p") {
+					if (info.command === `play` || info.command === `p`) {
 						const result = await DiscordMusic.play({
 							authorID: info.authorID,
 							channel: msg.member.voice.channel,
@@ -946,14 +838,14 @@ export class DiscordService {
 								})
 								.then(msg => this.deleteMSG(msg, 5000));
 						}
-					} else if (info.command === "stop" || info.command === "s") {
+					} else if (info.command === `stop` || info.command === `s`) {
 						const result = await DiscordMusic.stop(info.authorID, force);
 						await info.channel
 							.send({
 								content: `<@${info.authorID}>, ${result}`,
 							})
 							.then(msg => this.deleteMSG(msg, 5000));
-					} else if (info.command === "pause") {
+					} else if (info.command === `pause`) {
 						const result = await DiscordMusic.pause({
 							channelID: msg.member.voice.channelId,
 							force: force,
@@ -971,7 +863,7 @@ export class DiscordService {
 								})
 								.then(msg => this.deleteMSG(msg, 5000));
 						}
-					} else if (info.command === "unpause") {
+					} else if (info.command === `unpause`) {
 						const result = await DiscordMusic.unPause({
 							channelID: msg.member.voice.channelId,
 							force: force,
@@ -989,7 +881,7 @@ export class DiscordService {
 								})
 								.then(msg => this.deleteMSG(msg, 5000));
 						}
-					} else if (info.command === "skip") {
+					} else if (info.command === `skip`) {
 						const result = await DiscordMusic.skip({
 							channelID: msg.member.voice.channelId,
 							force: force,
@@ -1007,7 +899,7 @@ export class DiscordService {
 								})
 								.then(msg => this.deleteMSG(msg, 5000));
 						}
-					} else if (info.command === "drop") {
+					} else if (info.command === `drop`) {
 						const result = await DiscordMusic.clearQueue(
 							info.authorID,
 							force
@@ -1017,16 +909,16 @@ export class DiscordService {
 								content: `<@${info.authorID}>, ${result}`,
 							})
 							.then(msg => this.deleteMSG(msg, 5000));
-					} else if (info.command === "queue" || info.command === "q") {
+					} else if (info.command === `queue` || info.command === `q`) {
 						const result = await DiscordMusic.getQueue();
-						if (result === "Музыка не активна") {
+						if (result === `Музыка не активна`) {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result}`,
 								})
 								.then(msg => this.deleteMSG(msg, 5000));
 							return;
-						} else if (result === "Очередь пуста") {
+						} else if (result === `Очередь пуста`) {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result}`,
@@ -1034,18 +926,18 @@ export class DiscordService {
 								.then(msg => this.deleteMSG(msg, 5000));
 							return;
 						}
-						let qu = "";
-						for (let i in result) {
+						let qu = ``;
+						for (const i in result) {
 							qu += `${result[i].url} | <@${result[i].authorID}>\n`;
 						}
-						const embed = new ds.MessageEmbed().addField("Очередь", qu);
+						const embed = new ds.MessageEmbed().addField(`Очередь`, qu);
 						await info.channel
 							.send({
 								content: `<@${info.authorID}>`,
 								embeds: [embed],
 							})
 							.then(msg => this.deleteMSG(msg, 5000));
-					} else if (info.command === "now" || info.command === "n") {
+					} else if (info.command === `now` || info.command === `n`) {
 						const result = await DiscordMusic.getNowSong();
 						if (result.error) {
 							await info.channel
@@ -1055,7 +947,7 @@ export class DiscordService {
 								.then(msg => this.deleteMSG(msg, 5000));
 						} else {
 							const embed = new ds.MessageEmbed().addField(
-								"Сейчас играет",
+								`Сейчас играет`,
 								`${result.content.url}\nДобавил: <@${result.content.authorID}>`
 							);
 							await info.channel
@@ -1065,7 +957,7 @@ export class DiscordService {
 								})
 								.then(msg => this.deleteMSG(msg, 5000));
 						}
-					} else if (info.command === "change") {
+					} else if (info.command === `change`) {
 						const result = await DiscordMusic.changeQueueOwner({
 							ownerID: info.authorID,
 							nextOwnerID: info.splited[1],
@@ -1090,15 +982,15 @@ export class DiscordService {
 			}
 		});
 
-		this.client.on("guildMemberAdd", member => {
-			if (member.guild.id !== "437601028662231040") return;
+		this.client.on(`guildMemberAdd`, member => {
+			if (member.guild.id !== `437601028662231040`) return;
 
 			this.client.channels
-				.fetch("869693463510278245")
+				.fetch(`869693463510278245`)
 				.then((channel: ds.TextChannel) => {
 					const embed = new ds.MessageEmbed()
 						.setColor(0x44adab)
-						.setTitle("Добро пожаловать на сервер")
+						.setTitle(`Добро пожаловать на сервер`)
 						.setDescription(
 							`Давай введу тебя в курс дела\n
 						<#868108110001221632> Здесь проходит все основное общение\n
@@ -1111,10 +1003,10 @@ export class DiscordService {
 				});
 		});
 
-		this.client.on("guildMemberRemove", member => {
-			if (member.guild.id !== "437601028662231040") return;
+		this.client.on(`guildMemberRemove`, member => {
+			if (member.guild.id !== `437601028662231040`) return;
 			this.client.channels
-				.fetch("818566531486187611")
+				.fetch(`818566531486187611`)
 				.then((channel: ds.TextChannel) => {
 					const embed = new ds.MessageEmbed()
 						.setColor(0x341331)
@@ -1126,16 +1018,16 @@ export class DiscordService {
 				});
 		});
 
-		this.client.on("messageDelete", msg => {
-			if (msg.guild == null || msg.guild.id !== "437601028662231040") return;
-			if (msg.channel.id === "818566531486187611") return;
-			if (msg.channel.id === "917132649603162212") return;
-			if (msg.author.id === "308924864407011328") return;
+		this.client.on(`messageDelete`, msg => {
+			if (msg.guild == null || msg.guild.id !== `437601028662231040`) return;
+			if (msg.channel.id === `818566531486187611`) return;
+			if (msg.channel.id === `917132649603162212`) return;
+			if (msg.author.id === `308924864407011328`) return;
 			this.client.channels
-				.fetch("818566531486187611")
+				.fetch(`818566531486187611`)
 				.then((channel: ds.TextChannel) => {
-					let embeds = [];
-					let attachments = [];
+					const embeds = [];
+					const attachments = [];
 					const embed = new ds.MessageEmbed()
 						.setColor(0xf05656)
 						.setTitle(`Сообщение удалено`)
@@ -1147,14 +1039,14 @@ export class DiscordService {
 						.setTimestamp();
 					embeds.push(embed);
 					if (msg.attachments.toJSON().length > 0)
-						for (let i in msg.attachments.toJSON())
+						for (const i in msg.attachments.toJSON())
 							attachments.push(msg.attachments.toJSON()[i]);
 					if (msg.embeds.length > 0)
-						for (let i in msg.embeds) embeds.push(msg.embeds[i]);
+						for (const i in msg.embeds) embeds.push(msg.embeds[i]);
 					channel.send({embeds: [embed], files: attachments});
 				});
 		});
 
-		this.client.on("messageReactionAdd", async (reaction, user) => {});
+		this.client.on(`messageReactionAdd`, async (reaction, user) => {});
 	}
 }

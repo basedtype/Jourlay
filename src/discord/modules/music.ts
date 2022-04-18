@@ -1,6 +1,5 @@
 /* IMPORTS */
 import { DiscordMusicType } from 'types';
-import { DiscordService } from '../discord.service';
 
 import * as voice from '@discordjs/voice';
 import * as ds from 'discord.js';
@@ -24,20 +23,20 @@ export class DiscordMusic {
 			channel.send(opt.message);
 			return { error: false };
 		} else if (channel.isThread()) {
-			return { error: true, errorMessage: 'This is thread' };
+			return { error: true, errorMessage: `This is thread` };
 		} else if (channel.isVoice()) {
-			return { error: true, errorMessage: 'This is voice channel' };
-		} else {
-			return { error: true, errorMessage: 'Unknown type of channel' };
-		}
+			return { error: true, errorMessage: `This is voice channel` };
+		} 
+		return { error: true, errorMessage: `Unknown type of channel` };
+		
 	}
 
 	/**
 	 * Check amount users in voice channel
 	 */
-	@Cron('* */1 * * * *')
+	@Cron(`* */1 * * * *`)
 	private static async checkMusicChannel() {
-		if (this.information.channelID === '') return;
+		if (this.information.channelID === ``) return;
 
 		this.information.guild.channels
 			.fetch(this.information.channelID)
@@ -59,12 +58,12 @@ export class DiscordMusic {
 			onPause: false,
 			queue: [],
 			nowPlaying: null,
-			authorID: '',
+			authorID: ``,
 			connection: null,
 			player: voice.createAudioPlayer(),
 			guild: guild,
 			updated: Date.now(),
-			channelID: '',
+			channelID: ``,
 			client: null,
 		};
 
@@ -80,13 +79,13 @@ export class DiscordMusic {
 		const connection = voice.joinVoiceChannel({
 			channelId: channel.id,
 			guildId: channel.guild.id,
-			adapterCreator: this.information.guild.voiceAdapterCreator,
+			adapterCreator: this.information.guild.voiceAdapterCreator as unknown as voice.DiscordGatewayAdapterCreator,
 		});
 		try {
 			await voice.entersState(connection, voice.VoiceConnectionStatus.Ready, 30e3);
 			this.information.connection = connection;
 			this.information.channelID = channel.id;
-			return { error: false, content: 'Success' };
+			return { error: false, content: `Success` };
 		} catch (err) {
 			connection.destroy();
 			return { error: true, errorMessage: err };
@@ -97,7 +96,7 @@ export class DiscordMusic {
 	 * Start timeout on state change
 	 */
 	private static handler() {
-		this.information.player.on('stateChange', async (oldState, newState) => {
+		this.information.player.on(`stateChange`, async (oldState, newState) => {
 			if (this.information.state === false) return;
 			if (this.information.onPause === true) return;
 
@@ -125,7 +124,7 @@ export class DiscordMusic {
 				if (res.error) {
 					if (this.information.client != null) {
 						this.sendInChannel({
-							channelID: '917132649603162212',
+							channelID: `917132649603162212`,
 							message: `<@${url.authorID}>, ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров`,
 						});
 					}
@@ -153,7 +152,7 @@ export class DiscordMusic {
 			this.information.updated = Date.now();
 
 			await voice.entersState(this.information.player, voice.AudioPlayerStatus.Playing, 5e3);
-			return { error: false, content: 'Success' };
+			return { error: false, content: `Success` };
 		} catch (err) {
 			return { error: true, errorMessage: err };
 		}
@@ -190,7 +189,7 @@ export class DiscordMusic {
 		const res = await this.playSong(url);
 		if (res.error) {
 			this.sendInChannel({
-				channelID: '917132649603162212',
+				channelID: `917132649603162212`,
 				message: `<@${url.authorID}>, ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров`,
 			});
 		}
@@ -200,7 +199,7 @@ export class DiscordMusic {
 		if (this.information.state === false) {
 			const connectResult = await this.connectToChannel(opt.channel);
 			if (connectResult.error) {
-				return { error: true, errorMessage: 'Ошибка подключения к каналу' };
+				return { error: true, errorMessage: `Ошибка подключения к каналу` };
 			}
 			this.information.authorID = opt.authorID;
 			this.information.channelID = opt.channel.id;
@@ -210,110 +209,110 @@ export class DiscordMusic {
 				return {
 					error: true,
 					errorMessage:
-						'Ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров',
+						`Ошибка запуска музыки. Песня либо 18+, либо попробуй скинуть другую ссылку без всяких параметров`,
 				};
 			}
-			return { error: false, content: 'Музыка запущена', contentType: 'string' };
+			return { error: false, content: `Музыка запущена`, contentType: `string` };
 		} else if (opt.channelID === this.information.channelID) {
 			this.information.queue.push({ url: opt.url, authorID: opt.authorID });
-			return { error: false, content: 'Музыка добавлена в очередь', contentType: 'string' };
-		} else {
-			return {
-				error: true,
-				errorMessage: 'Кажется ты не в том голосовом канале, в котором запущен бот',
-			};
-		}
+			return { error: false, content: `Музыка добавлена в очередь`, contentType: `string` };
+		} 
+		return {
+			error: true,
+			errorMessage: `Кажется ты не в том голосовом канале, в котором запущен бот`,
+		};
+		
 	}
 
 	static async stop(authorID: string, force: boolean): Promise<string> {
 		if (this.information.state === false) {
-			return 'Музыка не активна';
+			return `Музыка не активна`;
 		}
 
 		if (this.information.authorID === authorID || force) {
 			await this.stopSong();
-			return 'Музыка остановлена, очередь очищена';
+			return `Музыка остановлена, очередь очищена`;
 		}
 
 		if (this.information.authorID !== authorID) {
-			return 'Вы не можете управлять очередью';
+			return `Вы не можете управлять очередью`;
 		}
 	}
 
 	static async pause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
-			return { error: true, errorMessage: 'Бот не активен' };
+			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.nowPlaying === null) {
-			return { error: true, errorMessage: 'Сейчас ничего не играет' };
+			return { error: true, errorMessage: `Сейчас ничего не играет` };
 		} else if (this.information.onPause) {
-			return { error: true, errorMessage: 'Музыка уже на паузе' };
+			return { error: true, errorMessage: `Музыка уже на паузе` };
 		} else if (opt.channelID === this.information.channelID) {
 			await this.pauseSong();
-			return { error: false, content: 'Музыка поставлена на паузу' };
-		} else {
-			return {
-				error: true,
-				errorMessage: 'Кажется ты не в том голосовом канале, в котором запущен бот',
-			};
-		}
+			return { error: false, content: `Музыка поставлена на паузу` };
+		} 
+		return {
+			error: true,
+			errorMessage: `Кажется ты не в том голосовом канале, в котором запущен бот`,
+		};
+		
 	}
 
 	static async unPause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
-			return { error: true, errorMessage: 'Бот не активен' };
+			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.nowPlaying === null) {
-			return { error: true, errorMessage: 'Сейчас ничего не играет' };
+			return { error: true, errorMessage: `Сейчас ничего не играет` };
 		} else if (!this.information.onPause) {
-			return { error: true, errorMessage: 'Музыка уже снята с паузы' };
+			return { error: true, errorMessage: `Музыка уже снята с паузы` };
 		} else if (opt.channelID === this.information.channelID) {
 			await this.unPauseSong();
-			return { error: false, content: 'Музыка cнята с паузы' };
-		} else {
-			return {
-				error: true,
-				errorMessage: 'Кажется ты не в том голосовом канале, в котором запущен бот',
-			};
-		}
+			return { error: false, content: `Музыка cнята с паузы` };
+		} 
+		return {
+			error: true,
+			errorMessage: `Кажется ты не в том голосовом канале, в котором запущен бот`,
+		};
+		
 	}
 
 	static async skip(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
-			return { error: true, errorMessage: 'Бот не активен' };
+			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.queue.length < 1) {
-			return { error: true, errorMessage: 'Очередь пуста' };
+			return { error: true, errorMessage: `Очередь пуста` };
 		} else if (opt.channelID === this.information.channelID) {
 			await this.skipSong();
-			return { error: false, content: 'Музыка пропущена' };
-		} else {
-			return {
-				error: true,
-				errorMessage: 'Кажется ты не в том голосовом канале, в котором запущен бот',
-			};
-		}
+			return { error: false, content: `Музыка пропущена` };
+		} 
+		return {
+			error: true,
+			errorMessage: `Кажется ты не в том голосовом канале, в котором запущен бот`,
+		};
+		
 	}
 
 	static async clearQueue(authorID: string, force: boolean): Promise<string> {
 		if (this.information.state === false) {
-			return 'Музыка не активна';
+			return `Музыка не активна`;
 		}
 
 		if (this.information.authorID === authorID || force) {
 			this.information.queue = [];
-			return 'Очередь сброшена';
+			return `Очередь сброшена`;
 		}
 
 		if (this.information.authorID !== authorID) {
-			return 'Вы не можете управлять музыкой';
+			return `Вы не можете управлять музыкой`;
 		}
 	}
 
 	static async getQueue() {
 		if (this.information.state === false) {
-			return 'Музыка не активна';
+			return `Музыка не активна`;
 		}
 
 		if (this.information.queue.length === 0) {
-			return 'Очередь пуста';
+			return `Очередь пуста`;
 		}
 
 		return this.information.queue;
@@ -321,29 +320,29 @@ export class DiscordMusic {
 
 	static async getNowSong(): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
-			return { error: true, errorMessage: 'Бот не активен' };
+			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.nowPlaying === null) {
-			return { error: true, errorMessage: 'Сейчас ничего не играет' };
-		} else {
-			return {
-				error: false,
-				content: this.information.nowPlaying,
-			};
-		}
+			return { error: true, errorMessage: `Сейчас ничего не играет` };
+		} 
+		return {
+			error: false,
+			content: this.information.nowPlaying,
+		};
+		
 	}
 
 	static async changeQueueOwner(
 		opt: DiscordMusicType.ChangeQueueOwnerTypes
 	): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
-			return { error: true, errorMessage: 'Бот не активен' };
-		} else if (this.information.authorID != opt.ownerID) {
-			return { error: true, errorMessage: 'Ты не можешь управлять очередью' };
+			return { error: true, errorMessage: `Бот не активен` };
+		} else if (this.information.authorID !== opt.ownerID) {
+			return { error: true, errorMessage: `Ты не можешь управлять очередью` };
 		} else if (this.information.authorID === opt.nextOwnerID) {
 			return { error: true, errorMessage: `<@${opt.nextOwnerID}> уже владеет очередью` };
-		} else {
-			this.information.authorID = opt.nextOwnerID;
-			return { error: false, content: `теперь <@${opt.nextOwnerID}> владеет очередью` };
-		}
+		} 
+		this.information.authorID = opt.nextOwnerID;
+		return { error: false, content: `теперь <@${opt.nextOwnerID}> владеет очередью` };
+		
 	}
 }
