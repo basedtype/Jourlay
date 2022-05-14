@@ -207,6 +207,11 @@ export class DVoice {
 		});
 	}
 
+
+	/**
+	 * It checks if the voice channel is full, and if it is, it creates a new channel with the limit
+	 */
+	@Cron(`*/1 * * * * *`)
 	private async voiceManager() {
 		/**
 		 * Limit: 2
@@ -268,6 +273,44 @@ export class DVoice {
 				await this.createChannel(channel, 0);
 			});
 	}
+
+	/* private async minutesInVoice() {
+		if (this.client == null) return;
+		const allChannels = this._guild.channels.cache.toJSON();
+		const channels = _.filter(allChannels, channel => channel.isVoice());
+		_.forEach(channels, (channel: ds.VoiceChannel) => {
+			if (channel.members.toJSON().length > 0) {
+				_.forEach(channel.members.toJSON(), async member => {
+					if (!this.memberInVoice[member.id]) {
+						this.memberInVoice[member.id] = {
+							channelID: channel.id,
+							seconds: 1,
+						};
+					} else if (this.memberInVoice[member.id].channelID === channel.id)
+						this.memberInVoice[member.id].seconds++;
+					else
+						this.memberInVoice[member.id] = {
+							channelID: channel.id,
+							seconds: 1,
+						};
+					const discordUser =
+						await this.databaseService.discordUserFindOneByUserID(member.id);
+					if (discordUser == null || discordUser.minutesInVoice == null) {
+						const user = new DiscordUser();
+						user.userID = member.id;
+						user.warnings = 0;
+						user.bans = 0;
+						user.messages = 0;
+						user.minutesInVoice = 1;
+						await this.databaseService.discordUserInsertOne(user);
+						return;
+					}
+					discordUser.minutesInVoice++;
+					await this.databaseService.discordUserRepository.save(discordUser);
+				});
+			}
+		});
+	} */
 }
 
 export interface VoiceSettings {

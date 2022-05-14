@@ -55,7 +55,7 @@ export class DTools {
 	 * @param {string} userID - The user's ID.
 	 * @returns A boolean value.
 	 */
-	private async isMod(userID: string): Promise<boolean> {
+	public async isMod(userID: string): Promise<boolean> {
 		const userMod = await this.guild.members
 			.fetch(userID)
 			.then(user =>
