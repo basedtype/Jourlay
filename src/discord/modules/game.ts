@@ -1,5 +1,5 @@
 export class Game {
-	private currency = "Золото";
+	// private currency = "Золото";
 
-	async initPlayer() {}
+	// async initPlayer() {}
 }

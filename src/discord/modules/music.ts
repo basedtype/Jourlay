@@ -5,15 +5,17 @@ import * as voice from '@discordjs/voice';
 import * as ds from 'discord.js';
 import * as play from 'play-dl';
 import { Cron } from '@nestjs/schedule';
+import { Logger } from '@nestjs/common';
 
 /* CLASSES */
-export class DiscordMusic {
-	public static information: DiscordMusicType.Information = null;
+export class DMusic {
+	public information: DiscordMusicType.Information = null;
+	private logger = new Logger(DMusic.name);
 
 	/**
 	 * Send any message in channel
 	 */
-	private static async sendInChannel(opt: {
+	private async sendInChannel(opt: {
 		channelID: string;
 		message: string | ds.MessagePayload | ds.MessageOptions;
 	}): Promise<{ error: boolean; errorMessage?: string }> {
@@ -35,7 +37,8 @@ export class DiscordMusic {
 	 * Check amount users in voice channel
 	 */
 	@Cron(`* */1 * * * *`)
-	private static async checkMusicChannel() {
+	private async checkMusicChannel() {
+		if (!this.information) return;
 		if (this.information.channelID === ``) return;
 
 		this.information.guild.channels
@@ -52,7 +55,7 @@ export class DiscordMusic {
 	/**
 	 * Initialization music class
 	 */
-	public static async init(guild: ds.Guild) {
+	public async init(guild: ds.Guild) {
 		this.information = {
 			state: false,
 			onPause: false,
@@ -68,12 +71,13 @@ export class DiscordMusic {
 		};
 
 		this.handler();
+		this.logger.log(`✅ Music module`);
 	}
 
 	/**
 	 * Connectig to channel and create connection
 	 */
-	private static async connectToChannel(
+	private async connectToChannel(
 		channel: ds.VoiceChannel | ds.StageChannel
 	): Promise<DiscordMusicType.Return> {
 		const connection = voice.joinVoiceChannel({
@@ -95,7 +99,7 @@ export class DiscordMusic {
 	/**
 	 * Start timeout on state change
 	 */
-	private static handler() {
+	private handler() {
 		this.information.player.on(`stateChange`, async (oldState, newState) => {
 			if (this.information.state === false) return;
 			if (this.information.onPause === true) return;
@@ -136,7 +140,7 @@ export class DiscordMusic {
 	/**
 	 * Start play a song
 	 */
-	private static async playSong(
+	private async playSong(
 		opt: DiscordMusicType.QueueRequest
 	): Promise<DiscordMusicType.Return> {
 		try {
@@ -145,20 +149,23 @@ export class DiscordMusic {
 			const resource = voice.createAudioResource(stream.stream, {
 				inputType: stream.type,
 			});
+
 			this.information.player.play(resource);
 			this.information.connection.subscribe(this.information.player);
 
 			this.information.state = true;
 			this.information.updated = Date.now();
 
+
 			await voice.entersState(this.information.player, voice.AudioPlayerStatus.Playing, 5e3);
+
 			return { error: false, content: `Success` };
 		} catch (err) {
 			return { error: true, errorMessage: err };
 		}
 	}
 
-	private static async stopSong() {
+	private async stopSong() {
 		this.information.player.stop();
 		this.information.connection.subscribe(this.information.player);
 		this.information.connection.disconnect();
@@ -166,7 +173,7 @@ export class DiscordMusic {
 		this.init(this.information.guild);
 	}
 
-	private static async pauseSong() {
+	private async pauseSong() {
 		this.information.player.pause(true);
 		this.information.connection.subscribe(this.information.player);
 
@@ -174,7 +181,7 @@ export class DiscordMusic {
 		this.information.updated = Date.now();
 	}
 
-	private static async unPauseSong() {
+	private async unPauseSong() {
 		this.information.player.unpause();
 		this.information.connection.subscribe(this.information.player);
 
@@ -182,7 +189,7 @@ export class DiscordMusic {
 		this.information.updated = Date.now();
 	}
 
-	private static async skipSong() {
+	private async skipSong() {
 		this.information.player.stop();
 		this.information.connection.subscribe(this.information.player);
 		const url = this.information.queue.shift();
@@ -195,7 +202,7 @@ export class DiscordMusic {
 		}
 	}
 
-	static async play(opt: DiscordMusicType.PlayTypes): Promise<DiscordMusicType.Return> {
+	async play(opt: DiscordMusicType.PlayTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			const connectResult = await this.connectToChannel(opt.channel);
 			if (connectResult.error) {
@@ -224,7 +231,7 @@ export class DiscordMusic {
 		
 	}
 
-	static async stop(authorID: string, force: boolean): Promise<string> {
+	async stop(authorID: string, force: boolean): Promise<string> {
 		if (this.information.state === false) {
 			return `Музыка не активна`;
 		}
@@ -239,7 +246,7 @@ export class DiscordMusic {
 		}
 	}
 
-	static async pause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
+	async pause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.nowPlaying === null) {
@@ -257,7 +264,7 @@ export class DiscordMusic {
 		
 	}
 
-	static async unPause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
+	async unPause(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.nowPlaying === null) {
@@ -275,7 +282,7 @@ export class DiscordMusic {
 		
 	}
 
-	static async skip(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
+	async skip(opt: DiscordMusicType.PauseTypes): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.queue.length < 1) {
@@ -291,7 +298,7 @@ export class DiscordMusic {
 		
 	}
 
-	static async clearQueue(authorID: string, force: boolean): Promise<string> {
+	async clearQueue(authorID: string, force: boolean): Promise<string> {
 		if (this.information.state === false) {
 			return `Музыка не активна`;
 		}
@@ -306,7 +313,7 @@ export class DiscordMusic {
 		}
 	}
 
-	static async getQueue() {
+	async getQueue() {
 		if (this.information.state === false) {
 			return `Музыка не активна`;
 		}
@@ -318,7 +325,7 @@ export class DiscordMusic {
 		return this.information.queue;
 	}
 
-	static async getNowSong(): Promise<DiscordMusicType.Return> {
+	async getNowSong(): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {
 			return { error: true, errorMessage: `Бот не активен` };
 		} else if (this.information.nowPlaying === null) {
@@ -331,7 +338,7 @@ export class DiscordMusic {
 		
 	}
 
-	static async changeQueueOwner(
+	async changeQueueOwner(
 		opt: DiscordMusicType.ChangeQueueOwnerTypes
 	): Promise<DiscordMusicType.Return> {
 		if (this.information.state === false) {

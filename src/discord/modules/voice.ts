@@ -19,10 +19,12 @@ export class DVoice {
 			},
 		},
 	};
+	private limit = 5;
 
-	constructor(c: ds.Client, g: ds.Guild) {
+	public init(c: ds.Client, g: ds.Guild) {
 		this.client = c;
 		this.guild = g;
+		this.logger.log(`✅ Voice module`);
 	}
 
 	private deleteFunction = (channelNew: ds.GuildChannel) => {
@@ -48,6 +50,7 @@ export class DVoice {
 	 */
 	@Cron(`0 */1 * * * *`)
 	private async cleaner() {
+		if (!this.client) return;
 		const channels: ds.GuildChannel[] = [];
 		this.guild.channels.cache.forEach(channel => {
 			if (
@@ -69,13 +72,14 @@ export class DVoice {
 	}
 
 	/**
-	 * It removes users from the voiceSettings.users array if they were added more than 15 minutes ago
+	 * It removes users from the voiceSettings.users array if they were added more than 5 minutes ago
 	 */
 	@Cron(`0 */1 * * * *`)
 	private clearUsers() {
+		if (!this.client) return;
 		const filtered: VoiceMember[] = [];
 		for (const user of this.voiceSettings.users) {
-			if (user.addedAt > Date.now() + 15 * 60 * 1000) filtered.push(user);
+			if (user.addedAt > Date.now() + 5 * 60 * 1000) filtered.push(user);
 		}
 		this.voiceSettings.users = filtered;
 	}
@@ -84,6 +88,7 @@ export class DVoice {
 	 * It creates a new voice channel with the name `📣│ Алиса` and places it in the category `Голосовые`
 	 */
 	public async createChannelForAlisa() {
+		if (!this.guild) return;
 		const parentChannel = await this.guild.channels.fetch(`964616843392319488`);
 		const options: ds.GuildChannelCreateOptions = {
 			type: `GUILD_VOICE`,
@@ -140,13 +145,13 @@ export class DVoice {
 	 */
 	private checkUser(user: VoiceMember): boolean {
 		if (user.ban) return false;
-		else if (user.created >= 10 && !user.ban) {
+		else if (user.created >= this.limit && !user.ban) {
 			user.ban = true;
 			user.banAt = Date.now();
 			user.banTime = 5 * 60 * 1000;
 			this.updateUserObject(user);
 			return false;
-		} else if (user.created >= 10) {
+		} else if (user.created >= this.limit) {
 			if (Date.now() < user.banAt + user.banTime) {
 				const u: VoiceMember = {
 					id: user.id,
@@ -157,7 +162,8 @@ export class DVoice {
 				return true;
 			}
 			return false;
-		}
+		} 
+		return true;
 	}
 
 	private async createChannel(channel: ds.VoiceChannel, limit: number) {
@@ -172,26 +178,24 @@ export class DVoice {
 			reason: `Created channel for ${user.user.username}`,
 		};
 		if (limit > 0) options.userLimit = limit;
-		if (userObject.ban) {
-			let userVoiceState: ds.VoiceState = null;
-			this.guild.members.fetch(user.id).then(member => {
-				userVoiceState = member.guild.voiceStates.cache.find(
-					userFind => userFind.id === user.id
-				);
-				userVoiceState.disconnect(`User created too many channels`);
-			});
-			return;
-		}
 		let userVoiceState: ds.VoiceState = null;
-		let idNew: string = null;
-
-		this.guild.members.fetch(user.id).then(member => {
+		await this.guild.members.fetch(user.id).then(member => {
 			userVoiceState = member.guild.voiceStates.cache.find(
 				userFind => userFind.id === user.id
 			);
-
-			if (!this.checkUser(userObject))
+		});
+		if (userObject.ban && userObject.ban === true) {
+			this.logger.warn(`Disconnect banned user`);
+			userVoiceState.disconnect(`User created too many channels`);
+			return;
+		}
+		let idNew: string = null;
+		this.guild.members.fetch(user.id).then(() => {
+			if (!this.checkUser(userObject)) {
+				this.logger.warn(`Disconnect not checked user`);
 				userVoiceState.disconnect(`Check return false`);
+				return;
+			}
 
 			this.guild.channels.create(name, options).then(async data => {
 				idNew = data.id;
@@ -207,12 +211,13 @@ export class DVoice {
 		});
 	}
 
-
 	/**
 	 * It checks if the voice channel is full, and if it is, it creates a new channel with the limit
 	 */
 	@Cron(`*/1 * * * * *`)
 	private async voiceManager() {
+		if (!this.client) return;
+
 		/**
 		 * Limit: 2
 		 */
@@ -273,44 +278,6 @@ export class DVoice {
 				await this.createChannel(channel, 0);
 			});
 	}
-
-	/* private async minutesInVoice() {
-		if (this.client == null) return;
-		const allChannels = this._guild.channels.cache.toJSON();
-		const channels = _.filter(allChannels, channel => channel.isVoice());
-		_.forEach(channels, (channel: ds.VoiceChannel) => {
-			if (channel.members.toJSON().length > 0) {
-				_.forEach(channel.members.toJSON(), async member => {
-					if (!this.memberInVoice[member.id]) {
-						this.memberInVoice[member.id] = {
-							channelID: channel.id,
-							seconds: 1,
-						};
-					} else if (this.memberInVoice[member.id].channelID === channel.id)
-						this.memberInVoice[member.id].seconds++;
-					else
-						this.memberInVoice[member.id] = {
-							channelID: channel.id,
-							seconds: 1,
-						};
-					const discordUser =
-						await this.databaseService.discordUserFindOneByUserID(member.id);
-					if (discordUser == null || discordUser.minutesInVoice == null) {
-						const user = new DiscordUser();
-						user.userID = member.id;
-						user.warnings = 0;
-						user.bans = 0;
-						user.messages = 0;
-						user.minutesInVoice = 1;
-						await this.databaseService.discordUserInsertOne(user);
-						return;
-					}
-					discordUser.minutesInVoice++;
-					await this.databaseService.discordUserRepository.save(discordUser);
-				});
-			}
-		});
-	} */
 }
 
 export interface VoiceSettings {

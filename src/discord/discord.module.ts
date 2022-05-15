@@ -6,6 +6,8 @@ import { SteamModule } from '../modules/steam/steam.module';
 import { GogModule } from '../modules/gog/gog.module';
 import { HtlbModule } from '../modules/htlb/htlb.module';
 import { WallhavenModule } from '../modules/wallhaven/wallhaven.module';
+import { DVoice } from './modules/voice';
+import { DMusic } from './modules/music';
 
 @Module({
 	imports: [
@@ -16,7 +18,7 @@ import { WallhavenModule } from '../modules/wallhaven/wallhaven.module';
 		ToolsModule,
 		WallhavenModule,
 	],
-	providers: [DiscordService],
+	providers: [DiscordService, DVoice, DMusic],
 	exports: [DiscordService],
 })
 export class DiscordModule {}

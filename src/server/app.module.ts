@@ -5,8 +5,8 @@ import { DiscordModule } from "src/discord/discord.module";
 
 @Module({
 	imports: [
-		DiscordModule,
 		ScheduleModule.forRoot(),
+		DiscordModule,
 	],
 	controllers: [],
 	providers: [],

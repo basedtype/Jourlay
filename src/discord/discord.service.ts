@@ -11,11 +11,12 @@ import {GogService} from "../modules/gog/gog.service";
 import * as _ from "lodash";
 import * as voice from "@discordjs/voice";
 import * as play from "play-dl";
-import {DiscordMusic} from "./modules/music";
+import {DMusic} from "./modules/music";
 import { DTools } from "./modules/tools";
 import { DVoice } from "./modules/voice";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require(`dotenv`).config();
+
 
 @Injectable()
 export class DiscordService {
@@ -24,6 +25,8 @@ export class DiscordService {
 		private readonly steamService: SteamService,
 		private readonly gogService: GogService,
 		private readonly toolsService: ToolsService,
+		private dVoice: DVoice,
+		private dMusic: DMusic,
 	) {}
 
 	private readonly logger = new Logger(DiscordService.name);
@@ -31,7 +34,6 @@ export class DiscordService {
 	private client: ds.Client = null;
 	private _guild: ds.Guild = null;
 	private tools: DTools;
-	private voice: DVoice;
 	private player = voice.createAudioPlayer();
 	private env = process.env;
 
@@ -60,8 +62,10 @@ export class DiscordService {
 			const discord = await this.getInformation(client);
 			this.client = discord.client;
 			this._guild = discord.guild;
+			this.logger.log(`✅ Discord ready`);
+			this.dVoice.init(this.client, this._guild);
+			this.dMusic.init(this._guild);
 			this.tools = new DTools(this.client, this._guild);
-			this.voice = new DVoice(this.client, this._guild);
 			this.run();
 		}
 	}
@@ -79,7 +83,7 @@ export class DiscordService {
 	/**
 	 * Send information about sales in EGS
 	 */
-	@Cron(`0 30 21 * * *`)
+	@Cron(`0 30 8 * * *`)
 	private async EGSsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
@@ -99,17 +103,12 @@ export class DiscordService {
 			.then((channel: ds.TextChannel) => {
 				channel.send({embeds: [embed]});
 			});
-		this.client.channels
-			.fetch(`881988459437359135`)
-			.then((channel: ds.TextChannel) => {
-				channel.send({embeds: [embed]});
-			});
 	}
 
 	/**
 	 * Send information about sales in STEAM
 	 */
-	@Cron(`0 31 21 * * *`)
+	@Cron(`30 30 8 * * *`)
 	private async STEAMsales() {
 		let embed = new ds.MessageEmbed()
 			.setTitle(`Steam`)
@@ -121,15 +120,12 @@ export class DiscordService {
 		this.client.channels
 			.fetch(`869957685326524456`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
-		this.client.channels
-			.fetch(`881988459437359135`)
-			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
 	/**
 	 * Send information about sales in GOG
 	 */
-	@Cron(`0 32 21 * * *`)
+	@Cron(`0 31 8 * * *`)
 	private async GOGsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
@@ -154,9 +150,6 @@ export class DiscordService {
 		}
 		this.client.channels
 			.fetch(`869957685326524456`)
-			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
-		this.client.channels
-			.fetch(`881988459437359135`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
@@ -203,12 +196,6 @@ export class DiscordService {
 	}
 
 	private async run() {
-		this.client.on(`ready`, () => {
-			this.logger.log(`Discord are ready`);
-
-			DiscordMusic.init(this._guild);
-		});
-
 		this.client.on(`messageCreate`, async msg => {
 			if (msg.author.bot) return;
 
@@ -284,7 +271,7 @@ export class DiscordService {
 					const force = await this.tools.isMod(info.authorID);
 
 					if (info.command === `play` || info.command === `p`) {
-						const result = await DiscordMusic.play({
+						const result = await this.dMusic.play({
 							authorID: info.authorID,
 							channel: msg.member.voice.channel,
 							channelID: msg.member.voice.channelId,
@@ -306,14 +293,14 @@ export class DiscordService {
 								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `stop` || info.command === `s`) {
-						const result = await DiscordMusic.stop(info.authorID, force);
+						const result = await this.dMusic.stop(info.authorID, force);
 						await info.channel
 							.send({
 								content: `<@${info.authorID}>, ${result}`,
 							})
 							.then(msg => this.tools.msgDelete(msg, 5000));
 					} else if (info.command === `pause`) {
-						const result = await DiscordMusic.pause({
+						const result = await this.dMusic.pause({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
@@ -331,7 +318,7 @@ export class DiscordService {
 								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `unpause`) {
-						const result = await DiscordMusic.unPause({
+						const result = await this.dMusic.unPause({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
@@ -349,7 +336,7 @@ export class DiscordService {
 								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `skip`) {
-						const result = await DiscordMusic.skip({
+						const result = await this.dMusic.skip({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
@@ -367,7 +354,7 @@ export class DiscordService {
 								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `drop`) {
-						const result = await DiscordMusic.clearQueue(
+						const result = await this.dMusic.clearQueue(
 							info.authorID,
 							force
 						);
@@ -377,7 +364,8 @@ export class DiscordService {
 							})
 							.then(msg => this.tools.msgDelete(msg, 5000));
 					} else if (info.command === `queue` || info.command === `q`) {
-						const result = await DiscordMusic.getQueue();
+						const result = await this.dMusic.getQueue();
+						this.tools.msgDelete(msg, 1000);
 						if (result === `Музыка не активна`) {
 							await info.channel
 								.send({
@@ -405,7 +393,7 @@ export class DiscordService {
 							})
 							.then(msg => this.tools.msgDelete(msg, 5000));
 					} else if (info.command === `now` || info.command === `n`) {
-						const result = await DiscordMusic.getNowSong();
+						const result = await this.dMusic.getNowSong();
 						if (result.error) {
 							await info.channel
 								.send({
@@ -425,7 +413,7 @@ export class DiscordService {
 								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `change`) {
-						const result = await DiscordMusic.changeQueueOwner({
+						const result = await this.dMusic.changeQueueOwner({
 							ownerID: info.authorID,
 							nextOwnerID: info.splited[1],
 							force: force,

@@ -19,7 +19,7 @@ export class DTools {
 	 */
 	public msgDelete(msg: ds.Message, time: number) {
 		return setTimeout(async () => {
-			if (msg.deletable && !msg.deleted) {
+			if (msg.deletable) {
 				await msg.delete();
 			}
 		}, time);
