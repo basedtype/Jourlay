@@ -7,11 +7,14 @@ import {ToolsService} from "../modules/tools/tools.service";
 import {Cron} from "@nestjs/schedule";
 import {SteamService} from "../modules/steam/steam.service";
 import {GogService} from "../modules/gog/gog.service";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as _ from "lodash";
 import * as voice from "@discordjs/voice";
 import * as play from "play-dl";
 import {DiscordMusic} from "./modules/music";
 import { DTools } from "./modules/tools";
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require(`dotenv`).config();
 
 @Injectable()
 export class DiscordService {
@@ -28,6 +31,7 @@ export class DiscordService {
 	private _guild: ds.Guild = null;
 	private tools: DTools;
 	private player = voice.createAudioPlayer();
+	private env = process.env;
 
 	/**
 	 * Init discord module
@@ -50,7 +54,7 @@ export class DiscordService {
 					ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
 				],
 			});
-			await client.login(config.api);
+			await client.login(this.env.DISCORD_KEY);
 			const discord = await this.getInformation(client);
 			this.client = discord.client;
 			this._guild = discord.guild;

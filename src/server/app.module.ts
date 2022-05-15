@@ -12,14 +12,11 @@ import { AuthModule } from "src/auth/auth.module";
 import { ProfileModule } from "src/profile/profile.module";
 import { DiscordModule } from "src/discord/discord.module";
 import { LoadFileMiddleware } from "src/middleware/loadfiles.middleware";
-import { AlisaModule } from "src/modules/alisa/alisa.module";
 
 @Module({
 	imports: [
 		ConfigurationModule,
-		DatabaseModule,
 		ConfigModule,
-		BullModule,
 		AuthModule,
 		ProfileModule,
 		DiscordModule,
@@ -27,7 +24,6 @@ import { AlisaModule } from "src/modules/alisa/alisa.module";
 			load: [configuration],
 		}),
 		ScheduleModule.forRoot(),
-		AlisaModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
