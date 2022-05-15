@@ -13,6 +13,7 @@ import * as voice from "@discordjs/voice";
 import * as play from "play-dl";
 import {DiscordMusic} from "./modules/music";
 import { DTools } from "./modules/tools";
+import { DVoice } from "./modules/voice";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require(`dotenv`).config();
 
@@ -30,6 +31,7 @@ export class DiscordService {
 	private client: ds.Client = null;
 	private _guild: ds.Guild = null;
 	private tools: DTools;
+	private voice: DVoice;
 	private player = voice.createAudioPlayer();
 	private env = process.env;
 
@@ -59,6 +61,7 @@ export class DiscordService {
 			this.client = discord.client;
 			this._guild = discord.guild;
 			this.tools = new DTools(this.client, this._guild);
+			this.voice = new DVoice(this.client, this._guild);
 			this.run();
 		}
 	}
