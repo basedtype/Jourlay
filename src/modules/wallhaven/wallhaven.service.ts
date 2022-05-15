@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from 'src/database/database.service';
 import axios from 'axios';
 import * as _ from 'lodash';
 
 @Injectable()
 export class WallhavenService {
-	constructor(private readonly databaseService: DatabaseService) {}
-
 	private options = {};
 
 	private async getJson(url: string) {
