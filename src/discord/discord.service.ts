@@ -14,6 +14,7 @@ import * as play from "play-dl";
 import {DMusic} from "./modules/music";
 import { DTools } from "./modules/tools";
 import { DVoice } from "./modules/voice";
+import { DRoles } from "./modules/roles";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require(`dotenv`).config();
 
@@ -27,6 +28,7 @@ export class DiscordService {
 		private readonly toolsService: ToolsService,
 		private dVoice: DVoice,
 		private dMusic: DMusic,
+		private dRoles: DRoles,
 	) {}
 
 	private readonly logger = new Logger(DiscordService.name);
@@ -65,6 +67,7 @@ export class DiscordService {
 			this.logger.log(`✅ Discord ready`);
 			this.dVoice.init(this.client, this._guild);
 			this.dMusic.init(this._guild);
+			this.dRoles.init(this.client, this._guild);
 			this.tools = new DTools(this.client, this._guild);
 			this.run();
 		}
@@ -83,7 +86,7 @@ export class DiscordService {
 	/**
 	 * Send information about sales in EGS
 	 */
-	@Cron(`0 30 8 * * *`)
+	@Cron(`0 0 13 * * *`)
 	private async EGSsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
@@ -108,7 +111,7 @@ export class DiscordService {
 	/**
 	 * Send information about sales in STEAM
 	 */
-	@Cron(`30 30 8 * * *`)
+	@Cron(`30 0 13 * * *`)
 	private async STEAMsales() {
 		let embed = new ds.MessageEmbed()
 			.setTitle(`Steam`)
@@ -125,7 +128,7 @@ export class DiscordService {
 	/**
 	 * Send information about sales in GOG
 	 */
-	@Cron(`0 31 8 * * *`)
+	@Cron(`0 1 13 * * *`)
 	private async GOGsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
@@ -446,13 +449,6 @@ export class DiscordService {
 					const embed = new ds.MessageEmbed()
 						.setColor(0x44adab)
 						.setTitle(`Добро пожаловать на сервер`)
-						.setDescription(
-							`Давай введу тебя в курс дела\n
-						<#868108110001221632> Здесь проходит все основное общение\n
-						<#875430878489227335> Тут мы делимся артами\n
-						<#875430878489227335> Раздел для 18+\n
-						<#880036048162402304> Сюда поржать`
-						)
 						.setFooter(`With ❤️ by NidhoggBot v2.0`);
 					channel.send({content: `<@${member.id}>`, embeds: [embed]});
 				});

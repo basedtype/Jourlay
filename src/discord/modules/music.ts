@@ -1,4 +1,3 @@
-/* IMPORTS */
 import { DiscordMusicType } from 'types';
 
 import * as voice from '@discordjs/voice';
@@ -7,7 +6,6 @@ import * as play from 'play-dl';
 import { Cron } from '@nestjs/schedule';
 import { Logger } from '@nestjs/common';
 
-/* CLASSES */
 export class DMusic {
 	public information: DiscordMusicType.Information = null;
 	private logger = new Logger(DMusic.name);

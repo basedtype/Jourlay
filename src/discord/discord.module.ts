@@ -8,6 +8,7 @@ import { HtlbModule } from '../modules/htlb/htlb.module';
 import { WallhavenModule } from '../modules/wallhaven/wallhaven.module';
 import { DVoice } from './modules/voice';
 import { DMusic } from './modules/music';
+import { DRoles } from './modules/roles';
 
 @Module({
 	imports: [
@@ -18,7 +19,7 @@ import { DMusic } from './modules/music';
 		ToolsModule,
 		WallhavenModule,
 	],
-	providers: [DiscordService, DVoice, DMusic],
+	providers: [DiscordService, DVoice, DMusic, DRoles],
 	exports: [DiscordService],
 })
 export class DiscordModule {}
