@@ -15,8 +15,6 @@ import {DMusic} from "./modules/music";
 import { DTools } from "./modules/tools";
 import { DVoice } from "./modules/voice";
 import { DRoles } from "./modules/roles";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require(`dotenv`).config();
 
 
 @Injectable()
