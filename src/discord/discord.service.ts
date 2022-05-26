@@ -258,6 +258,17 @@ export class DiscordService {
 						});
 					});
 				}
+
+				if (info.channelID === `799562265304891392`) {
+					if (info.command === `send`) {
+						const channelID = info.splited[1];
+						const text: string[] = [];
+						for (const t of info.splited) {
+							if (info.splited.indexOf(t) > 1) text.push(t);
+						}
+						this.tools.sendInChannel({channelID: channelID, message: text.join(` `)});
+					}
+				}
 			}
 
 			/* DEV GUILD */
