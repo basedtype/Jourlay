@@ -167,17 +167,28 @@ export class TwitchService {
 			const msSplit = messageSplit[0].split(`!`);
 			const command = msSplit[1];
 
-			if (command === `ping`) this.client.say(channel, `pong`);
+			if (command === `ping`) this.client.say(channel, `I'm here`);
 
+			/**
+			 * Translate english to russian
+			 */
 			if (
 				!this.checkDuplicate(messageSplit) &&
 				this.checkEn(messageSplit) && 
 				message.length > 2
-			)
+			) {
 				if (!this.banList.translate.includes(username)) {
 					const data = await this.checkWords(messageSplit);
 					if (data.count > 0) this.client.say(channel, data.text);
 				}
+			}
+
+			if (channel !== `#jourloy`) return;
+
+			this.logger.debug(channel);
+			if (command === `ann`) {
+				await this.client.say(channel, `/announceblue Это тестовый анонс через костыль :)`);
+			}
 		});
 	}
 }
