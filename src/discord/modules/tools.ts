@@ -63,4 +63,24 @@ export class DTools {
 			);
 		return userMod == null ? false : true;
 	}
+
+	public createEmbed(opt: EmbedDiscord) {
+		const embed = new ds.MessageEmbed({footer: opt.footer, author: opt.author});
+
+		embed.setColor((opt.color) ? opt.color : 0xf05656);
+		if (opt.title) embed.setTitle(opt.title);
+		if (opt.description) embed.setDescription(opt.description);
+		if (opt.timestamp) embed.setTimestamp();
+
+		return embed;
+	}
+}
+
+export interface EmbedDiscord {
+	color?: ds.ColorResolvable;
+	title?: string;
+	description?: string;
+	footer?: ds.MessageEmbedFooter;
+	author?: ds.MessageEmbedAuthor;
+	timestamp?: boolean;
 }

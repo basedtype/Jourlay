@@ -38,6 +38,8 @@ export class DiscordService {
 	private player = voice.createAudioPlayer();
 	private env = process.env;
 
+	private footerText = `With ❤️ by Jourlay`;
+
 	/**
 	 * Init discord module
 	 */
@@ -274,7 +276,20 @@ export class DiscordService {
 
 			/* DEV GUILD */
 
-			// if (info.isGuild === true && msg.guild.id === `823463145963913236`) {}
+			if (info.isGuild === true && msg.guild.id === `823463145963913236`) {
+				if (info.command === `test`) {
+					const embed = this.tools.createEmbed({
+						color: 0x44adab,
+						title: `Привет!`,
+						description: `Давай покажу что и как у нас\n\n<#868108110001221632> - тут мы общаемся 🤗\n<#880036048162402304> - тут мы шутим 😁\n<#875430878489227335> - тут мы общаемся если сообщения не пропускает дискорд 😉`,
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true,
+					});
+					info.channel.send({content: `<@${info.authorID}>`, embeds: [embed]});
+				}
+			}
 
 			/* MY GUILD */
 
@@ -471,10 +486,15 @@ export class DiscordService {
 			this.client.channels
 				.fetch(`869693463510278245`)
 				.then((channel: ds.TextChannel) => {
-					const embed = new ds.MessageEmbed()
-						.setColor(0x44adab)
-						.setTitle(`Добро пожаловать на сервер`)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`);
+					const embed = this.tools.createEmbed({
+						color: 0x44adab,
+						title: `Привет!`,
+						description: `Давай покажу что и как у нас\n\n<#868108110001221632> - тут мы общаемся 🤗\n<#880036048162402304> - тут мы шутим 😁\n<#875430878489227335> - тут мы общаемся если сообщения не пропускает дискорд 😉`,
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true,
+					});
 					channel.send({content: `<@${member.id}>`, embeds: [embed]});
 				});
 		});
@@ -484,12 +504,15 @@ export class DiscordService {
 			this.client.channels
 				.fetch(`818566531486187611`)
 				.then((channel: ds.TextChannel) => {
-					const embed = new ds.MessageEmbed()
-						.setColor(0x341331)
-						.setTitle(`Пользователь покинул сервер`)
-						.setDescription(`<@${member.id}> (${member.id}) покинул сервер`)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`)
-						.setTimestamp();
+					const embed = this.tools.createEmbed({
+						color: 0x341331,
+						title: `User leave from server.`,
+						description: `<@${member.id}> (${member.id}) leave from server.`,
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true
+					});
 					channel.send({embeds: [embed]});
 				});
 		});
@@ -504,15 +527,18 @@ export class DiscordService {
 				.then((channel: ds.TextChannel) => {
 					const embeds = [];
 					const attachments = [];
-					const embed = new ds.MessageEmbed()
-						.setColor(0xf05656)
-						.setTitle(`Сообщение удалено`)
-						.setDescription(
-							`Содержание:\n\`\`\`${msg.content}\`\`\`\n\nАвтор: <@${msg.author.id}>`
-						)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`)
-						.setAuthor(msg.author.username, msg.author.avatarURL())
-						.setTimestamp();
+					const embed = this.tools.createEmbed({
+						title: `Message deleted.`,
+						description: `Content:\n\`\`\`${msg.content}`,
+						author: {
+							name: msg.author.username,
+							iconURL: msg.author.avatarURL()
+						},
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true,
+					});
 					embeds.push(embed);
 					if (msg.attachments.toJSON().length > 0)
 						for (const i in msg.attachments.toJSON())
