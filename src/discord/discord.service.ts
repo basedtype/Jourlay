@@ -15,6 +15,7 @@ import {DMusic} from "./modules/music";
 import { DTools } from "./modules/tools";
 import { DVoice } from "./modules/voice";
 import { DRoles } from "./modules/roles";
+import {Language as lng} from "../modules/language";
 
 
 @Injectable()
@@ -276,6 +277,21 @@ export class DiscordService {
 			// if (info.isGuild === true && msg.guild.id === `823463145963913236`) {}
 
 			/* MY GUILD */
+
+			/**
+			 * Translate english to russian
+			 */
+			if (
+				!lng.checkDuplicate(info.splited) &&
+				lng.checkEn(info.splited) && 
+				msg.content.length > 2
+			) {
+				const data = await lng.checkWords(info.splited);
+				if (data.count > 0) {
+					const message = `Полагаю ты имел ввиду что-то вроде этого: \n> ${data.text}`;
+					this.tools.sendInChannel({channelID: info.channelID, message: message});
+				}
+			}
 
 			if (info.isGuild === true && msg.guild.id === `437601028662231040`) {
 				/* MUSIC CHANNEL */
