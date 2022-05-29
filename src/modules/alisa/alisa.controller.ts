@@ -8,9 +8,9 @@ export class AlisaController {
         private readonly alisaService: AlisaService
     ) {}
 
-    @Post()
+    /* @Post()
     async test(@Body() body, @Res() response) {
         const command = body.request.command;
         response.json(await this.alisaService.manager(command));
-    }
+    } */
 }

@@ -166,19 +166,3 @@ export namespace DiscordMusicType {
 		contentType?: InstanceType;
 	}
 }
-
-export namespace DiscordRolesTypes {
-	interface SetRoleOpt {
-		client: ds.Client;
-		guild: ds.Guild;
-		userID: string;
-		roleID: string;
-		expire?: number;
-	}
-
-	interface Output {
-		error: boolean;
-		description?: string;
-		reason?: string;
-	}
-}

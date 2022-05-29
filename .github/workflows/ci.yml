@@ -3,7 +3,7 @@ name: Deploy to server
 on:
     push:
         branches:
-            - master
+            - main
     workflow_dispatch:
 
 jobs:
@@ -20,4 +20,4 @@ jobs:
                   username: ${{ secrets.USERNAME }}
                   port: ${{ secrets.PORT }}
                   password: ${{ secrets.PASSWORD }}
-                  command: cd ${{ secrets.FOLDER }} && docker-compose down && git checkout master && git pull && docker-compose up -d
+                  command: cd ${{ secrets.FOLDER }} && npm run start:dev

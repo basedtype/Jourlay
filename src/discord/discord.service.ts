@@ -1,85 +1,44 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable spaced-comment */
 import {Injectable, Logger} from "@nestjs/common";
 import * as ds from "discord.js";
-import {DatabaseService} from "src/database/database.service";
 import {EgsService} from "../modules/egs/egs.service";
 import {ToolsService} from "../modules/tools/tools.service";
 import {Cron} from "@nestjs/schedule";
 import {SteamService} from "../modules/steam/steam.service";
 import {GogService} from "../modules/gog/gog.service";
-import {Service} from "src/entity/services.entity";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as _ from "lodash";
 import * as voice from "@discordjs/voice";
 import * as play from "play-dl";
-import {DiscordMusic} from "./modules/music";
-import {DiscordUser} from "src/entity/discord.entity";
+import {DMusic} from "./modules/music";
+import { DTools } from "./modules/tools";
+import { DVoice } from "./modules/voice";
+import { DRoles } from "./modules/roles";
+import {Language as lng} from "../modules/language";
+
 
 @Injectable()
 export class DiscordService {
 	constructor(
-		private readonly databaseService: DatabaseService,
 		private readonly egsService: EgsService,
 		private readonly steamService: SteamService,
 		private readonly gogService: GogService,
 		private readonly toolsService: ToolsService,
+		private dVoice: DVoice,
+		private dMusic: DMusic,
+		private dRoles: DRoles,
 	) {}
 
 	private readonly logger = new Logger(DiscordService.name);
 
 	private client: ds.Client = null;
 	private _guild: ds.Guild = null;
-	private voiceChannels = {
-		duo: {
-			id: `865697645920911371`,
-			name: `Кибер комната`,
-		},
-		trio: {
-			id: `865697670852378684`,
-			name: `Кибер комната`,
-		},
-		four: {
-			id: `865697708676087828`,
-			name: `Кибер комната`,
-		},
-		five: {
-			id: `865697728766803998`,
-			name: `Кибер комната`,
-		},
-	};
-	private banVoiceUsers: string[] = [];
-	private voiceUsers: string[] = [];
+	private tools: DTools;
 	private player = voice.createAudioPlayer();
-	private memberInVoice = {};
+	private env = process.env;
 
-	private deleteMSG(msg: ds.Message, time: number) {
-		setTimeout(async () => {
-			if (msg.deletable && !msg.deleted) {
-				await msg.delete();
-			}
-		}, time);
-	}
-
-	/**
-	 * Send any message in channel
-	 */
-	private async sendInChannel(opt: {
-		channelID: string;
-		message: string | ds.MessagePayload | ds.MessageOptions;
-	}): Promise<{error: boolean; errorMessage?: string}> {
-		const channel = await this.client.channels.fetch(opt.channelID);
-
-		if (channel.isText()) {
-			channel.send(opt.message);
-			return {error: false};
-		} else if (channel.isThread()) {
-			this.logger.error(`Bot cannot send message in threads`);
-			return {error: true, errorMessage: `This is thread`};
-		} else if (channel.isVoice()) {
-			this.logger.error(`Bot cannot send message in voice`);
-			return {error: true, errorMessage: `This is voice channel`};
-		} 
-		this.logger.error(`Unknown type of channel`);
-		return {error: true, errorMessage: `Unknown type of channel`};
-	}
+	private footerText = `With ❤️ by Jourlay`;
 
 	/**
 	 * Init discord module
@@ -87,16 +46,6 @@ export class DiscordService {
 	@Cron(`*/30 * * * * *`)
 	async init() {
 		if (this.client == null) {
-			const config: Service = await this.databaseService.serviceFindOne(
-				`Discord`,
-				`Nidhoggbot`
-			);
-			if (config == null) {
-				this.logger.error(
-					`Database can't find sevice with 'Discord' name and 'Nidhoggbot' target`
-				);
-				return;
-			}
 			const client = new ds.Client({
 				intents: [
 					ds.Intents.FLAGS.GUILDS,
@@ -112,10 +61,15 @@ export class DiscordService {
 					ds.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
 				],
 			});
-			await client.login(config.api);
+			await client.login(this.env.DISCORD_KEY);
 			const discord = await this.getInformation(client);
 			this.client = discord.client;
 			this._guild = discord.guild;
+			this.logger.log(`✅ Discord ready`);
+			this.dVoice.init(this.client, this._guild);
+			this.dMusic.init(this._guild);
+			this.dRoles.init(this.client, this._guild);
+			this.tools = new DTools(this.client, this._guild);
 			this.run();
 		}
 	}
@@ -130,50 +84,10 @@ export class DiscordService {
 		return data;
 	}
 
-
-	@Cron(`*/1 * * * * *`)
-	private async minutesInVoice() {
-		if (this.client == null) return;
-		const allChannels = this._guild.channels.cache.toJSON();
-		const channels = _.filter(allChannels, channel => channel.isVoice());
-		_.forEach(channels, (channel: ds.VoiceChannel) => {
-			if (channel.members.toJSON().length > 0) {
-				_.forEach(channel.members.toJSON(), async member => {
-					if (!this.memberInVoice[member.id]) {
-						this.memberInVoice[member.id] = {
-							channelID: channel.id,
-							seconds: 1,
-						};
-					} else if (this.memberInVoice[member.id].channelID === channel.id)
-						this.memberInVoice[member.id].seconds++;
-					else
-						this.memberInVoice[member.id] = {
-							channelID: channel.id,
-							seconds: 1,
-						};
-					const discordUser =
-						await this.databaseService.discordUserFindOneByUserID(member.id);
-					if (discordUser == null || discordUser.minutesInVoice == null) {
-						const user = new DiscordUser();
-						user.userID = member.id;
-						user.warnings = 0;
-						user.bans = 0;
-						user.messages = 0;
-						user.minutesInVoice = 1;
-						await this.databaseService.discordUserInsertOne(user);
-						return;
-					}
-					discordUser.minutesInVoice++;
-					await this.databaseService.discordUserRepository.save(discordUser);
-				});
-			}
-		});
-	}
-
 	/**
 	 * Send information about sales in EGS
 	 */
-	@Cron(`0 30 21 * * *`)
+	@Cron(`0 0 13 * * *`)
 	private async EGSsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
@@ -193,17 +107,12 @@ export class DiscordService {
 			.then((channel: ds.TextChannel) => {
 				channel.send({embeds: [embed]});
 			});
-		this.client.channels
-			.fetch(`881988459437359135`)
-			.then((channel: ds.TextChannel) => {
-				channel.send({embeds: [embed]});
-			});
 	}
 
 	/**
 	 * Send information about sales in STEAM
 	 */
-	@Cron(`0 31 21 * * *`)
+	@Cron(`30 0 13 * * *`)
 	private async STEAMsales() {
 		let embed = new ds.MessageEmbed()
 			.setTitle(`Steam`)
@@ -215,15 +124,12 @@ export class DiscordService {
 		this.client.channels
 			.fetch(`869957685326524456`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
-		this.client.channels
-			.fetch(`881988459437359135`)
-			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
 	/**
 	 * Send information about sales in GOG
 	 */
-	@Cron(`0 32 21 * * *`)
+	@Cron(`0 1 13 * * *`)
 	private async GOGsales() {
 		if (this.client == null) return;
 		const embed = new ds.MessageEmbed()
@@ -249,355 +155,8 @@ export class DiscordService {
 		this.client.channels
 			.fetch(`869957685326524456`)
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
-		this.client.channels
-			.fetch(`881988459437359135`)
-			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
-	/**
-	 * Set member count in name of voice channel
-	 */
-	@Cron(`* */5 * * * *`)
-	private async memberCount() {
-		if (this.client == null) return;
-		if (this._guild == null) return;
-
-		const names = [`Тянок`, `Ебейших`, `Викингов`, `Участников`, `Ботов`];
-
-		this.client.channels
-			.fetch(`871750394211090452`)
-			.then((channel: ds.VoiceChannel) => {
-				const memberCount = this._guild.memberCount;
-				channel.setName(`${_.sample(names)}: ${memberCount}`);
-			});
-	}
-
-	/**
-	 * Remove unused rooms
-	 */
-	@Cron(`*/20 * * * * *`)
-	private async cleaner() {
-		if (this._guild == null) return;
-
-		const channels: ds.GuildChannel[] = [];
-		this._guild.channels.cache.forEach(channel => {
-			if (
-				channel.type === `GUILD_VOICE` &&
-				(channel.name === this.voiceChannels.duo.name ||
-					channel.name === this.voiceChannels.trio.name ||
-					channel.name === this.voiceChannels.four.name ||
-					channel.name === this.voiceChannels.five.name)
-			)
-				channels.push(channel);
-		});
-		for (const i in channels) {
-			if (channels[i].members.first() == null) {
-				channels[i]
-					.delete()
-					.then(() => {})
-					.catch(() => {});
-			}
-		}
-	}
-
-	/**
-	 * Add user in ban list if he created too many channels
-	 */
-	@Cron(`*/5 * * * * *`)
-	private async addUsersInVoiceBan() {
-		const warningsID = {};
-		for (const i in this.voiceUsers) {
-			if (warningsID[this.voiceUsers[i]] == null) {
-				warningsID[this.voiceUsers[i]] = {count: 1};
-			} else if (warningsID[this.voiceUsers[i]] != null) {
-				warningsID[this.voiceUsers[i]].count++;
-			}
-		}
-		for (const i in warningsID) {
-			if (warningsID[i].count > 3 && this.banVoiceUsers.includes(i) === false) {
-				this.createLog(null, `User <@${i}> created too many channels`);
-				this.banVoiceUsers.push(i);
-			}
-		}
-	}
-
-	/**
-	 * Remove user from ban list if his ban expired
-	 */
-	@Cron(`0 */15 * * * *`)
-	private async clearBanLists() {
-		this.banVoiceUsers = [];
-		this.voiceUsers = [];
-	}
-
-	/**
-	 * Create voice channels with limit
-	 */
-	@Cron(`*/1 * * * * *`)
-	private async createVoiceChannel() {
-		if (this._guild == null) return;
-
-		const deleteFunction = (channelNew: ds.GuildChannel) => {
-			if (channelNew.members.first() == null) {
-				channelNew
-					.delete()
-					.then(() => {})
-					.catch(() => {});
-				return true;
-			}
-			return false;
-		};
-
-		const repeatCheck = (channelNew: ds.GuildChannel) => {
-			setTimeout(() => {
-				deleteChannel(channelNew);
-			}, 1000);
-		};
-
-		const deleteChannel = (channelNew: ds.GuildChannel) => {
-			if (deleteFunction(channelNew) === false) repeatCheck(channelNew);
-		};
-
-		/**
-		 * Create channel with limit is 2
-		 */
-		this.client.channels
-			.fetch(this.voiceChannels.duo.id)
-			.then((channel: ds.VoiceChannel | null) => {
-				if (channel == null || channel.full == null || channel.full === false)
-					return;
-
-				const parent = channel.parent;
-				const guild = channel.guild;
-				const name = this.voiceChannels.duo.name;
-				const options: ds.GuildChannelCreateOptions = {
-					type: `GUILD_VOICE`,
-					userLimit: 2,
-					position: parent.position + 10,
-					parent: parent,
-					reason: `Created channel for `,
-				};
-				const user = channel.members.first();
-				options.reason += `${user.user.username}`;
-				this.voiceUsers.push(user.id);
-				if (this.banVoiceUsers.includes(user.id) === true) {
-					let userVoiceState: ds.VoiceState = null;
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-						userVoiceState.disconnect(`User created too many channels`);
-						
-					});
-				} else {
-					let userVoiceState: ds.VoiceState = null;
-					let idNew: string = null;
-
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-
-						guild.channels.create(name, options).then(async data => {
-							idNew = data.id;
-							const channelNew: ds.VoiceChannel = await guild.channels
-								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => ch);
-							userVoiceState
-								.setChannel(channelNew)
-								.then(res => {})
-								.catch(err => {});
-							repeatCheck(channelNew);
-						});
-					});
-				}
-			});
-
-		/**
-		 * Create channel with limit is 3
-		 */
-		this.client.channels
-			.fetch(this.voiceChannels.trio.id)
-			.then((channel: ds.VoiceChannel | null) => {
-				if (channel == null || channel.full == null || channel.full === false)
-					return;
-
-				const parent = channel.parent;
-				const guild = channel.guild;
-				const name = this.voiceChannels.trio.name;
-				const options: ds.GuildChannelCreateOptions = {
-					type: `GUILD_VOICE`,
-					userLimit: 3,
-					position: parent.position + 10,
-					parent: parent,
-					reason: `Created channel for `,
-				};
-				const user = channel.members.first();
-				options.reason += `${user.user.username}`;
-				this.voiceUsers.push(user.id);
-				if (this.banVoiceUsers.includes(user.id) === true) {
-					let userVoiceState: ds.VoiceState = null;
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-						userVoiceState.disconnect(`User created too many channels`);
-						
-					});
-				} else {
-					let userVoiceState: ds.VoiceState = null;
-					let idNew: string = null;
-
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-
-						guild.channels.create(name, options).then(async data => {
-							idNew = data.id;
-							const channelNew: ds.VoiceChannel = await guild.channels
-								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => ch);
-							userVoiceState
-								.setChannel(channelNew)
-								.then(res => {})
-								.catch(err => {});
-							repeatCheck(channelNew);
-						});
-					});
-				}
-			});
-
-		/**
-		 * Create channel with limit is 4
-		 */
-		this.client.channels
-			.fetch(this.voiceChannels.four.id)
-			.then((channel: ds.VoiceChannel | null) => {
-				if (channel == null || channel.full == null || channel.full === false)
-					return;
-
-				const parent = channel.parent;
-				const guild = channel.guild;
-				const name = this.voiceChannels.four.name;
-				const options: ds.GuildChannelCreateOptions = {
-					type: `GUILD_VOICE`,
-					userLimit: 4,
-					position: parent.position + 10,
-					parent: parent,
-					reason: `Created channel for `,
-				};
-				const user = channel.members.first();
-				options.reason += `${user.user.username}`;
-				this.voiceUsers.push(user.id);
-				if (this.banVoiceUsers.includes(user.id) === true) {
-					let userVoiceState: ds.VoiceState = null;
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-						userVoiceState.disconnect(`User created too many channels`);
-						
-					});
-				} else {
-					let userVoiceState: ds.VoiceState = null;
-					let idNew: string = null;
-
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-
-						guild.channels.create(name, options).then(async data => {
-							idNew = data.id;
-							const channelNew: ds.VoiceChannel = await guild.channels
-								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => ch);
-							userVoiceState
-								.setChannel(channelNew)
-								.then(res => {})
-								.catch(err => {});
-							repeatCheck(channelNew);
-						});
-					});
-				}
-			});
-
-		/**
-		 * Create channel with limit is 5
-		 */
-		this.client.channels
-			.fetch(this.voiceChannels.five.id)
-			.then((channel: ds.VoiceChannel | null) => {
-				if (channel == null || channel.full == null || channel.full === false)
-					return;
-
-				const parent = channel.parent;
-				const guild = channel.guild;
-				const name = this.voiceChannels.five.name;
-				const options: ds.GuildChannelCreateOptions = {
-					type: `GUILD_VOICE`,
-					userLimit: 5,
-					position: parent.position + 10,
-					parent: parent,
-					reason: `Created channel for `,
-				};
-				const user = channel.members.first();
-				options.reason += `${user.user.username}`;
-				this.voiceUsers.push(user.id);
-				if (this.banVoiceUsers.includes(user.id) === true) {
-					let userVoiceState: ds.VoiceState = null;
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-						userVoiceState.disconnect(`User created too many channels`);
-						
-					});
-				} else {
-					let userVoiceState: ds.VoiceState = null;
-					let idNew: string = null;
-
-					guild.members.fetch(user.id).then(member => {
-						userVoiceState = member.guild.voiceStates.cache.find(
-							userFind => userFind.id === user.id
-						);
-
-						guild.channels.create(name, options).then(async data => {
-							idNew = data.id;
-							const channelNew: ds.VoiceChannel = await guild.channels
-								.fetch(idNew)
-								.then((ch: ds.VoiceChannel) => ch);
-							userVoiceState
-								.setChannel(channelNew)
-								.then(res => {})
-								.catch(err => {});
-							repeatCheck(channelNew);
-						});
-					});
-				}
-			});
-	}
-
-	async createChannelByAlisa() {
-		/* @ts-ignore */
-		const parent: ds.CategoryChannel = await this._guild.channels.fetch(
-			`870395638276300821`
-		);
-		const options: ds.GuildChannelCreateOptions = {
-			type: `GUILD_VOICE`,
-			position: parent.position + 10,
-			parent: parent,
-			reason: `Created channel for `,
-		};
-		const name = `Алиса (${_.random(0, 10)} | ${_.random(0, 10)})`;
-		this._guild.channels.create(name, options).then(async data => {
-			const idNew = data.id;
-			const channelNew: ds.VoiceChannel = await this._guild.channels
-				.fetch(idNew)
-				.then((ch: ds.VoiceChannel) => ch);
-		});
-	}
 
 	/**
 	 * Create log in channel
@@ -615,14 +174,6 @@ export class DiscordService {
 			.then((channel: ds.TextChannel) => channel.send({embeds: [embed]}));
 	}
 
-	/**
-	 * Check moderation permissions
-	 */
-	private async isMod(userID: string): Promise<boolean> {
-		const userMod = await this._guild.members.fetch(userID).then(user => user.roles.cache.find(role => role.id === `799561051905458176`));
-		return userMod == null ? false : true;
-	}
-
 	private async playSong(url: string) {
 		const stream = await play.stream(url);
 		const resource = voice.createAudioResource(stream.stream, {
@@ -636,6 +187,7 @@ export class DiscordService {
 		const connection = voice.joinVoiceChannel({
 			channelId: channel.id,
 			guildId: channel.guild.id,
+			//@ts-ignore
 			adapterCreator: channel.guild.voiceAdapterCreator,
 		});
 		try {
@@ -648,12 +200,6 @@ export class DiscordService {
 	}
 
 	private async run() {
-		this.client.on(`ready`, () => {
-			this.logger.log(`Discord are ready`);
-
-			DiscordMusic.init(this._guild);
-		});
-
 		this.client.on(`messageCreate`, async msg => {
 			if (msg.author.bot) return;
 
@@ -667,10 +213,6 @@ export class DiscordService {
 				splited: msg.content.split(` `),
 				command: msg.content.split(` `)[0].split(`!`)[1],
 			};
-
-			if (info.content.length >= 3 && msg.guildId === `437601028662231040`) {
-				this.databaseService.discordUserAddMessage(info.authorID);
-			}
 
 			/* <=========================== CROSSPOST ===========================> */
 
@@ -698,7 +240,7 @@ export class DiscordService {
 			if (
 				info.isGuild === true &&
 				msg.guild.id === `437601028662231040` &&
-				(await this.isMod(info.authorID)) === true
+				(await this.tools.isMod(info.authorID)) === true
 			) {
 				if (info.command === `ping`) info.channel.send(`Pong`);
 
@@ -720,104 +262,59 @@ export class DiscordService {
 					});
 				}
 
-				if (info.command === `db_add`) {
-					const userID = info.splited[1];
-					const amount = parseInt(info.splited[2]);
-					await this.databaseService.discordUserAddMessage(userID, amount);
-					const user = await this.databaseService.discordUserFindOneByUserID(
-						userID
-					);
-					info.channel.send({
-						content: `Было успешно добавлено ${amount} сообщений, теперь у него ${user.messages} сообщений`,
-					});
-				}
-
-				if (info.command === `db_remove`) {
-					const userID = info.splited[1];
-					const amount = parseInt(info.splited[2]);
-					await this.databaseService.discordUserRemoveMessage(userID, amount);
-					const user = await this.databaseService.discordUserFindOneByUserID(
-						userID
-					);
-					info.channel.send({
-						content: `Было успешно отнято ${amount} сообщений, теперь у него ${user.messages} сообщений`,
-					});
-				}
-
-				if (info.command === `user`) {
-					const userID = info.splited[1];
-					const user = await this.databaseService.discordUserFindOneByUserID(
-						userID
-					);
-					const member = await this._guild.members.fetch(userID);
-					const embed = new ds.MessageEmbed()
-						.setAuthor(member.user.username, member.user.avatarURL())
-						.setDescription(
-							`Сообщений: ${user.messages}\nПредупреждений: ${user.warnings}`
-						)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`);
-					info.channel.send({embeds: [embed]});
-					return;
-				}
-
-				if (info.command === `test`) {
-					const members = this._guild.members.cache.toJSON();
-					const limit = Date.now() - 3 * 31 * 24 * 60 * 60 * 1000;
-					msg.delete();
-					_.forEach(members, member => {
-						if (
-							member.joinedTimestamp <= limit &&
-							member.roles.cache.has(`918778640869773334`)
-						)
-							console.log(member.displayName);
-					});
+				if (info.channelID === `799562265304891392`) {
+					if (info.command === `send`) {
+						const channelID = info.splited[1];
+						const text: string[] = [];
+						for (const t of info.splited) {
+							if (info.splited.indexOf(t) > 1) text.push(t);
+						}
+						this.tools.sendInChannel({channelID: channelID, message: text.join(` `)});
+					}
 				}
 			}
 
 			/* DEV GUILD */
 
 			if (info.isGuild === true && msg.guild.id === `823463145963913236`) {
+				if (info.command === `test`) {
+					const embed = this.tools.createEmbed({
+						color: 0x44adab,
+						title: `Привет!`,
+						description: `Давай покажу что и как у нас\n\n<#868108110001221632> - тут мы общаемся 🤗\n<#880036048162402304> - тут мы шутим 😁\n<#875430878489227335> - тут мы общаемся если сообщения не пропускает дискорд 😉`,
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true,
+					});
+					info.channel.send({content: `<@${info.authorID}>`, embeds: [embed]});
+				}
 			}
 
 			/* MY GUILD */
 
-			if (info.isGuild === true && msg.guild.id === `437601028662231040`) {
-				if (info.command === `me`) {
-					const user = await this.databaseService.discordUserFindOneByUserID(
-						info.authorID
-					);
-					if (!user) {
-						this.logger.error(
-							`${msg.author.username} (ID: ${msg.author.id}) not found in database`
-						);
-						const embed = new ds.MessageEmbed()
-							.setAuthor(msg.author.username, msg.author.avatarURL())
-							.setDescription(`Ошибка`)
-							.setColor(0xff0000)
-							.setFooter(`With ❤️ by NidhoggBot v2.0`);
-						info.channel.send({embeds: [embed]});
-					} else {
-						const embed = new ds.MessageEmbed()
-							.setAuthor(msg.author.username, msg.author.avatarURL())
-							.setDescription(
-								`Сообщений: ${
-									user.messages
-								}\nВремя в голосовых каналах: ${this.toolsService.toDDHHMMSS(
-									`${user.minutesInVoice}`
-								)}`
-							)
-							.setFooter(`With ❤️ by NidhoggBot v2.0`);
-						info.channel.send({embeds: [embed]});
-					}
-					return;
+			/**
+			 * Translate english to russian
+			 */
+			if (
+				!lng.checkDuplicate(info.splited) &&
+				lng.checkEn(info.splited) && 
+				msg.content.length > 2
+			) {
+				const data = await lng.checkWords(info.splited);
+				if (data.count > 0) {
+					const message = `Полагаю ты имел ввиду что-то вроде этого: \n> ${data.text}`;
+					this.tools.sendInChannel({channelID: info.channelID, message: message});
 				}
+			}
 
+			if (info.isGuild === true && msg.guild.id === `437601028662231040`) {
 				/* MUSIC CHANNEL */
 				if (info.channelID === `917132649603162212`) {
-					const force = await this.isMod(info.authorID);
+					const force = await this.tools.isMod(info.authorID);
 
 					if (info.command === `play` || info.command === `p`) {
-						const result = await DiscordMusic.play({
+						const result = await this.dMusic.play({
 							authorID: info.authorID,
 							channel: msg.member.voice.channel,
 							channelID: msg.member.voice.channelId,
@@ -830,23 +327,23 @@ export class DiscordService {
 								.send({
 									content: `<@${info.authorID}>, ${result.errorMessage}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						} else {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result.content}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `stop` || info.command === `s`) {
-						const result = await DiscordMusic.stop(info.authorID, force);
+						const result = await this.dMusic.stop(info.authorID, force);
 						await info.channel
 							.send({
 								content: `<@${info.authorID}>, ${result}`,
 							})
-							.then(msg => this.deleteMSG(msg, 5000));
+							.then(msg => this.tools.msgDelete(msg, 5000));
 					} else if (info.command === `pause`) {
-						const result = await DiscordMusic.pause({
+						const result = await this.dMusic.pause({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
@@ -855,16 +352,16 @@ export class DiscordService {
 								.send({
 									content: `<@${info.authorID}>, ${result.errorMessage}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						} else {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result.content}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `unpause`) {
-						const result = await DiscordMusic.unPause({
+						const result = await this.dMusic.unPause({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
@@ -873,16 +370,16 @@ export class DiscordService {
 								.send({
 									content: `<@${info.authorID}>, ${result.errorMessage}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						} else {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result.content}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `skip`) {
-						const result = await DiscordMusic.skip({
+						const result = await this.dMusic.skip({
 							channelID: msg.member.voice.channelId,
 							force: force,
 						});
@@ -891,16 +388,16 @@ export class DiscordService {
 								.send({
 									content: `<@${info.authorID}>, ${result.errorMessage}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						} else {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result.content}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `drop`) {
-						const result = await DiscordMusic.clearQueue(
+						const result = await this.dMusic.clearQueue(
 							info.authorID,
 							force
 						);
@@ -908,22 +405,23 @@ export class DiscordService {
 							.send({
 								content: `<@${info.authorID}>, ${result}`,
 							})
-							.then(msg => this.deleteMSG(msg, 5000));
+							.then(msg => this.tools.msgDelete(msg, 5000));
 					} else if (info.command === `queue` || info.command === `q`) {
-						const result = await DiscordMusic.getQueue();
+						const result = await this.dMusic.getQueue();
+						this.tools.msgDelete(msg, 1000);
 						if (result === `Музыка не активна`) {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 							return;
 						} else if (result === `Очередь пуста`) {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 							return;
 						}
 						let qu = ``;
@@ -936,15 +434,15 @@ export class DiscordService {
 								content: `<@${info.authorID}>`,
 								embeds: [embed],
 							})
-							.then(msg => this.deleteMSG(msg, 5000));
+							.then(msg => this.tools.msgDelete(msg, 5000));
 					} else if (info.command === `now` || info.command === `n`) {
-						const result = await DiscordMusic.getNowSong();
+						const result = await this.dMusic.getNowSong();
 						if (result.error) {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result.errorMessage}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						} else {
 							const embed = new ds.MessageEmbed().addField(
 								`Сейчас играет`,
@@ -955,10 +453,10 @@ export class DiscordService {
 									content: `<@${info.authorID}>`,
 									embeds: [embed],
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					} else if (info.command === `change`) {
-						const result = await DiscordMusic.changeQueueOwner({
+						const result = await this.dMusic.changeQueueOwner({
 							ownerID: info.authorID,
 							nextOwnerID: info.splited[1],
 							force: force,
@@ -968,16 +466,16 @@ export class DiscordService {
 								.send({
 									content: `<@${info.authorID}>, ${result.errorMessage}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						} else {
 							await info.channel
 								.send({
 									content: `<@${info.authorID}>, ${result.content}`,
 								})
-								.then(msg => this.deleteMSG(msg, 5000));
+								.then(msg => this.tools.msgDelete(msg, 5000));
 						}
 					}
-					this.deleteMSG(msg, 1000);
+					this.tools.msgDelete(msg, 1000);
 				}
 			}
 		});
@@ -988,17 +486,15 @@ export class DiscordService {
 			this.client.channels
 				.fetch(`869693463510278245`)
 				.then((channel: ds.TextChannel) => {
-					const embed = new ds.MessageEmbed()
-						.setColor(0x44adab)
-						.setTitle(`Добро пожаловать на сервер`)
-						.setDescription(
-							`Давай введу тебя в курс дела\n
-						<#868108110001221632> Здесь проходит все основное общение\n
-						<#875430878489227335> Тут мы делимся артами\n
-						<#875430878489227335> Раздел для 18+\n
-						<#880036048162402304> Сюда поржать`
-						)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`);
+					const embed = this.tools.createEmbed({
+						color: 0x44adab,
+						title: `Привет!`,
+						description: `Давай покажу что и как у нас\n\n<#868108110001221632> - тут мы общаемся 🤗\n<#880036048162402304> - тут мы шутим 😁\n<#875430878489227335> - тут мы общаемся если сообщения не пропускает дискорд 😉`,
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true,
+					});
 					channel.send({content: `<@${member.id}>`, embeds: [embed]});
 				});
 		});
@@ -1008,12 +504,15 @@ export class DiscordService {
 			this.client.channels
 				.fetch(`818566531486187611`)
 				.then((channel: ds.TextChannel) => {
-					const embed = new ds.MessageEmbed()
-						.setColor(0x341331)
-						.setTitle(`Пользователь покинул сервер`)
-						.setDescription(`<@${member.id}> (${member.id}) покинул сервер`)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`)
-						.setTimestamp();
+					const embed = this.tools.createEmbed({
+						color: 0x341331,
+						title: `User leave from server.`,
+						description: `<@${member.id}> (${member.id}) leave from server.`,
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true
+					});
 					channel.send({embeds: [embed]});
 				});
 		});
@@ -1028,15 +527,18 @@ export class DiscordService {
 				.then((channel: ds.TextChannel) => {
 					const embeds = [];
 					const attachments = [];
-					const embed = new ds.MessageEmbed()
-						.setColor(0xf05656)
-						.setTitle(`Сообщение удалено`)
-						.setDescription(
-							`Содержание:\n\`\`\`${msg.content}\`\`\`\n\nАвтор: <@${msg.author.id}>`
-						)
-						.setFooter(`With ❤️ by NidhoggBot v2.0`)
-						.setAuthor(msg.author.username, msg.author.avatarURL())
-						.setTimestamp();
+					const embed = this.tools.createEmbed({
+						title: `Message deleted.`,
+						description: `Content:\n\`\`\`${msg.content}`,
+						author: {
+							name: msg.author.username,
+							iconURL: msg.author.avatarURL()
+						},
+						footer: {
+							text: this.footerText,
+						},
+						timestamp: true,
+					});
 					embeds.push(embed);
 					if (msg.attachments.toJSON().length > 0)
 						for (const i in msg.attachments.toJSON())
@@ -1047,6 +549,6 @@ export class DiscordService {
 				});
 		});
 
-		this.client.on(`messageReactionAdd`, async (reaction, user) => {});
+		// this.client.on(`messageReactionAdd`, async (reaction, user) => {});
 	}
 }

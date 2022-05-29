@@ -1,10 +1,9 @@
-import { Module } from '@nestjs/common';
-import { DatabaseModule } from 'src/database/database.module';
-import { WallhavenService } from './wallhaven.service';
+import {Module} from "@nestjs/common";
+import {WallhavenService} from "./wallhaven.service";
 
 @Module({
-  imports: [DatabaseModule],
-  providers: [WallhavenService],
-  exports: [WallhavenService],
+	imports: [],
+	providers: [WallhavenService],
+	exports: [WallhavenService],
 })
 export class WallhavenModule {}

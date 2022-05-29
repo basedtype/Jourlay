@@ -5,7 +5,7 @@ import { DiscordService } from "../../discord/discord.service";
 export class AlisaService {
 	constructor(private readonly discordService: DiscordService) {}
 
-	async testResp() {
+	/* async testResp() {
 		const obj = {
 			response: {
 				text: "Здравствуйте! Это мы, хороводоведы.",
@@ -41,9 +41,9 @@ export class AlisaService {
 			version: "1.0",
 		};
 		return obj;
-	}
+	} */
 
-	private async buildResponse(answer: string, event: string, tts?: string, version?: string) {
+	/* private async buildResponse(answer: string, event: string, tts?: string, version?: string) {
 		return {
 			response: {
 				text: answer,
@@ -69,9 +69,9 @@ export class AlisaService {
 			},
 			version: "1.0",
 		};
-	}
+	} */
 
-	async manager(command: string) {
+	/* async manager(command: string) {
 		if (command === "" || command === "команды") {
 			const answer = `Вы можете попросить меня рассказать о моих командах, сказав "Алиса, команды". Также я могу создать канал в дискорде при помощи команды "Алиса, создай канал".`;
 			return this.buildResponse(answer, "commands");
@@ -81,5 +81,5 @@ export class AlisaService {
 		} else {
 			return this.buildResponse("Не совсем поняла вашу просьбу", "not_find");
 		}
-	}
+	} */
 }
