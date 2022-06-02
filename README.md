@@ -1,4 +1,4 @@
-# NidhoggBot
+# Jourlay
 
 One tool - many things
 
@@ -47,38 +47,8 @@ $ npm run start:prod
 
 ### .env
 
-You should create a **.env** file
+You should create a **.env** file. Look into `.env.template`.
 
-Template:
-```
-NODE_ENV='development'
-
-WWWPATH=<string>
-SECRET=<string>
-HOST_IP=<string>
-HOST_PORT=<number>
-HOST_PROTOCOL=<string>
-
-REDIS_HOST=<string>
-REDIS_PORT=<number>
-
-POSTGRES_TYPE='postgres'
-POSTGRES_HOST=<string>
-POSTGRES_PORT=<number>
-POSTGRES_USERNAME=<string>
-POSTGRES_PASSWORD=<string>
-POSTGRES_DATABASE=<string>
-POSTGRES_ENTITIES=[<string>]
-POSTGRES_SYNCHRONIZE=<boolean>
-POSTGRES_MIGRATIONSRUN=<boolean>
-POSTGRES_LOGGING=<boolean>
-POSTGRES_LOGGER=<string>
-POSTGRES_MIGRATIONS=["<string>"]
-POSTGRES_CLI_MIGRATIONSDIR=<string>
-
-PGADMIN_DEFAULT_EMAIL=<string>
-PGADMIN_DEFAULT_PASSWORD=<string>
-```
 
 ### ormconfig.json
 
